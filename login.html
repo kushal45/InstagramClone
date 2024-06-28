@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login Form</title>
+    <style>
+        /* Optional styling for the form */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        label {
+            margin-bottom: 5px;
+        }
+    </style>
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+    <div class="login-container">
+        <img src="Instagram_Glyph_Gradient.png" alt="Instagram Logo" class="logo">
+        <form action="/login" method="post">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Log In</button>
+            <a href="#">Forgot password?</a>
+            <p>Or</p>
+            <button onclick="FB.login()">Login with Facebook</button>
+        </form>
+        <p>Don't have an account? <a href="#">Sign up</a></p>
+    </div>
+    <script>
+        // Optional JavaScript for handling form submission client-side
+        const form = document.querySelector('form');
+        const errorMessage = document.getElementById('error-message');
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            // Perform basic validation here (optional)
+            if (username.value === '' || password.value === '') {
+                errorMessage.textContent = 'Please enter username and password';
+                return;
+            }
+
+            // You can use Fetch API or a library like Axios to send the form data to the server
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(new FormData(form)) // Encode form data
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Login failed');
+                    }
+                    return response.json(); // Parse JSON response (if applicable)
+                })
+                .then(data => {
+                    // Handle successful login (e.g., redirect, display success message)
+                    console.log('Login successful:', data);
+                    window.location.href = '/home'; // Example redirect on success
+                })
+                .catch(error => {
+                    errorMessage.textContent = error.message; // Display error message
+                });
+        });
+    </script>
+    <script>
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk')
+        );
+
+
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '984280323141672',
+                xfbml: true,
+                version: 'EAANZCMp8FMCgBO4nO79p0tzD4ERFAPH8ImWWZBfPSJadhBsWr0NKEIzOddAUOSkZCnazeB9q0mMlm6FOYZAYwl4CpaoanBSuRL3CgoFSaLCxQXDAt3bevSDqKBornb4y44lcGcDcewepMY49ZAABXzYovPDZBCpwlqoZBJgyV1YZAL7DBEevL9K3DB6b4gflTCAfZCRBXPl3gZBaIbDKMIp1kbsiEuJy5XZCilSb1DuZA3na41Xia804fKhgTrYxne5GXgZDZD'
+            });
+
+            FB.login(function (response) {
+                if (response.authResponse) {
+                    console.log('Welcome!  Fetching your information.... ');
+                    FB.api('/me', { fields: 'name, email' }, function (response) {
+                        document.getElementById("profile").innerHTML = "Good to see you, " + response.name + ". i see your email address is " + response.email
+                    });
+                } else {
+
+                    console.log('User cancelled login or did not fully authorize.');
+                }
+            });
+        };
+    </script>
+</body>
+
+</html>
