@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const routes = require("./routes");
 
-const PORT = process.env.PORT || 3333;
+const PORT = process.env.PORT || 3000;
 
 app.use(
     cors({ origin: [process.env.CORS_ORIGIN, process.env.CORS_ORIGIN_IP] })
@@ -21,3 +21,4 @@ app.use(
 app.use(routes);
 
 app.listen(PORT);
+console.log(`Server running on port ${PORT}`);

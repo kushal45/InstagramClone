@@ -6,9 +6,9 @@ const { promisify } = require("util");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const User = require("../Models/User");
-const Photo = require("../Models/Photo");
-const Follow = require("../Models/Follow");
+const User = require("../models/User");
+//const Photo = require("../models/Photo");
+//const Follow = require("../models/Follow");
 
 module.exports = {
     async show(req, res) {
@@ -63,7 +63,7 @@ module.exports = {
 
     async store(req, res) {
         const { name, email, username, password } = req.body;
-
+        console.log("body response", req.body);
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });

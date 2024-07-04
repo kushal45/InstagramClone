@@ -4,17 +4,17 @@ const { Router } = require("express");
 
 const routes = Router();
 
-const AuthMiddleware = require("./Middleware/Auth");
+const AuthMiddleware = require("./middleware/Auth");
 
-const RedisMiddleware = require("./Middleware/Redis"); // Middleware of redis
-const CacheHowiam = require("./Middleware/RedisCache"); // Middleware of redis
-
+const RedisMiddleware = require("./middleware/Redis"); // Middleware of redis
+const CacheHowiam = require("./middleware/RedisCache"); // Middleware of redis
+require("./database");
 const ValidationsUser = require("./Validation/User");
 // const ValidationComment = require("./Validations/ValidationComment");
 const ValidationAuth = require("./Validation/Auth");
 
-const AuthController = require("./Controller/AuthController");
-const UserController = require("./Controller/UserController");
+const AuthController = require("./controllers/AuthController");
+const UserController = require("./controllers/UserController");
 // const PhotoController = require("./Controllers/PhotoController");
 // const LikeController = require("./Controllers/LikeController");
 // const CommentController = require("./Controllers/CommentController");
@@ -23,7 +23,6 @@ const UserController = require("./Controller/UserController");
 // const SearchController = require("./Controllers/SearchController");
 
 // ** Routes Authenticate ** //
-
 routes.post("/auth", ValidationAuth.login, AuthController.login);
 routes.get(
     "/auth",
