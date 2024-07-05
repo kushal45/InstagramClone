@@ -27,6 +27,15 @@ class Comment extends Model {
         }
       );
     }
+
+    static associate(models) {
+      this.belongsTo(models.Asset, {
+        foreignKey: 'assetId', // 'assetId' is a column in 'Post' referencing 'id' in 'Asset'
+        as: 'asset', // Optional: Specifies an alias for when you load the association
+      });
+
+      this.belongsTo(models.Post, { foreignKey: 'postId', as: 'post' });
+     }
   }
   
   module.exports = Comment;

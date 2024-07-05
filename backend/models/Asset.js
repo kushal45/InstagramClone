@@ -30,6 +30,15 @@ class Asset extends Model {
         }
       );
     }
+
+    static associate(models) {
+      this.belongsTo(models.Post, {
+        foreignKey: 'assetId', // 'assetId' is a column in 'Post' referencing 'id' in 'Asset'
+        as: 'postasset', // Optional: Specifies an alias for when you load the association
+      });
+
+      this.belongsTo(models.Comment, { foreignKey: 'assetId', as: 'commentasset' });
+     }
   }
   
   module.exports = Asset;

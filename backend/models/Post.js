@@ -24,7 +24,13 @@ class Post extends Model {
         foreignKey: 'assetId', // 'assetId' is a column in 'Post' referencing 'id' in 'Asset'
         as: 'asset', // Optional: Specifies an alias for when you load the association
       });
+
+      this.hasMany(models.Comment, {
+        foreignKey: 'postId',
+        as: 'comments',
+       });
      }
+     
   }
   
   module.exports = Post;

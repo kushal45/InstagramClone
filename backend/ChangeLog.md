@@ -4,11 +4,11 @@
 1. Login 
 2. Register
 3. Post 
-  a) single tag
-4. Comment
-5. like on Post
-6. Feeds
-7. Basic caching on user level
+4. Comment (Basic create/view comment / view comments)
+5. single tag with enums defining predefined tags
+6. like on Post with like count 
+7. Feeds
+8. Basic caching on user level
 
 ## [Unreleased]
 
