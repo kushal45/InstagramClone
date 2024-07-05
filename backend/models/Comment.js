@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
 
-class Post extends Model {
+class Comment extends Model {
     static init(sequelize) {
       super.init(
         {
@@ -8,14 +8,14 @@ class Post extends Model {
             type: DataTypes.INTEGER,
             allowNull: false,
           },
-          assetId:{
+          postId:{
             type: DataTypes.INTEGER,
             allowNull: false,
           },
-          tag: {
-            type: DataTypes.STRING,
+          assetId:{
+            type: DataTypes.INTEGER,
             allowNull: false,
-          },
+          }
         },
         {
           sequelize,
@@ -23,10 +23,10 @@ class Post extends Model {
           underscored: false,
           createdAt: "createdAt",
           updatedAt: "updatedAt",
-          tableName: "posts",
+          tableName: "comments",
         }
       );
     }
   }
   
-  module.exports = Post;
+  module.exports = Comment;

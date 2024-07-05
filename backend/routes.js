@@ -8,7 +8,7 @@ const AuthMiddleware = require("./middleware/Auth");
 
 const RedisMiddleware = require("./middleware/Redis"); // Middleware of redis
 const CacheHowiam = require("./middleware/RedisCache"); // Middleware of redis
-require("./database");
+require("./Database");
 const ValidationsUser = require("./Validation/User");
 // const ValidationComment = require("./Validations/ValidationComment");
 const ValidationAuth = require("./Validation/Auth");
@@ -61,66 +61,5 @@ routes.put(
  */
 // routes.post("/post/:user-id")
 
-// /**
-//  * Routes feed
-//  */
-
-
-// // ** Routes user ** //
-
-// // ** Routes photo ** //
-// routes.get("/photos/:id", authMiddleware, PhotoController.show);
-// routes.post(
-//     "/photos",
-//     authMiddleware,
-//     multer(multerConfig).single("file"),
-//     PhotoController.store
-// );
-// routes.delete("/photos/:id", authMiddleware, PhotoController.destroy);
-
-// // ** Routes photo ** //
-
-// // ** Routes Like ** //
-
-// routes.post("/likes/:photo", authMiddleware, LikeController.store);
-
-// // ** Routes Like ** //
-
-// // ** Routes Comment ** //
-
-// routes.post(
-//     "/comments/:photo",
-//     ValidationComment.comment,
-//     authMiddleware,
-//     CommentController.store
-// );
-// routes.put(
-//     "/comments/:id",
-//     ValidationComment.comment,
-//     authMiddleware,
-//     CommentController.update
-// );
-// routes.delete("/comments/:id", authMiddleware, CommentController.destroy);
-
-// // ** Routes Comment ** //
-
-// // ** Routes Follow ** //
-
-// routes.post("/follows/:user_id", authMiddleware, FollowController.store);
-
-// // ** Routes Follow ** //
-
-// // ** Routes Feed ** //
-
-// routes.get("/feeds", authMiddleware, FeedController.show);
-// routes.get("/follows", authMiddleware, FeedController.showFollow);
-
-// ** Routes Feed ** //
-
-// ** Routes Feed ** //
-
-//routes.get("/search/:term", authMiddleware, SearchController.search);
-
-// ** Routes Feed ** //
 
 module.exports = routes;

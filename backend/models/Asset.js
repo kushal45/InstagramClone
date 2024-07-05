@@ -1,21 +1,18 @@
 const { Model, DataTypes } = require("sequelize");
 
-class Post extends Model {
+class Asset extends Model {
     static init(sequelize) {
       super.init(
         {
-          userId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-          },
-          assetId:{
-            type: DataTypes.INTEGER,
-            allowNull: false,
-          },
-          tag: {
+          imageUrl: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
           },
+          videoUrl:{
+            type: DataTypes.STRING,
+            allowNull: true,
+          },
+          text: DataTypes.STRING,
         },
         {
           sequelize,
@@ -23,10 +20,10 @@ class Post extends Model {
           underscored: false,
           createdAt: "createdAt",
           updatedAt: "updatedAt",
-          tableName: "posts",
+          tableName: "assets",
         }
       );
     }
   }
   
-  module.exports = Post;
+  module.exports = Asset;
