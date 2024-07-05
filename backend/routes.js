@@ -8,19 +8,13 @@ const AuthMiddleware = require("./middleware/Auth");
 
 const RedisMiddleware = require("./middleware/Redis"); // Middleware of redis
 const CacheHowiam = require("./middleware/RedisCache"); // Middleware of redis
-require("./Database");
-const ValidationsUser = require("./Validation/User");
-// const ValidationComment = require("./Validations/ValidationComment");
-const ValidationAuth = require("./Validation/Auth");
+const ValidationsUser = require("./validations/User");
+const ValidationAuth = require("./validations/Auth");
+const ValidationPost = require("./validations/Post");
 
 const AuthController = require("./controllers/AuthController");
 const UserController = require("./controllers/UserController");
-// const PhotoController = require("./Controllers/PhotoController");
-// const LikeController = require("./Controllers/LikeController");
-// const CommentController = require("./Controllers/CommentController");
-// const FollowController = require("./Controllers/FollowController");
-// const FeedController = require("./Controllers/FeedController");
-// const SearchController = require("./Controllers/SearchController");
+const PostController = require("./controllers/PostController");
 
 // ** Routes Authenticate ** //
 routes.post("/auth", ValidationAuth.login, AuthController.login);
@@ -50,16 +44,12 @@ routes.put(
     UserController.updatePassword
 );
 
-/**
- * Routes Post
- * Post table
- * post can be 
- * 1) text string 
- * 2) image  url 
- * 3) video  url 
- * postId   userId  post 
- */
-// routes.post("/post/:user-id")
+// ** Routes Post ** //
+
+ routes.post("/post", AuthMiddleware, ValidationPost.validatePost , PostController.createPost);
+ routes.get("/posts", AuthMiddleware, PostController.getAllPosts);
+ routes.get("/post/:id", AuthMiddleware, PostController.getPostById);
+ routes.delete("/post/:id", AuthMiddleware, PostController.deletePost);
 
 
 module.exports = routes;

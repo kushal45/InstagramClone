@@ -21,6 +21,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      tag: {
+        type: Sequelize.ENUM('politics', 'sports', 'technology', 'entertainment', 'science', 
+              'health', 'business', 'education', 'lifestyle', 'other'),
+        allowNull: false,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

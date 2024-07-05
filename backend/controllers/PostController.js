@@ -1,3 +1,7 @@
+const Post = require("../models/Post");
+const Asset = require("../models/Asset");
+const User = require("../models/User");
+
 module.exports = {
     /**
      * Create a new post
@@ -6,10 +10,23 @@ module.exports = {
      */
     createPost: async (req, res) => {
       try {
-        // Logic to create a post
-        // const post = await PostModel.create(req.body);
+        const {username,text,imageUrl,videoUrl,tag }= req.body;
+        const user = await User.findOne({ where: { username } });
+        if(!user)
+          return res.status(404).send({ message: "User not found" });
+        const asset = await Asset.create({
+          imageUrl,
+          videoUrl,
+          text,
+          tag
+        });
+        const post = await Post.create({
+          userId: user.id,
+          assetId:asset.id
+        });
         res.status(201).send({ message: "Post created successfully", post });
       } catch (error) {
+        console.log(error);
         res.status(500).send({ message: "Error creating post", error: error.message });
       }
     },
@@ -21,8 +38,14 @@ module.exports = {
      */
     getAllPosts: async (req, res) => {
       try {
-        // Logic to fetch all posts
-        // const posts = await PostModel.findAll();
+        const username = req.query.username;
+        const user = await User.findOne({ where: { username } });
+        if(!user)
+          return res.status(404).send({ message: "User not found" });
+        const posts = await Post.findAll({
+          where: { userId: user.id },
+          include: [{ model: Asset, as: "asset" }],
+        });
         res.status(200).send(posts);
       } catch (error) {
         res.status(500).send({ message: "Error fetching posts", error: error.message });
@@ -37,7 +60,11 @@ module.exports = {
     getPostById: async (req, res) => {
       try {
         // Logic to fetch a single post by id
-        // const post = await PostModel.findByPk(req.params.id);
+        const post = await Post.findByPk(req.params.id,
+          {
+            include: [{ model: Asset, as: "asset" }],
+          }
+        );
         if (!post) {
           return res.status(404).send({ message: "Post not found" });
         }
@@ -55,7 +82,8 @@ module.exports = {
     updatePost: async (req, res) => {
       try {
         // Logic to update a post
-        // const updated = await PostModel.update(req.body, { where: { id: req.params.id } });
+        const originalPost = await PostModel.findOne(req.body, { where: { id: req.params.id } });
+
         if (updated) {
           res.status(200).send({ message: "Post updated successfully" });
         } else {
@@ -74,7 +102,7 @@ module.exports = {
     deletePost: async (req, res) => {
       try {
         // Logic to delete a post
-        // const deleted = await PostModel.destroy({ where: { id: req.params.id } });
+        const deleted = await Post.destroy({ where: { id: req.params.id } });
         if (deleted) {
           res.status(200).send({ message: "Post deleted successfully" });
         } else {

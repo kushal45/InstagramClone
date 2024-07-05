@@ -1,21 +1,12 @@
 const { Model, DataTypes } = require("sequelize");
+const Asset = require("./Asset");
 
 class Post extends Model {
     static init(sequelize) {
       super.init(
         {
-          userId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-          },
-          assetId:{
-            type: DataTypes.INTEGER,
-            allowNull: false,
-          },
-          tag: {
-            type: DataTypes.STRING,
-            allowNull: false,
-          },
+          userId:DataTypes.INTEGER,
+          assetId:DataTypes.INTEGER
         },
         {
           sequelize,
@@ -27,6 +18,13 @@ class Post extends Model {
         }
       );
     }
+
+    static associate(models) {
+      this.belongsTo(models.Asset, {
+        foreignKey: 'assetId', // 'assetId' is a column in 'Post' referencing 'id' in 'Asset'
+        as: 'asset', // Optional: Specifies an alias for when you load the association
+      });
+     }
   }
   
   module.exports = Post;
