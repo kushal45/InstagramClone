@@ -29,6 +29,43 @@ const User = {
         ).isLength({
             min: 6
         })
+    ],
+    avatarUrl: [
+        check("avatarUrl", "Enter a valid URL").optional().isURL()
+    ],
+    bio: [
+        check("bio", "Enter a valid bio").optional().isString()
+    ],
+    website: [
+        check("website", "Enter a valid website").optional().isURL()
+    ],
+    phone: [
+        check("phone", "Enter a valid phone number").optional().isMobilePhone()
+    ],
+    tags: [
+        check("tags", "Enter valid tags").optional().isArray().isIn([
+            "politics",
+            "sports",
+            "technology",
+            "entertainment",
+            "science",
+            "health",
+            "business",
+            "education",
+            "lifestyle",
+            "other"
+        ])
+    ],
+    langPrefs: [
+        check("langPrefs", "Enter valid language preferences").optional().isArray().isIn(
+            [
+                "English",
+                "Spanish",
+                "French",
+                "German",
+                "Japanese"
+            ]
+        )
     ]
 };
 

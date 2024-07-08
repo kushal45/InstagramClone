@@ -1,6 +1,9 @@
 const { Model, DataTypes } = require("sequelize");
 
 class User extends Model {
+  static LanguagePreferences = DataTypes.ENUM('English', 'Spanish', 'French', 'German', 'Japanese');
+  static tags= DataTypes.ENUM('politics', 'sports', 'technology', 'entertainment', 'science', 
+              'health', 'business', 'education', 'lifestyle', 'other');
   static init(sequelize) {
     super.init(
       {
@@ -8,6 +11,12 @@ class User extends Model {
         email: DataTypes.STRING,
         username: DataTypes.STRING,
         password: DataTypes.STRING,
+        avatarUrl: DataTypes.STRING,
+        bio: DataTypes.STRING,
+        website: DataTypes.STRING,
+        phone: DataTypes.STRING,
+        tags:DataTypes.ARRAY(User.LanguagePreferences),
+        langPrefs:DataTypes.ARRAY(User.tags),
       },
       {
         sequelize,
