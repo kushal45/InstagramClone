@@ -1,8 +1,5 @@
-const { validationResult } = require("express-validator");
-const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-
 const User = require("../models/User");
+const UserService = require("../services/UserService");
 
 module.exports = {
     async howIam(req, res) {
@@ -17,30 +14,15 @@ module.exports = {
     },
 
     async login(req, res) {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errores: errors.array() });
-        }
-
-        const { username, password } = req.body;
-
-        let user = await User.findOne({ where: { username } });
-        if (!user) return res.status(400).send({ message: "User incorrect" });
-
-        const verifyPass = await bcryptjs.compare(password, user.password);
-        if (!verifyPass)
-            return res.status(400).send({ message: "Verification Password not matched" });
-
-        //JWT
-        const payload = { id: user.id, username: user.username };
-        jwt.sign(
-            payload,
-            process.env.SIGNATURE_TOKEN,
-            { expiresIn: 86400 },
-            (error, token) => {
-                if (error) throw error;
-                return res.json({ token });
+        try {
+            const result = await UserService.login(req);
+            if (result.status !== 200) {
+                return res.status(result.status).json(result.body);
             }
-        );
+            return res.status(200).json(result.body);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).send({ message: "Server error" });
+        }
     }
 };

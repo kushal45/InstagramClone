@@ -1,4 +1,5 @@
 const { User, Post, Asset, Comment } = require("../models");
+const { PostService } = require("../services");
 module.exports = {
   /**
    * Create a new post
@@ -7,25 +8,17 @@ module.exports = {
    */
   createPost: async (req, res) => {
     try {
-      const { username, text, imageUrl, videoUrl, tag } = req.body;
-      const user = await User.findOne({ where: { username } });
-      if (!user) return res.status(404).send({ message: "User not found" });
-      const asset = await Asset.create({
-        imageUrl,
-        videoUrl,
-        text,
-        tag,
-      });
-      const post = await Post.create({
-        userId: user.id,
-        assetId: asset.id,
-      });
+      const post = await PostService.createPost(req.body,req.userId);
       res.status(201).send({ message: "Post created successfully", post });
     } catch (error) {
-      console.log(error);
-      res
-        .status(500)
-        .send({ message: "Error creating post", error: error.message });
+      if (error.message === "User not found") {
+        res.status(404).send({ message: error.message });
+      } else {
+        console.log(error);
+        res
+          .status(500)
+          .send({ message: "Error creating post", error: error.message });
+      }
     }
   },
 
@@ -37,12 +30,7 @@ module.exports = {
   getAllPosts: async (req, res) => {
     try {
       const username = req.query.username;
-      const user = await User.findOne({ where: { username } });
-      if (!user) return res.status(404).send({ message: "User not found" });
-      const posts = await Post.findAll({
-        where: { userId: user.id },
-        include: [{ model: Asset, as: "asset" }],
-      });
+      const posts = await PostService.listPosts(username);
       res.status(200).send(posts);
     } catch (error) {
       res
@@ -58,22 +46,7 @@ module.exports = {
    */
   getPostById: async (req, res) => {
     try {
-      // Logic to fetch a single post by id
-      const post = await Post.findByPk(req.params.id, {
-        include: [
-          { model: Asset, as: "asset" },
-          {
-            model: Comment,
-            as: "comments",
-            include: [
-              { model: Asset, as: "asset" }, // Corrected alias to match the association definition
-            ],
-          },
-        ]
-      });
-      if (!post) {
-        return res.status(404).send({ message: "Post not found" });
-      }
+      const post = PostService.getPostById(req.params.id);
       res.status(200).send(post);
     } catch (error) {
       res
@@ -114,12 +87,8 @@ module.exports = {
   deletePost: async (req, res) => {
     try {
       // Logic to delete a post
-      const deleted = await Post.destroy({ where: { id: req.params.id } });
-      if (deleted) {
-        res.status(200).send({ message: "Post deleted successfully" });
-      } else {
-        res.status(404).send({ message: "Post not found" });
-      }
+      const response= await PostService.deletePost(req.params.id);
+      res.status(204).send(response);
     } catch (error) {
       res
         .status(500)

@@ -1,44 +1,34 @@
 # Changelog
 
-# [1.0.0]
-1. Login 
-2. Register
-3. Post 
-4. Comment (Basic create/view comment / view comments)
-5. single tag with enums defining predefined tags
-6. like on Post with like count 
-7. Basic caching on user level
+This document provides a comprehensive log of all notable changes made to the project. It's structured to offer clear insights into each version's enhancements, new features, and fixes, ensuring technical stakeholders can easily understand the project's evolution.
 
 ## [Unreleased]
 
-## [1.0.1]
-1. migration of existing content to support new structure
-2. User profile
-  i) tags interested - multiple
-  ii) user id
-  iii)Contact Information
-  iv) Name
-  v) Profile picture
-  vi)Language preferences 
-  vii) followers count , following count
+## [1.0.3] - YYYY-MM-DD
+### Enhancements
+- **Error Handling**: Improved error handling to prevent errors from propagating to the client, enhancing user experience and system stability.
+- **Logging**: Integrated a sophisticated logging framework for enhanced debugging and operational visibility.
 
-3. Pass userId from the jwt token's signature instead of request body in Users,posts, comments, likes,follow
+### New Features
+- **Posts**: Introduced the ability to tag posts with multiple categories, allowing for more nuanced categorization and discovery.
+- **Feeds**: Launched a new feeds feature, aggregating content in a user-centric manner to enhance engagement.
+- **Caching**: Expanded Redis caching mechanisms to include posts, comments, followers, and following, significantly improving response times and scalability.
 
-3. Followers and Following 
-4. Redis Caching for posts, comments, followers, following
+### Fixes
+- Placeholder for future fixes.
 
+## [1.0.1] - YYYY-MM-DD
+### Enhancements
+- **User Profile**: Overhauled the user profile structure to include a richer set of information, such as multiple interested tags for viewing feeds, contact details, and language preferences, thereby enriching the user experience.
+- **Authentication**: Refined the authentication process to leverage JWT token signatures for user identification, enhancing security and simplifying the API design.
 
+### New Features
+- **Social Graph**: Implemented a comprehensive followers and following system, enabling users to build their network within the platform.
+- **API Documentation**: Introduced API documentation using API Blueprint and Swagger, making it easier for developers to understand and integrate with our APIs.
 
-
-## [1.0.3]
-
-1. Make errors not to propagate to the client 
-2. Adding proper logs for debugging  and integrating logging layer 
-3. Post with multiple tags
-4. Feeds
-
-### Fixed
-- NA 
-
-## [1.0.0] 
-- Initial release.
+## [1.0.0] - YYYY-MM-DD
+### Initial Release
+- **Core Features**:
+  - **Authentication**: Launched with basic login and registration capabilities.
+  - **Content Creation**: Enabled users to create and view posts, along with basic commenting functionality.
+  - **Engagement**: Introduced a like feature for posts and implemented basic user-level caching to optimize performance.
