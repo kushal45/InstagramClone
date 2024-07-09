@@ -1,4 +1,3 @@
-const { User, Post, Asset, Comment } = require("../models");
 const { PostService } = require("../services");
 module.exports = {
   /**

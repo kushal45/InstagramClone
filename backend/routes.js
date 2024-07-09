@@ -1,4 +1,4 @@
-const { Router } = require("express");
+const { Router, application } = require("express");
 //const multer = require("multer");
 //const multerConfig = require("./config/multer");
 
@@ -8,6 +8,7 @@ const AuthMiddleware = require("./middleware/Auth");
 
 const RedisMiddleware = require("./middleware/Redis"); // Middleware of redis
 const CacheHowiam = require("./middleware/RedisCache"); // Middleware of redis
+const errorHandler = require('./middleware/ErrorHandler');
 
 const ValidationsUser = require("./validations/User");
 const ValidationAuth = require("./validations/Auth");
@@ -85,5 +86,7 @@ routes.put(
 );
 routes.get("/like", AuthMiddleware, LikeController.show);
 routes.post("/remove", AuthMiddleware, LikeController.delete);
+
+routes.use(errorHandler);
 
 module.exports = routes;
