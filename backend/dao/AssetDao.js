@@ -2,9 +2,9 @@ const  Asset  = require('../models/Asset');
 
 class AssetDAO {
   // Method to create a new asset
-  static async create(assetData) {
+  static async create({imageUrl, videoUrl, text}) {
     try {
-      const asset = await Asset.create(assetData);
+      const asset = await Asset.create({imageUrl, videoUrl, text });
       return asset;
     } catch (error) {
       throw error;

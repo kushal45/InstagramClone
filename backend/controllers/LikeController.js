@@ -6,7 +6,7 @@ module.exports = {
       const likes = await LikeService.getLikesByPostId(req.query.postId);
       return res.json(likes);
     } catch (err) {
-      return res.status(500).json({ error: "Error while fetching likes" });
+      throw err;
     }
   },
   async like(req, res) {
@@ -14,8 +14,7 @@ module.exports = {
       const like = await LikeService.likePost(req.body.postId);
       return res.json(like);
     } catch (err) {
-      const status = err.message === "Post not found" ? 400 : 500;
-      return res.status(status).json({ error: err.message });
+      throw err;
     }
   },
   async unlike(req, res) {
@@ -23,8 +22,7 @@ module.exports = {
       const like = await LikeService.unlikePost(req.body.postId);
       return res.json(like);
     } catch (err) {
-      const status = err.message === "Post not found" || err.message === "Like not found" || err.message === "Like count is already 0" ? 400 : 500;
-      return res.status(status).json({ error: err.message });
+      throw err;
     }
   },
   async delete(req, res) {
@@ -32,8 +30,7 @@ module.exports = {
       const message = await LikeService.deleteLike(req.params.id);
       return res.status(200).json(message);
     } catch (err) {
-      const status = err.message === "Like not found" ? 400 : 500;
-      return res.status(status).json({ error: err.message });
+      throw err;
     }
   },
 };

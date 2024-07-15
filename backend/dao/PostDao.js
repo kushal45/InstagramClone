@@ -3,11 +3,9 @@ const { Asset, Post } = require("../models");
 
 class PostDao {
   static async create(postData) {
-    const asset = await Asset.create(postData);
-    
     const post = await Post.create({
       userId: postData.userId,
-      assetId: asset.id,
+      assetId: postData.assetId,
     });
     return post;
   }

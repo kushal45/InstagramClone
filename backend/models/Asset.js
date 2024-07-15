@@ -12,10 +12,13 @@ class Asset extends Model {
             type: DataTypes.STRING,
             allowNull: true,
           },
-          text: DataTypes.STRING,
+          text: {
+            type: DataTypes.STRING,
+            allowNull: false,
+          },
           tag: {
             type: DataTypes.ENUM,
-            allowNull: false,
+            allowNull: true,
             values: ['politics', 'sports', 'technology', 'entertainment', 'science', 
               'health', 'business', 'education', 'lifestyle', 'other'],
           },

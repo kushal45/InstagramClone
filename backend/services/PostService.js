@@ -1,18 +1,15 @@
 const { UserDAO, AssetDAO, PostDAO } = require("../dao");
+const { NotFoundError } = require("../errors");
 const { User, Post, Asset, Comment } = require("../models");
 //const { sendEvent } = require("../kafka/Producer");
 
 class PostService {
   async createPost(postData, userId) {
-    console.log("userId for post", userId);
     const user = await UserDAO.findUserById(userId);
-    console.log("user", user);
     if (!user) {
-      console.log("User not found",userId);
       throw new Error("User not found");
     }
     const asset = await AssetDAO.create(postData);
-
     const post = await PostDAO.create({
       userId: user.id,
       assetId: asset.id,
@@ -76,7 +73,7 @@ class PostService {
 
   async listPosts(username,{ page = 1, pageSize = 10 } = {}) {
     const user = await User.findOne({ where: { username } });
-    if (!user) throw new Error("User not found");
+    if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
     const posts = await Post.findAll({
       where: { userId: user.id },

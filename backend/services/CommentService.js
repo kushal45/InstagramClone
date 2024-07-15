@@ -1,5 +1,5 @@
 const { Comment, User, Post, Asset } = require("../models");
-const { NotFoundError } = require('../errors/NotFoundError');
+const { NotFoundError } = require('../errors');
 const { UserDAO, AssetDAO, CommentDAO } = require("../dao");
 const PostDao = require("../dao/PostDao");
 

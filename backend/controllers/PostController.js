@@ -1,4 +1,7 @@
+const { validationResult } = require("express-validator");
 const { PostService } = require("../services");
+const { BadRequestError } = require("../errors");
+const { PostDAO } = require("../dao");
 module.exports = {
   /**
    * Create a new post
@@ -7,17 +10,14 @@ module.exports = {
    */
   createPost: async (req, res) => {
     try {
-      const post = await PostService.createPost(req.body,req.userId);
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        throw new BadRequestError(JSON.stringify(errors.array()));
+      }
+      const post = await PostService.createPost(req.body, req.userId);
       res.status(201).send({ message: "Post created successfully", post });
     } catch (error) {
-      if (error.message === "User not found") {
-        res.status(404).send({ message: error.message });
-      } else {
-        console.log(error);
-        res
-          .status(500)
-          .send({ message: "Error creating post", error: error.message });
-      }
+      throw error;
     }
   },
 
@@ -32,9 +32,7 @@ module.exports = {
       const posts = await PostService.listPosts(username);
       res.status(200).send(posts);
     } catch (error) {
-      res
-        .status(500)
-        .send({ message: "Error fetching posts", error: error.message });
+      throw error;
     }
   },
 
@@ -48,9 +46,7 @@ module.exports = {
       const post = PostService.getPostById(req.params.id);
       res.status(200).send(post);
     } catch (error) {
-      res
-        .status(500)
-        .send({ message: "Error fetching post", error: error.message });
+      throw error;
     }
   },
 
@@ -62,7 +58,7 @@ module.exports = {
   updatePost: async (req, res) => {
     try {
       // Logic to update a post
-      const originalPost = await PostModel.findOne(req.body, {
+      const originalPost = await PostDAO.findOne(req.body, {
         where: { id: req.params.id },
       });
 
@@ -72,9 +68,7 @@ module.exports = {
         res.status(404).send({ message: "Post not found" });
       }
     } catch (error) {
-      res
-        .status(500)
-        .send({ message: "Error updating post", error: error.message });
+       throw error;
     }
   },
 
@@ -86,12 +80,10 @@ module.exports = {
   deletePost: async (req, res) => {
     try {
       // Logic to delete a post
-      const response= await PostService.deletePost(req.params.id);
+      const response = await PostService.deletePost(req.params.id);
       res.status(204).send(response);
     } catch (error) {
-      res
-        .status(500)
-        .send({ message: "Error deleting post", error: error.message });
+       throw error;
     }
   },
 };
