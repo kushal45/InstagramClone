@@ -1,5 +1,6 @@
 
-import { NotFoundError } from './NotFoundError';
-import { InternalServerError } from './InternalServerError';
+const  NotFoundError =  require('./NotFoundError');
+const InternalServerError = require('./InternalServerError');
+const BadRequestError = require('./BadRequestError');
 
-module.exports = { NotFoundError, InternalServerError };
+module.exports = { NotFoundError, InternalServerError, BadRequestError};

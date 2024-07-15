@@ -1,21 +1,23 @@
+const { UserDAO, AssetDAO, PostDAO } = require("../dao");
 const { User, Post, Asset, Comment } = require("../models");
+//const { sendEvent } = require("../kafka/Producer");
 
 class PostService {
   async createPost(postData, userId) {
     console.log("userId for post", userId);
-    const user = await User.findByPk(userId);
+    const user = await UserDAO.findUserById(userId);
     console.log("user", user);
     if (!user) {
       console.log("User not found",userId);
       throw new Error("User not found");
     }
-    const asset = await Asset.create(postData);
+    const asset = await AssetDAO.create(postData);
 
-    const post = await Post.create({
+    const post = await PostDAO.create({
       userId: user.id,
       assetId: asset.id,
     });
-
+    //await sendEvent('postCreated', post);
     return post;
   }
 
@@ -34,7 +36,7 @@ class PostService {
       ],
     });
     if (!post) {
-      throw new Error("Post not found");
+      throw new NotFoundError("Post not found");
     }
     return post;
   }
@@ -45,7 +47,7 @@ class PostService {
       new: true,
     });
     if (!post) {
-      throw new Error("Post not found");
+      throw new NotFoundError("Post not found");
     }
     return post;
   }
@@ -53,7 +55,7 @@ class PostService {
   async deletePost(postId) {
     const post = await Post.findById(postId);
     if (!post) {
-      throw new Error("Post not found");
+      throw new NotFoundError("Post not found");
     }
 
     // Assuming the post model has a reference to the assetId
@@ -62,16 +64,14 @@ class PostService {
     // Step 2: Delete the associated asset
     const deletedAsset = await Asset.findByIdAndDelete(assetId);
     if (!deletedAsset) {
-      throw new Error("Asset not found or already deleted");
+      throw new NotFoundError("Asset not found or already deleted");
     }
 
     // Step 3: Delete the post
     const postDeletionResult = await Post.findByIdAndDelete(postId);
     if (!postDeletionResult) {
-      throw new Error("Post not found or already deleted");
+      throw new NotFoundError("Post not found or already deleted");
     }
-
-    return { message: "Post and associated asset deleted successfully" };
   }
 
   async listPosts(username,{ page = 1, pageSize = 10 } = {}) {

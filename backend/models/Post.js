@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require("sequelize");
-const Asset = require("./Asset");
 
 class Post extends Model {
     static init(sequelize) {

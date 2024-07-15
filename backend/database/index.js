@@ -12,10 +12,10 @@ console.log("configDB", ConfigDB);
 const connection = new Sequelize(ConfigDB);
 
 User.init(connection);
-Asset.init(connection);
-Post.init(connection);
-Comment.init(connection);
-Like.init(connection);
+ Asset.init(connection);
+ Post.init(connection);
+ Comment.init(connection);
+// Like.init(connection);
 
 //
 // Photo.init(connection);
@@ -23,9 +23,9 @@ Like.init(connection);
 // Comment.init(connection);
 // Follow.init(connection);
 
-Post.associate(connection.models);
-Comment.associate(connection.models);
-Like.associate(connection.models);
+// Post.associate(connection.models);
+// Comment.associate(connection.models);
+// Like.associate(connection.models);
 // User.associate(connection.models);
 // Photo.associate(connection.models);
 // Like.associate(connection.models);
