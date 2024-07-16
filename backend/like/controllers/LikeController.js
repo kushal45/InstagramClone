@@ -1,4 +1,4 @@
-const {LikeService} = require("../../services");
+const LikeService = require("../services/LikeService");
 
 module.exports = {
   async show(req, res) {

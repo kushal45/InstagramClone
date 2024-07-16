@@ -5,7 +5,7 @@ const app = express();
 const cors = require("cors");
 require("./database");
 const routes = require("./routes");
-const { connectProducer } = require("./kafka/Producer");
+const errorHandler = require("./middleware/ErrorHandler");
 
 const PORT = process.env.PORT || 3000;
 
@@ -21,13 +21,6 @@ app.use(
     express.static(path.resolve(__dirname, "..", "tmp", "uploads"))
 );
 app.use(routes);
-// (async () => {
-//     try {
-//      // await connectProducer();
-//    //  console.log('Kafka Producer connected successfully.');
-//     } catch (error) {
-//      // console.error('Failed to connect Kafka Producer:', error);
-//     }
-//   })();
+app.use(errorHandler);
 app.listen(PORT);
 console.log(`Server running on port ${PORT}`);
