@@ -2,6 +2,7 @@ cd backend
 if docker ps -a | grep -q 'backend'; then
     docker stop backend
     docker rm backend
+    docker volume prune
 fi
 docker image prune -f
 containers_up=$(docker-compose ps -q)

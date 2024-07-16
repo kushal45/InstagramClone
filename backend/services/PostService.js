@@ -1,7 +1,8 @@
 const { UserDAO, AssetDAO, PostDAO } = require("../dao");
 const { NotFoundError } = require("../errors");
 const { User, Post, Asset, Comment } = require("../models");
-//const { sendEvent } = require("../kafka/Producer");
+const { sendEvent,connectProducer } = require("../kafka/Producer");
+const { createConsumer } = require("../kafka/Consumer");
 
 class PostService {
   async createPost(postData, userId) {
@@ -14,7 +15,17 @@ class PostService {
       userId: user.id,
       assetId: asset.id,
     });
-    //await sendEvent('postCreated', post);
+
+    await connectProducer();
+    await sendEvent('postCreated', post);
+    const consumerInst = createConsumer({
+      brokers: ["kafka:9092"],
+      clientId: "postConsumer",
+      groupId: "post-group"
+    });
+    await consumerInst.connect();
+    await consumerInst.subscribe('postCreated',  true );
+    //await consumerInst.run(());
     return post;
   }
 
