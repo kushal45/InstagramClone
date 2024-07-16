@@ -1,7 +1,6 @@
 const { validationResult } = require("express-validator");
-const { PostService } = require("../../services");
+const PostService  = require("../services/PostService");
 const { BadRequestError } = require("../../errors");
-const { PostDAO } = require("../../dao");
 module.exports = {
   /**
    * Create a new post
@@ -58,15 +57,8 @@ module.exports = {
   updatePost: async (req, res) => {
     try {
       // Logic to update a post
-      const originalPost = await PostDAO.findOne(req.body, {
-        where: { id: req.params.id },
-      });
-
-      if (updated) {
-        res.status(200).send({ message: "Post updated successfully" });
-      } else {
-        res.status(404).send({ message: "Post not found" });
-      }
+      const response = await PostService.updatePost(req.params.id, req.body);
+      res.status(200).send(response);
     } catch (error) {
        throw error;
     }

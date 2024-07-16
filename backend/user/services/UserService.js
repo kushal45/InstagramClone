@@ -1,8 +1,8 @@
 const { validationResult } = require("express-validator");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Utility = require("../../utils/Utility");
-const { UserDAO } = require("../../dao");
+const Utility = require("../utils/Utility");
+const  UserDAO  = require("../dao/UserDao");
 const { BadRequestError, NotFoundError } = require("../../errors");
 
 class UserService {

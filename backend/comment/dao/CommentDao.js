@@ -1,4 +1,4 @@
-const { Comment } = require("../../models");
+const { Comment, Asset } = require("../../models");
 
 class CommentDao {
     static async create({ userId, postId, assetId  }) {

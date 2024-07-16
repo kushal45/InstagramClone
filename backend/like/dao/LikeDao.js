@@ -1,4 +1,5 @@
 const { NotFoundError, BadRequestError } = require("../../errors");
+const { Like } = require("../../models");
 
 class LikeDAO {
     // Get likes by postId
@@ -24,7 +25,7 @@ class LikeDAO {
     // Create or increment like for a post
     static async likePost(postId) {
       try {
-        let like = await LikeDAO.get({ where: { postId } });
+        let like = await Like.get({ where: { postId } });
         if (!like) {
           like = await Like.create({ postId, count: 1 });
         } else {

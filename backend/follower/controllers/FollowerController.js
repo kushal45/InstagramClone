@@ -1,4 +1,4 @@
-const { Follower, User } = require('../models');
+const { Follower, User } = require('../../models');
 
 class FollowerController {
   // List followers of a user

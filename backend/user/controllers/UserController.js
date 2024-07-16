@@ -1,10 +1,4 @@
-const Sequelize = require("sequelize");
-const { validationResult } = require("express-validator");
-const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { UserService } = require("../services");
-//const Photo = require("../models/Photo");
-//const Follow = require("../models/Follow");
+const { UserService } = require("../services/UserService");
 
 module.exports = {
   async show(req, res) {

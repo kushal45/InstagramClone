@@ -1,3 +1,4 @@
+const { NotFoundError } = require('../../errors');
 const  Asset  = require('../model/Asset'); 
 
 class AssetDAO {
@@ -16,7 +17,7 @@ class AssetDAO {
     try {
       const asset = await Asset.findByPk(id);
       if (!asset) {
-        throw new Error('Asset not found');
+        throw new NotFoundError('Asset not found');
       }
       return asset;
     } catch (error) {
@@ -32,7 +33,7 @@ class AssetDAO {
         returning: true, // This option is specific to certain SQL dialects like PostgreSQL
       });
       if (updatedRows === 0) {
-        throw new Error('Asset not found or no update required');
+        throw new NotFoundError('Asset not found or no update required');
       }
       return updatedAsset;
     } catch (error) {
@@ -47,7 +48,7 @@ class AssetDAO {
         where: { id },
       });
       if (deletedRows === 0) {
-        throw new Error('Asset not found');
+        throw new NotFoundError('Asset not found');
       }
       return true;
     } catch (error) {

@@ -4,20 +4,20 @@ const { Router, application } = require("express");
 
 const routes = Router();
 
-const AuthMiddleware = require("./middleware/Auth");
+const AuthMiddleware = require("./user/middleware/Auth");
 
 const RedisMiddleware = require("./middleware/Redis"); // Middleware of redis
 const CacheHowiam = require("./middleware/RedisCache"); // Middleware of redis
 const errorHandler = require('./middleware/ErrorHandler');
 
-const ValidationsUser = require("./validations/User");
-const ValidationAuth = require("./validations/Auth");
-const ValidationPost = require("./validations/Post");
-const ValidationComment = require("./validations/Comment");
-const ValidationLike = require("./validations/Like");
+const ValidationsUser = require("./user/validations/User");
+const ValidationAuth = require("./user/validations/Auth");
+const ValidationPost = require("./post/validations/Post");
+const ValidationComment = require("./comment/validations/Comment");
+const ValidationLike = require("./like/validations/Like");
 
-const AuthController = require("./controllers/AuthController");
-const UserController = require("./controllers/UserController");
+const AuthController = require("./user/controllers/AuthController");
+const UserController = require("./user/controllers/UserController");
 const PostController = require("./post/controllers/PostController");
 const CommentController = require("./comment/controllers/CommentController");
 const LikeController = require("./like/controllers/LikeController");

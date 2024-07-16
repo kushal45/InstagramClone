@@ -1,6 +1,5 @@
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
-const { User, Post, Asset, Comment } = require("../../models");
 const { sendEvent,connectProducer } = require("../../kafka/Producer");
 const { createConsumer } = require("../../kafka/Consumer");
 
@@ -31,18 +30,7 @@ class PostService {
 
   async getPostById(postId) {
     // Logic to fetch a post by ID
-    const post = await Post.findByPk(req.params.id, {
-      include: [
-        { model: Post, as: "asset" },
-        {
-          model: Comment,
-          as: "comments",
-          include: [
-            { model: Asset, as: "asset" }, // Corrected alias to match the association definition
-          ],
-        },
-      ],
-    });
+    const post = await PostDAO.getById(req.params.id);
     if (!post) {
       throw new NotFoundError("Post not found");
     }
@@ -51,9 +39,7 @@ class PostService {
 
   async updatePost(postId, updateData) {
     // Logic to update a post
-    const post = await Post.findByIdAndUpdate(postId, updateData, {
-      new: true,
-    });
+    const post = await PostDAO.update(postId, updateData);
     if (!post) {
       throw new NotFoundError("Post not found");
     }
@@ -61,7 +47,7 @@ class PostService {
   }
 
   async deletePost(postId) {
-    const post = await Post.findById(postId);
+    const post = await PostDao.getById(postId);
     if (!post) {
       throw new NotFoundError("Post not found");
     }
@@ -70,28 +56,23 @@ class PostService {
     const assetId = post.assetId;
 
     // Step 2: Delete the associated asset
-    const deletedAsset = await Asset.findByIdAndDelete(assetId);
+    const deletedAsset = await AssetDAO.delete(assetId);
     if (!deletedAsset) {
       throw new NotFoundError("Asset not found or already deleted");
     }
 
     // Step 3: Delete the post
-    const postDeletionResult = await Post.findByIdAndDelete(postId);
+    const postDeletionResult = await PostDAO.delete(postId);
     if (!postDeletionResult) {
       throw new NotFoundError("Post not found or already deleted");
     }
   }
 
   async listPosts(username,{ page = 1, pageSize = 10 } = {}) {
-    const user = await User.findOne({ where: { username } });
+    const user = await UserDAO.findUserByQuery({ username });
     if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
-    const posts = await Post.findAll({
-      where: { userId: user.id },
-      include: [{ model: Asset, as: "asset" }],
-      offset: skip,
-      limit: pageSize
-    });
+    const posts = await PostDAO.list(user.id, { offset: skip, limit: pageSize });
     return posts;
   }
 }

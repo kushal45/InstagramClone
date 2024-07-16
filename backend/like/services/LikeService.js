@@ -1,7 +1,6 @@
 const { PostDAO } = require("../../dao");
 const LikeDAO = require("../dao/LikeDao");
 const { NotFoundError } = require("../../errors");
-const { Like, Post } = require("../../models");
 
 class LikeService {
   static async getLikesByPostId(postId) {
