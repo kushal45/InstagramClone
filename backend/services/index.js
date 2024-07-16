@@ -1,6 +1,6 @@
 module.exports = {
-  UserService: require("./UserService"),
-  PostService: require("./PostService"),
-  CommentService: require("./CommentService"),
-  LikeService: require("./LikeService"),
+  UserService: require("../user/services/UserService"),
+  PostService: require("../post/services/PostService"),
+  CommentService: require("../comment/services/CommentService"),
+  LikeService: require("../like/services/LikeService"),
 };

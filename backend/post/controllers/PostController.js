@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
-const { PostService } = require("../services");
-const { BadRequestError } = require("../errors");
-const { PostDAO } = require("../dao");
+const { PostService } = require("../../services");
+const { BadRequestError } = require("../../errors");
+const { PostDAO } = require("../../dao");
 module.exports = {
   /**
    * Create a new post

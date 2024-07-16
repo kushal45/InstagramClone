@@ -1,9 +1,9 @@
 const { validationResult } = require("express-validator");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Utility = require("../utils/Utility");
-const { UserDAO } = require("../dao");
-const { BadRequestError, NotFoundError } = require("../errors");
+const Utility = require("../../utils/Utility");
+const { UserDAO } = require("../../dao");
+const { BadRequestError, NotFoundError } = require("../../errors");
 
 class UserService {
   static async getUserProfile(username, currentUserId) {

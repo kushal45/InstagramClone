@@ -1,4 +1,4 @@
-const { NotFoundError, BadRequestError } = require("../errors");
+const { NotFoundError, BadRequestError } = require("../../errors");
 
 class LikeDAO {
     // Get likes by postId

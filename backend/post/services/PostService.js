@@ -1,8 +1,8 @@
-const { UserDAO, AssetDAO, PostDAO } = require("../dao");
-const { NotFoundError } = require("../errors");
-const { User, Post, Asset, Comment } = require("../models");
-const { sendEvent,connectProducer } = require("../kafka/Producer");
-const { createConsumer } = require("../kafka/Consumer");
+const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
+const { NotFoundError } = require("../../errors");
+const { User, Post, Asset, Comment } = require("../../models");
+const { sendEvent,connectProducer } = require("../../kafka/Producer");
+const { createConsumer } = require("../../kafka/Consumer");
 
 class PostService {
   async createPost(postData, userId) {

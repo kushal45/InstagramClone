@@ -1,4 +1,4 @@
-const { Asset, Post } = require("../models");
+const { Asset, Post } = require("../../models");
 
 
 class PostDao {

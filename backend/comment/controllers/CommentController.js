@@ -1,5 +1,5 @@
 
-const {CommentService} = require("../services");
+const {CommentService} = require("../../services");
 
 module.exports = {
   create: async (req, res) => {

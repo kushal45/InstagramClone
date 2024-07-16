@@ -18,9 +18,9 @@ const ValidationLike = require("./validations/Like");
 
 const AuthController = require("./controllers/AuthController");
 const UserController = require("./controllers/UserController");
-const PostController = require("./controllers/PostController");
-const CommentController = require("./controllers/CommentController");
-const LikeController = require("./controllers/LikeController");
+const PostController = require("./post/controllers/PostController");
+const CommentController = require("./comment/controllers/CommentController");
+const LikeController = require("./like/controllers/LikeController");
 
 // ** Routes Authenticate ** //
 routes.post("/auth", ValidationAuth.login, AuthController.login);

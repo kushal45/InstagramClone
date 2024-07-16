@@ -1,4 +1,4 @@
-const  Asset  = require('../models/Asset'); 
+const  Asset  = require('../model/Asset'); 
 
 class AssetDAO {
   // Method to create a new asset
