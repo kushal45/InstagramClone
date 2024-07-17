@@ -35,25 +35,56 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
-  kafka:
+  kafka1:
     image: confluentinc/cp-kafka:latest
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,EXTERNAL://host.docker.internal:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092,EXTERNAL://host.docker.internal:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true  # Optional, to prevent automatic topic creation
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      #KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  kafka2:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9094:9094"
+      - "9095:9095"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9094,EXTERNAL://host.docker.internal:9095
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,EXTERNAL://0.0.0.0:9095
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+  kafka3:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9096:9096"
+      - "9097:9097"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9096,EXTERNAL://host.docker.internal:9097
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9096,EXTERNAL://0.0.0.0:9097
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
   kafka-drop:
     image: obsidiandynamics/kafdrop
     depends_on:
-      - kafka
+      - kafka1
+      - kafka2
+      - kafka3
     ports:
       - "9000:9000"
     environment:
-      KAFKA_BROKERCONNECT: "kafka:9092"
+      KAFKA_BROKERCONNECT: "host.docker.internal:9093,host.docker.internal:9095,host.docker.internal:9097"
+      #KAFKA_BROKERCONNECT: "host.docker.internal:9092"
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"

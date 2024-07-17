@@ -15,8 +15,8 @@ class User extends Model {
         bio: DataTypes.STRING,
         website: DataTypes.STRING,
         phone: DataTypes.STRING,
-        tags:DataTypes.ARRAY(User.LanguagePreferences),
-        langPrefs:DataTypes.ARRAY(User.tags),
+        tags:DataTypes.ARRAY(User.tags),
+        langPrefs:DataTypes.ARRAY(User.LanguagePreferences),
       },
       {
         sequelize,

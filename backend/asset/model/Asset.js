@@ -1,6 +1,8 @@
 const { Model, DataTypes } = require("sequelize");
 
 class Asset extends Model {
+  static tags= DataTypes.ENUM('politics', 'sports', 'technology', 'entertainment', 'science', 
+    'health', 'business', 'education', 'lifestyle', 'other');
     static init(sequelize) {
       super.init(
         {
@@ -16,8 +18,8 @@ class Asset extends Model {
             type: DataTypes.STRING,
             allowNull: false,
           },
-          tag: {
-            type: DataTypes.ENUM,
+          tags: {
+            type: DataTypes.ARRAY(Asset.tags),
             allowNull: true,
             values: ['politics', 'sports', 'technology', 'entertainment', 'science', 
               'health', 'business', 'education', 'lifestyle', 'other'],

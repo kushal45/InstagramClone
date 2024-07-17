@@ -1,10 +1,10 @@
+const assetConsumer = require("../../asset/util/assetConsumer");
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
-const { sendEvent,connectProducer } = require("../../kafka/Producer");
-const { createConsumer } = require("../../kafka/Consumer");
+const emitEvent = require("../../kafka/Producer");
 
 class PostService {
-  async createPost(postData, userId) {
+  static async createPost(postData, userId) {
     const user = await UserDAO.findUserById(userId);
     if (!user) {
       throw new Error("User not found");
@@ -15,29 +15,23 @@ class PostService {
       assetId: asset.id,
     });
 
-    await connectProducer();
-    await sendEvent('postCreated', post);
-    const consumerInst = createConsumer({
-      brokers: ["kafka:9092"],
-      clientId: "postConsumer",
-      groupId: "post-group"
-    });
-    await consumerInst.connect();
-    await consumerInst.subscribe('postCreated',  true );
-    //await consumerInst.run(());
+    // Publish the event to Kafka
+    const topic="assetCreated";
+    await emitEvent(topic,asset);
+    await assetConsumer(topic,"assetConsumerGroup");
     return post;
   }
 
-  async getPostById(postId) {
+  static async getPostById(postId) {
     // Logic to fetch a post by ID
-    const post = await PostDAO.getById(req.params.id);
+    const post = await PostDAO.getById(postId);
     if (!post) {
       throw new NotFoundError("Post not found");
     }
     return post;
   }
 
-  async updatePost(postId, updateData) {
+  static async updatePost(postId, updateData) {
     // Logic to update a post
     const post = await PostDAO.update(postId, updateData);
     if (!post) {
@@ -46,7 +40,7 @@ class PostService {
     return post;
   }
 
-  async deletePost(postId) {
+  static async deletePost(postId) {
     const post = await PostDao.getById(postId);
     if (!post) {
       throw new NotFoundError("Post not found");
@@ -68,7 +62,7 @@ class PostService {
     }
   }
 
-  async listPosts(username,{ page = 1, pageSize = 10 } = {}) {
+  static async listPosts(username,{ page = 1, pageSize = 10 } = {}) {
     const user = await UserDAO.findUserByQuery({ username });
     if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
@@ -77,4 +71,4 @@ class PostService {
   }
 }
 
-module.exports = new PostService();
+module.exports =  PostService;

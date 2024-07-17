@@ -1,24 +1,39 @@
-// kafkaProducer.js
-const { Kafka, Partitioners } = require('kafkajs');
+const { Kafka } = require("kafkajs");
+require("dotenv").config();
 
-const kafka = new Kafka({
-  clientId: 'my-app',
-  brokers: ['kafka:9092'] // Adjust the broker address according to your setup
-});
+async function initiateProducer() {
+    const kafkaBrokers = process.env.KAFKA_BROKERS.split(",");
+    console.log(kafkaBrokers);
+    const kafka = new Kafka({
+      clientId: 'my-app',
+      brokers: kafkaBrokers
+    });
+  
+    const producer = kafka.producer();
+    await producer.connect();
+    return producer;
+  }
+  
+  // Function to emit an event when an asset is created
+  async function emitEvent(topic,event) {
+    const producer = await initiateProducer();
+  
+    try {
+      const messages = [{
+        value: JSON.stringify(event),
+      }];
+  
+      await producer.send({
+        topic,
+        messages,
+      });
+  
+      console.log('event emitted:', event);
+    } catch (error) {
+      console.error('Error emitting event:', error);
+    } finally {
+      await producer.disconnect();
+    }
+  }
 
-const producer = kafka.producer({ createPartitioner: Partitioners.LegacyPartitioner })
-
-const connectProducer = async () => {
-  await producer.connect();
-};
-
-const sendEvent = async (topic, message) => {
-  await producer.send({
-    topic,
-    messages: [
-      { value: JSON.stringify(message) },
-    ],
-  });
-};
-
-module.exports = { connectProducer, sendEvent };
+  module.exports= emitEvent;
