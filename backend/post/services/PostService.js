@@ -1,13 +1,15 @@
+
 const assetConsumer = require("../../asset/util/assetConsumer");
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
+const KafkaProducer = require("../../kafka/Producer");
 const emitEvent = require("../../kafka/Producer");
 
 class PostService {
   static async createPost(postData, userId) {
     const user = await UserDAO.findUserById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new NotFoundError("User not found");
     }
     const asset = await AssetDAO.create(postData);
     const post = await PostDAO.create({
@@ -17,8 +19,10 @@ class PostService {
 
     // Publish the event to Kafka
     const topic="assetCreated";
-    await emitEvent(topic,asset);
-    await assetConsumer(topic,"assetConsumerGroup");
+    //await emitEvent(topic,asset);
+    const kafkaProducerInst= new KafkaProducer("producer-1");
+    await kafkaProducerInst.produce(topic,asset);
+   // await assetConsumer(topic,"assetConsumerGroup");
     return post;
   }
 

@@ -1,3 +1,4 @@
+export DEBUG=1
 cd backend
 if docker ps -a | grep -q 'backend'; then
     docker stop backend
@@ -14,5 +15,5 @@ else
   echo "Containers are already down."
 fi
 
-docker-compose up -d --build
+DEBUG=1 docker-compose up -d --build
 
