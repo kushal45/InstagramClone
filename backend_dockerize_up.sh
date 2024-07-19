@@ -1,4 +1,3 @@
-export DEBUG=1
 cd backend
 if docker ps -a | grep -q 'backend'; then
     docker stop backend

@@ -10,5 +10,9 @@ router.use(PostRoutes);
 router.use(CommentRoutes);
 router.use(LikeRoutes);
 
+router.post('/health', (req, res) => {
+    res.send('OK');
+});
+
 module.exports = router;
 
