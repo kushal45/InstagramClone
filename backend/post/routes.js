@@ -8,12 +8,12 @@ const routes = Router();
 // ** Routes Post ** //
 
 routes.post(
-    "/post",
+    "",
     AuthMiddleware,
     ValidationPost.validatePost,
     PostController.createPost
   );
-  routes.get("/posts", AuthMiddleware, PostController.getAllPosts);
-  routes.get("/post/:id", AuthMiddleware, PostController.getPostById);
+  routes.get("", AuthMiddleware, PostController.getAllPosts);
+  routes.get("/:id", AuthMiddleware, PostController.getPostById);
 
   module.exports = routes;

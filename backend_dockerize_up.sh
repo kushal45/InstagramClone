@@ -15,4 +15,5 @@ else
 fi
 
 DEBUG=1 docker-compose up -d --build
+node run-migrations.js
 

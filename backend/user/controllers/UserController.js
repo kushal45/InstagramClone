@@ -1,22 +1,22 @@
-const { UserService } = require("../services/UserService");
+const  UserService  = require("../services/UserService");
 
 module.exports = {
   async show(req, res) {
     try {
       const { username } = req.params;
       const result = await UserService.getUserProfile(username, req.userId);
-      return res.status(result.status).send(result.body);
+      return res.status(200).send(result.body);
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   },
 
   async store(req, res) {
     try {
       const result = await UserService.registerUser(req);
-      return res.status(result.status).json(result.body);
+      return res.status(201).json(result.body);
     } catch (error) {
-      console.log(error);
+     throw error;
     }
   },
 
@@ -28,7 +28,7 @@ module.exports = {
       );
       res.json(response);
     } catch (error) {
-      console.log(error);
+     throw error;
     }
   },
   async updatePassword(req, res) {
@@ -44,7 +44,7 @@ module.exports = {
       );
       res.json(response);
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   },
 };

@@ -7,11 +7,11 @@ const routes = Router();
 
 // ** Routes Comment ** //
 routes.post(
-    "/comment",
+    "/",
     AuthMiddleware,
     ValidationComment.validateComment,
     CommentController.create
   );
-  routes.get("/comment/:id", AuthMiddleware, CommentController.getById);
+  routes.get("/:id", AuthMiddleware, CommentController.getById);
 
   module.exports = routes;

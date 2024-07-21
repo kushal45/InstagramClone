@@ -10,7 +10,7 @@ const UserController = require("./controllers/UserController");
 const routes = Router();
 
 // ** Routes Authenticate ** //
-routes.post("/auth", ValidationAuth.login, AuthController.login);
+routes.post("/login", ValidationAuth.login, AuthController.login);
 routes.get(
   "/auth",
   AuthMiddleware,
@@ -21,10 +21,10 @@ routes.get(
 
 
 // ** Routes user ** //
-routes.get("/users/:username", AuthMiddleware, UserController.show);
-routes.post("/users", ValidationsUser.withPassword, UserController.store);
+routes.get("/:username", AuthMiddleware, UserController.show);
+routes.post("/register", ValidationsUser.withPassword, UserController.store);
 routes.put(
-  "/users",
+  "/update",
   AuthMiddleware,
   ValidationsUser.withoutPassword,
   UserController.update

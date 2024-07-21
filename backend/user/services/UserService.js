@@ -56,7 +56,7 @@ class UserService {
     return { body: { token } };
   }
 
-  async registerUser(req) {
+  static async registerUser(req) {
     const { name, email, username, password } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new NotFoundError(errors.array());
@@ -75,7 +75,7 @@ class UserService {
     const salt = await bcryptjs.genSalt(10);
     const passwordHash = await bcryptjs.hash(password, salt);
 
-    user = await UserDAO.create({
+    user = await UserDAO.createUser({
       name,
       email,
       username,

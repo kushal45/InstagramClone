@@ -24,10 +24,10 @@ module.exports = {
       // }
 
       // Remove the old 'tag' column
-     // await queryInterface.removeColumn('assets', 'tag');
+     //await queryInterface.removeColumn('assets', 'tag');
       
       // Add the new 'tags' column with an array of ENUMs
-      await queryInterface.changeColoumn('assets', 'tags', {
+      await queryInterface.addColumn('assets', 'tags', {
         type: Sequelize.ARRAY(Sequelize.ENUM('politics', 'sports', 'technology', 'entertainment', 'science', 'health', 'business', 'education', 'lifestyle', 'other')),
         allowNull: true, 
       });
