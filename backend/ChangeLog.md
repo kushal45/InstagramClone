@@ -17,16 +17,21 @@ This document provides a comprehensive log of all notable changes made to the pr
 ### Fixes
 - Placeholder for future fixes.
 
-## [1.0.1] - YYYY-MM-DD
+## [1.0.1] - 2024-07-23 (Branch: `intagragramV1`)
 ### Enhancements
 - **User Profile**: Overhauled the user profile structure to include a richer set of information, such as multiple interested tags for viewing feeds, contact details, and language preferences, thereby enriching the user experience.
 - **Authentication**: Refined the authentication process to leverage JWT token signatures for user identification, enhancing security and simplifying the API design.
 
-### New Features
+### New Features 
 - **Social Graph**: Implemented a comprehensive followers and following system, enabling users to build their network within the platform.
-- **API Documentation**: Introduced API documentation using API Blueprint and Swagger, making it easier for developers to understand and integrate with our APIs.
+-**load testing** Implmented load testing framework with artiller  by building scenarios with user register / login, user post creation , fetch posts , comment creation on post 
 
-## [1.0.0] - YYYY-MM-DD
+-**dao and service** Implemented dao - service integration so that controller talks to service layer which then talks to dao layer instead of communicating directly to the data store directly from service layer
+
+-**modular components** Implemented  user,post,like,comment modules having its own controller , routes component
+
+
+## [1.0.0] - 2024-07-04 (Branch: `main`)
 ### Initial Release
 - **Core Features**:
   - **Authentication**: Launched with basic login and registration capabilities.
