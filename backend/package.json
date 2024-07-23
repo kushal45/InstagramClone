@@ -8,6 +8,11 @@
     "start": "node entrypoint.js",
     "dev": "nodemon entrypoint.js"
   },
+  "nodemonConfig": {
+    "ignore":[
+      "tests/*.json"
+    ]
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {

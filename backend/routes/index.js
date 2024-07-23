@@ -11,6 +11,7 @@ router.use("/comments",CommentRoutes);
 router.use("/like",LikeRoutes);
 
 router.post('/health', (req, res) => {
+    console.log('Health check');
     res.send('OK');
 });
 

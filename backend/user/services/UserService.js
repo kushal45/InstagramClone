@@ -59,7 +59,7 @@ class UserService {
   static async registerUser(req) {
     const { name, email, username, password } = req.body;
     const errors = validationResult(req);
-    if (!errors.isEmpty()) throw new NotFoundError(errors.array());
+    if (!errors.isEmpty()) throw new NotFoundError(JSON.stringify(errors.array()));
 
     let user = await UserDAO.findUserByEmailOrUsername(email, username);
 

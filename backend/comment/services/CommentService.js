@@ -3,30 +3,41 @@ const { UserDAO, AssetDAO, CommentDAO,PostDAO } = require("../../dao");
 
 
 class CommentService {
-  static async createComment({ username, postId, imageUrl, videoUrl, text }) {
-    const user = await UserDAO.findUserByQuery({  username  });
-    if (!user)throw new NotFoundError("User not found");
-
-    const post = await PostDAO.getById(postId);
-    if (!post) throw new NotFoundError("Post not found");
-
-    const asset = await AssetDAO.create({ imageUrl, videoUrl, text });
-    const comment = await CommentDAO.create({
-      userId: user.id,
-      postId,
-      assetId: asset.id,
-    });
-
-    return comment;
+  static async createComment({userId,postId, imageUrl, videoUrl, text }) {
+    try {
+      const user = await UserDAO.findUserById(userId);
+      if (!user)throw new NotFoundError("User not found");
+      
+      console.log("post id to fetch",postId);
+      const post = await PostDAO.getById(postId);
+      if (!post) throw new NotFoundError("Post not found");
+      const tags = ["other"];
+      const asset = await AssetDAO.create({ imageUrl, videoUrl, text,tags});
+      const comment = await CommentDAO.create({
+        userId: user.id,
+        postId,
+        assetId: asset.id,
+      });
+  
+      return comment;
+    } catch (error) {
+       throw error;
+    }
+   
   }
 
   static async getCommentById(id) {
-    const comment = await CommentDAO.getById(id);
-    if (!comment) {
-        throw new NotFoundError('Comment not found');
-      }
-
-    return comment;
+    try {
+      const comment = await CommentDAO.getById(id);
+      if (!comment) {
+          throw new NotFoundError('Comment not found');
+        }
+  
+      return comment;
+    } catch (error) {
+      throw error; 
+    }
+  
   }
 }
 

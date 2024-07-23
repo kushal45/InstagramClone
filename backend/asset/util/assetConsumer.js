@@ -21,7 +21,7 @@ async function assetConsumer(kafaConsumerInst){
           return null; // or return tag to keep the original tag if no close match is found
       }).filter(tag => tag !== null); // Remove nulls (no close match)
         console.log("tags extracted",matchedTags,asset.id);
-        await AssetService.updateAsset(asset.id,{tags:matchedTags});
+        await AssetService.updateAsset(asset.id,{tags:matchedTags.length>0?matchedTags:["other"]});
     });
 }
 

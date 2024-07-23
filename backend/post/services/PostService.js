@@ -66,8 +66,8 @@ class PostService {
     }
   }
 
-  static async listPosts(username,{ page = 1, pageSize = 10 } = {}) {
-    const user = await UserDAO.findUserByQuery({ username });
+  static async listPosts(userId,{ page = 1, pageSize = 10 } = {}) {
+    const user = await UserDAO.findUserById(userId);
     if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
     const posts = await PostDAO.list(user.id, { offset: skip, limit: pageSize });

@@ -1,0 +1,84 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30 # Run the test for 100 seconds
+      arrivalRate: 5  # New users arrive at a rate of 50 per second
+  plugins:
+    ensure: {}
+    apdex: {}
+    metrics-by-endpoint: {}
+  processor: "./processor.js"
+  hooks:
+   beforeRequest: ["logRequest"]
+   afterResponse: ["logResponse"]
+scenarios:
+  - name: "User Registration and Login Flow"
+    flow:
+      - post: # User Registration
+          url: "/user/register"
+          json:
+            name: "User {{ $uuid }}"
+            email: "user_{{ $uuid }}@gmail.com"
+            username: "user_{{ $uuid }}" # Using Artillery's built-in variable substitution to generate unique users
+            password: "password"
+      - think: 1 # Pause for a second (simulate think time)
+      - post: # User Login
+          url: "/user/login"
+          json:
+            username: "user_{{ $uuid }}"
+            password: "password"
+          capture:
+            json: "$.token" # Capture the JWT token from the login response
+            as: "loginToken" # Save it as loginToken
+      - function: "saveToken" # Call the saveToken function defined in processors.js
+      - think: 1
+
+  - name: "Create posts"
+    
+    flow:
+      - function: "readToken"
+      - function: "loadPostData"
+      - loop:
+          - post:
+              url: "/posts"
+              headers:
+                Authorization: "Bearer {{ loginToken }}"
+              json:
+                text: "{{ postData }}"
+                imageUrl: "https://source.unsplash.com/random/800x600"
+                videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
+              capture:
+                json: "$.post.id" # Capture the postId from the response
+                as: "postId" # Save it as postId
+          - function: "savePostId"
+          - log: 'post id saved  {{ postId }}'
+          - think: 2
+        count: 5 # Simulate creating 5 posts
+      
+  
+
+  - name: "Get all posts"
+    flow:
+       - function: "readToken"
+       - function: "readUserIdFrmToken"
+       - log: 'New virtual user running {{ userId }}'
+       - get:
+            url: "/posts?userId={{ userId }}"
+            headers:
+               Authorization: "Bearer {{ loginToken }}"
+
+  - name: "Create Comments on a Post"
+    flow:
+      - function: "readToken"
+      - function: "loadPostData"
+      - function: "loadPostId"
+      - log: 'post id given  {{ postId }}'
+      - loop:
+         - post:
+            url: "/comments"
+            headers:
+             Authorization: "Bearer {{ loginToken }}"
+            json:
+              text: "{{ postData }}"
+              postId: "{{ postId }}" # Use the postId captured from the previous request
+        count: 5 # Simulate creating 5 comments
