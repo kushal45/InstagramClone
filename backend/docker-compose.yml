@@ -50,6 +50,7 @@ services:
       MODE: consumer
       TOPIC: assetCreated
       GROUPID: assetConsumer
+      CONSUMER_NAME: assetConsumer
     ports:
       - "3001:3001"
     command: npm run dev

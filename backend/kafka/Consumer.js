@@ -25,7 +25,8 @@ class KafkaConsumer {
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
-          // Attempt to process the message
+          const correlationId = message.headers['correlation-id'] ? message.headers['correlation-id'].toString() : null;
+          console.log(`Received message: ${message.offset} with correlation ID: ${correlationId}`);
           const eventData = JSON.parse(message.value.toString());
           await handler(eventData);
         } catch (error) {

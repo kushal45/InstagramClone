@@ -1,9 +1,7 @@
-
-const assetConsumer = require("../../asset/util/assetConsumer");
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
 const KafkaProducer = require("../../kafka/Producer");
-const emitEvent = require("../../kafka/Producer");
+const httpContext = require('express-http-context');
 
 class PostService {
   static async createPost(postData, userId) {
@@ -21,9 +19,11 @@ class PostService {
     const topic="assetCreated";
     //await emitEvent(topic,asset);
     const kafkaProducerInst= new KafkaProducer("producer-1");
-    await kafkaProducerInst.produce(topic,asset);
+    const correlationId = httpContext.get('correlationId');
+    await kafkaProducerInst.produce(topic,asset,{correlationId});
    // await assetConsumer(topic,"assetConsumerGroup");
-    return post;
+    
+    return {post,correlationId};
   }
 
   static async getPostById(postId) {

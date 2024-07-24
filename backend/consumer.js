@@ -1,9 +1,15 @@
-const assetConsumer = require("./asset/util/assetConsumer");
+
+//const assetConsumer = require("./asset/util/assetConsumerGptStrat");
+const assetConsumer = require("./asset/util/assetConsumerGenNLPStrat");
 const KafkaConsumer = require("./kafka/Consumer");
 const fs = require('fs').promises;
 const path = require('path');
 
 let isRunnable = true;
+
+const consumerServices =Object.freeze({
+  ASSETCONSUMER: 'assetConsumer'
+});
 
 const kafaConsumerInst = new KafkaConsumer("consumer-1");
 initializeConsumer(kafaConsumerInst);
@@ -21,14 +27,15 @@ async function initializeConsumer(kafaConsumerInst) {
 
 async function processConsumerInfinitely(kafaConsumerInst){
   while (isRunnable) {
-    if (process.env.TOPIC === "assetCreated") {
-      await assetConsumer(kafaConsumerInst); // Ensure this is async or has some delay
+    if (process.env.CONSUMER_NAME === consumerServices.ASSETCONSUMER) {
+      await assetConsumer(kafaConsumerInst); 
     }
    
    
     const filePath = path.join(__dirname, 'example.txt');
     await touchFile(filePath);
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Introduce a delay to prevent tight looping
+    // Introduce a delay to prevent tight looping
+    await new Promise(resolve => setTimeout(resolve, 5000));
   }
 }
 

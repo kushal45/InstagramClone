@@ -10,7 +10,7 @@ const SUPPORTED_TAGS=['politics', 'sports', 'technology', 'entertainment', 'scie
 async function assetConsumer(kafaConsumerInst){
 
     kafaConsumerInst.run(async(asset)=>{
-        console.log("assetConsumer running called with",asset);
+        console.log("assetConsumer running called with",asset.text,"correlationId",asset.correlationId);
         const tags = generateTagsFromText(asset.text);
         // Map each tag to its best match in SUPPORTED_TAGS if the similarity is above a threshold
       const matchedTags = tags.map(tag => {
