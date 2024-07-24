@@ -3,7 +3,6 @@ require("dotenv").config();
 
 async function getChatGptResponse(prompt) {
   const openaiApiKey = process.env.OPENAI_API_KEY;
- //const openaiApiKey = 'sk-proj-qMtEzcSmRmVdJNwij2MUT3BlbkFJaMRmQU6cZUEGDmSLwZlX';
  const url = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
  const data = {
     prompt: prompt,
