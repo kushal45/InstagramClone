@@ -3,9 +3,8 @@ require("dotenv").config();
 
 async function getChatGptResponse(prompt) {
   const openaiApiKey = "";
- //const url = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
- const url ='';
- const data = {
+  const url = "";
+  const data = {
     prompt: prompt,
     max_tokens: 150,
     n: 1,
@@ -13,8 +12,8 @@ async function getChatGptResponse(prompt) {
     temperature: 0.7,
   };
   const headers = {
-    'Authorization': `Bearer ${openaiApiKey}`,
-    'Content-Type': 'application/json',
+    Authorization: `Bearer ${openaiApiKey}`,
+    "Content-Type": "application/json",
   };
   const response = await axios.post(url, data, { headers });
   const messageContent = response.data.choices[0].text.trim();
