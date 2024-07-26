@@ -1,3 +1,4 @@
+const { NotFoundError } = require("../../errors");
 const FollowerService = require("../../follower/services/FollowerService");
 const PostService = require("../../post/services/PostService");
 
@@ -23,7 +24,7 @@ class FeedService {
     return sharedPost;
   }
    
-  
+
 }
 
 module.exports = FeedService;
