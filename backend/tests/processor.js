@@ -107,4 +107,16 @@ module.exports = {
     // Step 5: Call done() to signal completion
     done();
   },
+  logCaptureError: function (requestParams, response, context, ee, next) {
+    if (response.statusCode !== 200) {
+      console.error(`Request to ${requestParams.url} failed with status code ${response.statusCode}`);
+    }
+
+    // Check if the capture failed
+    if (context.vars.loginToken === undefined) {
+      console.error(`Failed to capture loginToken from response: ${JSON.stringify(response.body)}`);
+    }
+
+    return next();
+  },
 };

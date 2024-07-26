@@ -1,6 +1,12 @@
 volumes:
   postgres_data:  # Define a named volume for database persistence
-  
+  influxdb2config:
+  influxdb2data:
+  grafana-storage:
+
+networks:
+  metrics:
+    external: false 
 services:
   app:
     restart: on-failure
@@ -73,7 +79,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist data
       - ./backend/init-db.sql:/docker-entrypoint-initdb.d  # init script for db setup
-    
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     healthcheck:

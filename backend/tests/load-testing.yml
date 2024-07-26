@@ -1,16 +1,23 @@
 config:
   target: "http://localhost:3000"
   phases:
-    - duration: 30 # Run the test for 100 seconds
+    - duration: 1 # Run the test for 100 seconds
       arrivalRate: 5  # New users arrive at a rate of 50 per second
   plugins:
     ensure: {}
     apdex: {}
     metrics-by-endpoint: {}
+    publish-metrics:
+      - type: influxdb-statsd # https://artillery.io/docs/guides/plugins/plugin-publish-metrics.html#InfluxDB-Telegraf
+        tags:
+          - "testId:weather-forecast"
+          - "reporterType:influxdb-statsd"
+        event:
+          priority: low
   processor: "./processor.js"
   hooks:
    beforeRequest: ["logRequest"]
-   afterResponse: ["logResponse"]
+   afterResponse: ["logResponse", "logCaptureError"]
 scenarios:
   - name: "User Registration and Login Flow"
     flow:
@@ -51,7 +58,7 @@ scenarios:
                 json: "$.post.id" # Capture the postId from the response
                 as: "postId" # Save it as postId
           - function: "savePostId"
-          - log: 'post id saved  {{ postId }}'
+          #- log: 'post id saved  {{ postId }}'
           - think: 2
         count: 5 # Simulate creating 5 posts
       
@@ -72,7 +79,7 @@ scenarios:
       - function: "readToken"
       - function: "loadPostData"
       - function: "loadPostId"
-      - log: 'post id given  {{ postId }}'
+      #- log: 'post id given  {{ postId }}'
       - loop:
          - post:
             url: "/comments"

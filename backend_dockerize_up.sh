@@ -14,6 +14,7 @@ else
   echo "Containers are already down."
 fi
 
-DEBUG=1 docker-compose up -d --build
+#DEBUG=1 docker-compose up -d --remove-orphans --force-recreate
+docker-compose -f docker-compose.yml -f docker-compose-inflx-grafana-telegraf.yml up  -d --build
 node run-migrations.js
 
