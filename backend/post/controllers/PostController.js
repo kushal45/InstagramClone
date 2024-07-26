@@ -7,7 +7,7 @@ module.exports = {
    * @param {Object} req - Request object containing post data
    * @param {Object} res - Response object
    */
-  createPost: async (req, res) => {
+  createPost: async (req, res,next) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -16,7 +16,7 @@ module.exports = {
       const post = await PostService.createPost(req.body, req.userId);
       res.status(201).send({ message: "Post created successfully", post });
     } catch (error) {
-      throw error;
+      next(error);
     }
   },
 
@@ -25,14 +25,14 @@ module.exports = {
    * @param {Object} req - Request object
    * @param {Object} res - Response object
    */
-  getAllPosts: async (req, res) => {
+  getAllPosts: async (req, res,next) => {
     try {
       console.log("get all posts for user",req.userId);
       const userId=req.query.userId;
       const posts = await PostService.listPosts(userId);
       res.status(200).send(posts);
     } catch (error) {
-      throw error;
+      next(error);
     }
   },
 
@@ -41,12 +41,12 @@ module.exports = {
    * @param {Object} req - Request object
    * @param {Object} res - Response object
    */
-  getPostById: async (req, res) => {
+  getPostById: async (req, res,next) => {
     try {
       const post = PostService.getPostById(req.params.id);
       res.status(200).send(post);
     } catch (error) {
-      throw error;
+      next(error);
     }
   },
 
@@ -55,13 +55,13 @@ module.exports = {
    * @param {Object} req - Request object containing update data
    * @param {Object} res - Response object
    */
-  updatePost: async (req, res) => {
+  updatePost: async (req, res,next) => {
     try {
       // Logic to update a post
       const response = await PostService.updatePost(req.params.id, req.body);
       res.status(200).send(response);
     } catch (error) {
-       throw error;
+      next(error);
     }
   },
 
@@ -70,13 +70,13 @@ module.exports = {
    * @param {Object} req - Request object
    * @param {Object} res - Response object
    */
-  deletePost: async (req, res) => {
+  deletePost: async (req, res,next) => {
     try {
       // Logic to delete a post
       const response = await PostService.deletePost(req.params.id);
       res.status(204).send(response);
     } catch (error) {
-       throw error;
+      next(error);
     }
   },
 };

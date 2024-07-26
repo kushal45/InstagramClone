@@ -35,6 +35,11 @@ class PostService {
     return post;
   }
 
+  static async listPostsByAttr(attr) {
+    const posts = await PostDAO.listByAttr(attr);
+    return posts;
+  }
+
   static async updatePost(postId, updateData) {
     // Logic to update a post
     const post = await PostDAO.update(postId, updateData);
@@ -73,6 +78,17 @@ class PostService {
     const posts = await PostDAO.list(user.id, { offset: skip, limit: pageSize });
     return posts;
   }
+
+  static async listPostsByUserIds(userIds) {
+    const userList = await UserDAO.findUserList(userIds);
+    if (!userList) {
+      throw new NotFoundError("Users not found");
+    }
+    const filteredUserIds = userList.map(user => user.id);
+    const posts = await PostDAO.list(filteredUserIds);
+    return posts;
+  }
+
 }
 
 module.exports =  PostService;

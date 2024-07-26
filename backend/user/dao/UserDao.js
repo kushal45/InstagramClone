@@ -28,6 +28,22 @@ class UserDAO {
     }
   }
 
+  static async findUserList(userIds){
+    try {
+      const users = await User.findAll({
+        where: {
+          id: {
+            [Sequelize.Op.in]: userIds
+          }
+        }
+      });
+      return users;
+    } catch (error) {
+      console.error("Error finding users:", error);
+      throw error;
+    }
+  }
+
   // Method to update a user by ID
   static async updateUser(id, updateData) {
     try {

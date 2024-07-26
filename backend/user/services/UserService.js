@@ -83,7 +83,7 @@ class UserService {
     });
 
     // JWT
-    const payload = { id: user.id, username: user.username };
+    const payload = { id: user.id, username: user.username, tags: user.tags };
     const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {
       expiresIn: 86400,
     });

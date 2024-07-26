@@ -34,15 +34,43 @@ class PostDao {
     return post;
   }
 
-  static async list(userId, { offset = 0, limit = 10 } = {}) {
+  static async list(userIds, { offset = 0, limit = 10 } = {}) {
     const posts = await Post.findAll({
-      where: { userId },
+      where: {
+        userId: {
+          [Op.in]: userIds
+        }
+      },
       include: [{ model: Asset, as: "asset" }],
       offset,
       limit,
     });
     return posts;
   }
+
+  
+static async listByAttr(attr) {
+    const whereClause = {};
+
+    // Dynamically build the where clause based on the provided attributes
+    for (const key in attr) {
+      if (attr.hasOwnProperty(key)) {
+        whereClause[key] = attr[key];
+      }else if(key === "tags"){
+        whereClause[key] = {
+          [Op.contains]: attr[key]
+        }
+      }
+    }
+
+    const posts = await Post.findAll({
+      where: whereClause,
+      include: [{ model: Asset, as: "asset" }],
+    });
+    return posts;
+  }
+
+  
 }
 
 module.exports =  PostDao ;
