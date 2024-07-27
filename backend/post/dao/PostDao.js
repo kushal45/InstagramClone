@@ -1,5 +1,5 @@
+const { Op } = require("sequelize");
 const { Asset, Post } = require("../../models");
-
 
 class PostDao {
   static async create(postData) {
@@ -10,11 +10,9 @@ class PostDao {
     return post;
   }
 
-  static async  getById(postId) {
+  static async getById(postId) {
     const post = await Post.findByPk(postId, {
-      include: [
-        { model: Asset, as: "asset" },
-      ],
+      include: [{ model: Asset, as: "asset" }],
     });
     return post;
   }
@@ -34,12 +32,12 @@ class PostDao {
     return post;
   }
 
-  static async list(userIds, { offset = 0, limit = 10 } = {}) {
+  static async listByUsers(userIds, { offset = 0, limit = 10 } = {}) {
     const posts = await Post.findAll({
       where: {
         userId: {
-          [Op.in]: userIds
-        }
+          [Op.in]: userIds,
+        },
       },
       include: [{ model: Asset, as: "asset" }],
       offset,
@@ -48,18 +46,25 @@ class PostDao {
     return posts;
   }
 
-  
-static async listByAttr(attr) {
+  static async listByAssets(assetIds) {
+    const posts = await Post.findAll({
+      where: {
+        assetId: {
+          [Op.in]: assetIds,
+        },
+      },
+      include: [{ model: Asset, as: "asset" }],
+    });
+    return posts;
+  }
+
+  static async listByAttr(attr) {
     const whereClause = {};
 
     // Dynamically build the where clause based on the provided attributes
     for (const key in attr) {
       if (attr.hasOwnProperty(key)) {
         whereClause[key] = attr[key];
-      }else if(key === "tags"){
-        whereClause[key] = {
-          [Op.contains]: attr[key]
-        }
       }
     }
 
@@ -69,8 +74,6 @@ static async listByAttr(attr) {
     });
     return posts;
   }
-
-  
 }
 
-module.exports =  PostDao ;
+module.exports = PostDao;

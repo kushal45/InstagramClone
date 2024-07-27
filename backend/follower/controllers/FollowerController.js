@@ -24,10 +24,11 @@ class FollowerController {
   // Follow another user
   async followUser(req, res,next) {
     try {
-      const {followingId}= req.body;
+      const followingId = req.params.userId;
       await FollowerService.followUser(req.userId, followingId);
       res.status(201).send('Followed successfully.');
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }
@@ -35,7 +36,7 @@ class FollowerController {
   // Unfollow a user
   async unfollowUser(req, res,next) {
     try {
-      const {followingId}= req.body;
+      const followingId = req.params.userId;
       await FollowerService.unfollowUser(req.userId, followingId);
       res.send('Unfollowed successfully.');
     } catch (error) {

@@ -11,6 +11,7 @@ class FollowerDao {
       }
       return await Follower.create({ followerId, followingId });
     } catch (error) {
+      console.log(error);
       throw new Error(error.toString());
     }
   }
@@ -33,7 +34,7 @@ class FollowerDao {
     try {
       const following = await Follower.findAll({
         where: { followerId: userId },
-        include: [{ model: User, as: 'FollowingDetails' }]
+        include: [{ model: User, as: 'FollowingUser' }]
       });
       return following;
     } catch (error) {

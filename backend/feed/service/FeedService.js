@@ -7,9 +7,11 @@ class FeedService {
   static async fetch({userTags,userId}){
     const postWithTags=await PostService.listPostsByAttr({tags:userTags});
     const followings=await FollowerService.listFollowing(userId);
+    //console.log("followings",followings);
     const followingIds=followings.map(following=>following.followingId);
+    //console.log("followingIds",followingIds);
     const postWithFollowings=await PostService.listPostsByUserIds(followingIds);
-    return[...postWithTags,...postWithFollowings];
+    return[...postWithTags,...[postWithFollowings]];
   }
 
   static async share(postId,userId){

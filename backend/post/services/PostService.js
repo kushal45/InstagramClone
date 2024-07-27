@@ -36,7 +36,14 @@ class PostService {
   }
 
   static async listPostsByAttr(attr) {
-    const posts = await PostDAO.listByAttr(attr);
+    let posts=[];
+    if(attr.tags!=null){
+      const assetIds= await AssetDAO.findAssetIdsByTag(attr.tags);
+      posts = await PostDAO.listByAssets(assetIds);
+    }else{
+      posts =[...posts,...await PostDAO.listByAttr(attr)];
+    }
+    
     return posts;
   }
 
@@ -75,7 +82,7 @@ class PostService {
     const user = await UserDAO.findUserById(userId);
     if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
-    const posts = await PostDAO.list(user.id, { offset: skip, limit: pageSize });
+    const posts = await PostDAO.listByUsers(user.id, { offset: skip, limit: pageSize });
     return posts;
   }
 
@@ -85,7 +92,8 @@ class PostService {
       throw new NotFoundError("Users not found");
     }
     const filteredUserIds = userList.map(user => user.id);
-    const posts = await PostDAO.list(filteredUserIds);
+    //console.log("filteredUserIds",filteredUserIds);
+    const posts = await PostDAO.listByUsers(filteredUserIds);
     return posts;
   }
 

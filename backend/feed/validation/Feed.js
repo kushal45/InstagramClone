@@ -1,4 +1,4 @@
-const { check } = require('express-validator');
+const { check, body } = require('express-validator');
 
 const validateGetFeeds = [
     check('userId')
@@ -14,3 +14,8 @@ const validateGetFeeds = [
     body('postId').isInt().withMessage('Post ID must be an integer'),
     check('userId').exists().isInt().withMessage('User ID should be there in the request as integer'), 
   ];
+
+  module.exports = {
+    validateGetFeeds,
+    validateSharePost,
+  };

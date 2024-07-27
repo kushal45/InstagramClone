@@ -1,8 +1,10 @@
 config:
   target: "http://localhost:3000"
   phases:
-    - duration: 1 # Run the test for 100 seconds
+    - duration: 10 # Run the test for 100 seconds
       arrivalRate: 5  # New users arrive at a rate of 50 per second
+  variables:
+    currentTokenIdx: 0
   plugins:
     ensure: {}
     apdex: {}
@@ -15,14 +17,14 @@ config:
         event:
           priority: low
   processor: "./processor.js"
-  hooks:
-   beforeRequest: ["logRequest"]
-   afterResponse: ["logResponse", "logCaptureError"]
 scenarios:
-  - name: "User Registration and Login Flow"
+  - name: "User Registration and Login Flow update user profile"
     flow:
+      - function : "incrementTokenIdx"
       - post: # User Registration
           url: "/user/register"
+          beforeRequest:
+             - 'logRequest'
           json:
             name: "User {{ $uuid }}"
             email: "user_{{ $uuid }}@gmail.com"
@@ -39,15 +41,45 @@ scenarios:
             as: "loginToken" # Save it as loginToken
       - function: "saveToken" # Call the saveToken function defined in processors.js
       - think: 1
+      #- log: "User token for user update is {{ loginToken }}"
+      - put: # Update User Profile
+          url: "/user/update"
+          beforeRequest:
+             - "fetchUserProfileDataToUpdate"
+          headers:
+            Authorization: "Bearer {{ loginToken }}"
+          json:
+            tags: "{{ tags }}"
+            langPrefs: "{{ langPrefs }}"
+    
+  - name: "Follow Users"
+    flow:
+      - function: "readUsersToFollow"
+      #- log: 'Users to follow {{ usersToFollow }}'
+      - loop:
+        - log: "Following user: {{ $loopElement }}"
+        - post:
+            url: "/users/{{ $loopElement }}/follow"
+            beforeRequest:
+              - "readToken" 
+            headers:
+              Authorization: "Bearer {{ loginToken }}"
+        - think: 3   
+        over: "usersToFollow"          
+
 
   - name: "Create posts"
-    
     flow:
-      - function: "readToken"
-      - function: "loadPostData"
       - loop:
           - post:
+            - log: 'request to skip {{ shouldRequestForPostComm }}'
               url: "/posts"
+              ifTrue: '{{ shouldRequestForPostComm }}'
+              beforeRequest:
+                - "readToken"
+                - "loadPostData"
+                - "shouldSkipPostCommentScenario"
+              afterResponse: "savePostId"
               headers:
                 Authorization: "Bearer {{ loginToken }}"
               json:
@@ -57,7 +89,6 @@ scenarios:
               capture:
                 json: "$.post.id" # Capture the postId from the response
                 as: "postId" # Save it as postId
-          - function: "savePostId"
           #- log: 'post id saved  {{ postId }}'
           - think: 2
         count: 5 # Simulate creating 5 posts
@@ -66,22 +97,25 @@ scenarios:
 
   - name: "Get all posts"
     flow:
-       - function: "readToken"
-       - function: "readUserIdFrmToken"
        - log: 'New virtual user running {{ userId }}'
        - get:
             url: "/posts?userId={{ userId }}"
+            ifTrue: '{{ shouldRequestForPostComm }}'
+            beforeRequest:
+              - "readToken"
+              - "readUserIdFrmToken"
+              - "shouldSkipPostCommentScenario"
             headers:
                Authorization: "Bearer {{ loginToken }}"
 
   - name: "Create Comments on a Post"
     flow:
-      - function: "readToken"
-      - function: "loadPostData"
-      - function: "loadPostId"
-      #- log: 'post id given  {{ postId }}'
       - loop:
          - post:
+            beforeRequest:
+              - "readToken"
+              - "loadPostData"
+              - "loadPostId"
             url: "/comments"
             headers:
              Authorization: "Bearer {{ loginToken }}"

@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { NotFoundError } = require('../../errors');
 const  Asset  = require('../model/Asset'); 
 
@@ -21,6 +22,25 @@ class AssetDAO {
       }
       return asset;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  static async findAssetIdsByTag(tags){
+    try{
+      const assets=await Asset.findAll({
+        where: {
+          tags: {
+            [Op.contains]: tags
+          }
+        }
+      });
+      let assetIds=[];
+      if (assets.length>0){
+        assetIds=assets.map(asset=>asset.id);
+      }
+      return assetIds;
+    }catch(error){
       throw error;
     }
   }

@@ -31,6 +31,11 @@ class Follower extends Model {
       }
     );
   }
+
+  static associate(models) {
+    this.belongsTo(models.User, { as: 'FollowingUser', foreignKey: 'followingId' });
+    this.belongsTo(models.User, { as: 'FollowerUser', foreignKey: 'followerId' });
+  }
 }
 
 module.exports = Follower;

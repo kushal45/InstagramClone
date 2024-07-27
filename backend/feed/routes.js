@@ -1,14 +1,14 @@
 //create routes for getFeeds and sharePost
 
 const { Router } = require("express");
-const FeedMiddleware = require("./middleware/Feed");
 const FeedController = require("./controller/FeedController");
-const ValidationFeed = require("./validations/Feed");
+const AuthMiddleware = require("../user/middleware/Auth");
+const {validateGetFeeds,validateSharePost} = require("./validation/Feed");
 
 const routes = Router();
 
 // ** Routes Feed ** //
-routes.get("/", FeedMiddleware, FeedController.getFeeds);
-routes.post("/share", FeedMiddleware, ValidationFeed.share, FeedController.sharePost);
+routes.get("/", AuthMiddleware, FeedController.getFeeds);
+routes.post("/share", validateSharePost, FeedController.sharePost);
 
 module.exports = routes;

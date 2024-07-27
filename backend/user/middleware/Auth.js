@@ -17,7 +17,7 @@ module.exports = (req, res, next) => {
 
     jwt.verify(token, process.env.SIGNATURE_TOKEN, (err, decoded) => {
         if (err) return res.status(401).send({ error: "Token invalid" });
-
+        console.log("decoded", decoded);
         req.userId = decoded.id;
         req.userTags= decoded.tags;
         return next();

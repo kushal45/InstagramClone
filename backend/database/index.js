@@ -1,11 +1,11 @@
 const Sequelize = require("sequelize");
 const ConfigDB = require("../config/db");
-const { User, Asset, Post, Comment, Like } = require("../models");
+const { User, Asset, Post, Comment, Like,Follower } = require("../models");
 
 // const Photo = require("../models/Photo");
 // const Like = require("../models/Like");
 //
-// const Follow = require("../models/Follow");
+
 
 console.log("configDB", ConfigDB);
 const connection = new Sequelize(ConfigDB);
@@ -15,6 +15,8 @@ Asset.init(connection);
 Post.init(connection);
 Comment.init(connection);
 Like.init(connection);
+Follower.init(connection);
+
 
 //
 // Photo.init(connection);
@@ -25,7 +27,8 @@ Like.init(connection);
 Post.associate(connection.models);
 Comment.associate(connection.models);
 Like.associate(connection.models);
-// User.associate(connection.models);
+Follower.associate(connection.models);
+User.associate(connection.models);
 // Photo.associate(connection.models);
 // Like.associate(connection.models);
 // Comment.associate(connection.models);

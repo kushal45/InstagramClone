@@ -42,13 +42,12 @@ class UserService {
     const { username, password } = req.body;
     let user = await UserDAO.findUserByQuery({ username });
     if (!user) throw new NotFoundError("User not found");
-
     const verifyPass = await bcryptjs.compare(password, user.password);
     if (!verifyPass)
       throw new NotFoundError("Verification Password not matched");
 
     //JWT
-    const payload = { id: user.id, username: user.username };
+    const payload = { id: user.id, username: user.username, tags: user.tags };
     const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {
       expiresIn: 86400,
     });
@@ -141,7 +140,7 @@ class UserService {
   }
 
   static async updateUserProfile(userId, profileData) {
-    const user = await UserDAO.findByPk(userId);
+    const user = await UserDAO.findUserById(userId);
     if (!user) {
       throw new NotFoundError("User not found");
     }
@@ -174,7 +173,7 @@ class UserService {
       throw new BadRequestError("No fields to update");
     }
 
-    await UserDAO.updateUser(userId, updatedFields);
+    return await UserDAO.updateUser(userId, updatedFields);
   }
 
   static async updateUser(userId, updateData) {

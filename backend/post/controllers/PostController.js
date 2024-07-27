@@ -32,6 +32,7 @@ module.exports = {
       const posts = await PostService.listPosts(userId);
       res.status(200).send(posts);
     } catch (error) {
+      console.log(error);
       next(error);
     }
   },

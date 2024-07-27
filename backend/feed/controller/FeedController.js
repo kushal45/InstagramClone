@@ -19,11 +19,13 @@ class FeedController {
       if (!errors.isEmpty()) {
         throw new BadRequestError(JSON.stringify(errors.array()));
       }
-      const userTags = req.user.tags;
+      const userTags = req.userTags;
+      console.log("userTags", userTags);
       const userId = req.userId;
       const feeds = await FeedService.fetch({ userTags, userId });
       res.json(feeds);
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }

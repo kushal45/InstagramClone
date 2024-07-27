@@ -5,11 +5,13 @@ const PostRoutes= require('../post/routes');
 const CommentRoutes= require('../comment/routes');
 const LikeRoutes= require('../like/routes');
 const FeedRoutes= require('../feed/routes');
+const FollowerRoutes= require('../follower/routes');
 
 router.use("/user",UserRoutes);
 router.use("/posts",PostRoutes);
 router.use("/comments",CommentRoutes);
 router.use("/like",LikeRoutes);
+router.use("/users",FollowerRoutes);
 router.use("/feeds",FeedRoutes);
 
 router.post('/health', (req, res) => {
