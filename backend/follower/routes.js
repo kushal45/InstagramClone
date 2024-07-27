@@ -11,6 +11,6 @@ router.get('/:userId/following',AuthMiddleware, FollowerController.listFollowing
 router.post('/:userId/follow',AuthMiddleware, FollowerController.followUser);
 
 // Unfollow a user
-router.post('/:userId/unfollow', AuthMiddleware,FollowerController.unfollowUser);
+router.delete('/:userId/unfollow', AuthMiddleware,FollowerController.unfollowUser);
 
 module.exports = router;

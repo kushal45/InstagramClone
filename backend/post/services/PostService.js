@@ -1,7 +1,7 @@
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
 const KafkaProducer = require("../../kafka/Producer");
-const httpContext = require('express-http-context');
+const httpContext = require("express-http-context");
 
 class PostService {
   static async createPost(postData, userId) {
@@ -9,21 +9,23 @@ class PostService {
     if (!user) {
       throw new NotFoundError("User not found");
     }
-    const asset = await AssetDAO.create(postData);
+    let assetId = postData.assetId;
+    if (assetId == null) {
+      const asset = await AssetDAO.create(postData);
+      assetId = asset.id;
+      // Publish the event to Kafka
+      const topic = "assetCreated";
+      //await emitEvent(topic,asset);
+      const kafkaProducerInst = new KafkaProducer("producer-1");
+      const correlationId = httpContext.get("correlationId");
+      await kafkaProducerInst.produce(topic, asset, { correlationId });
+    }
     const post = await PostDAO.create({
       userId: user.id,
-      assetId: asset.id,
+      assetId,
     });
 
-    // Publish the event to Kafka
-    const topic="assetCreated";
-    //await emitEvent(topic,asset);
-    const kafkaProducerInst= new KafkaProducer("producer-1");
-    const correlationId = httpContext.get('correlationId');
-    await kafkaProducerInst.produce(topic,asset,{correlationId});
-   // await assetConsumer(topic,"assetConsumerGroup");
-    
-    return {post,correlationId};
+    return post;
   }
 
   static async getPostById(postId) {
@@ -36,14 +38,14 @@ class PostService {
   }
 
   static async listPostsByAttr(attr) {
-    let posts=[];
-    if(attr.tags!=null){
-      const assetIds= await AssetDAO.findAssetIdsByTag(attr.tags);
+    let posts = [];
+    if (attr.hasOwnProperty("tags")) {
+      const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags);
       posts = await PostDAO.listByAssets(assetIds);
-    }else{
-      posts =[...posts,...await PostDAO.listByAttr(attr)];
+    } else {
+      posts = [...posts, ...(await PostDAO.listByAttr(attr))];
     }
-    
+
     return posts;
   }
 
@@ -78,11 +80,14 @@ class PostService {
     }
   }
 
-  static async listPosts(userId,{ page = 1, pageSize = 10 } = {}) {
+  static async listPosts(userId, { page = 1, pageSize = 10 } = {}) {
     const user = await UserDAO.findUserById(userId);
     if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
-    const posts = await PostDAO.listByUsers(user.id, { offset: skip, limit: pageSize });
+    const posts = await PostDAO.listByUsers(user.id, {
+      offset: skip,
+      limit: pageSize,
+    });
     return posts;
   }
 
@@ -91,12 +96,11 @@ class PostService {
     if (!userList) {
       throw new NotFoundError("Users not found");
     }
-    const filteredUserIds = userList.map(user => user.id);
+    const filteredUserIds = userList.map((user) => user.id);
     //console.log("filteredUserIds",filteredUserIds);
     const posts = await PostDAO.listByUsers(filteredUserIds);
     return posts;
   }
-
 }
 
-module.exports =  PostService;
+module.exports = PostService;

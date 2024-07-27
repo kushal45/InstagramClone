@@ -12,7 +12,6 @@ const validateGetFeeds = [
 
   const validateSharePost = [
     body('postId').isInt().withMessage('Post ID must be an integer'),
-    check('userId').exists().isInt().withMessage('User ID should be there in the request as integer'), 
   ];
 
   module.exports = {

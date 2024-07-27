@@ -15,7 +15,7 @@ class FollowerController {
   async listFollowing(req, res,next) {
     try {
       const following = await FollowerService.listFollowing(req.params.userId);
-      res.json(following);
+      res.status(200).json(following);
     } catch (error) {
       next(error);
     }

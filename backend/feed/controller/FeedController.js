@@ -42,6 +42,7 @@ class FeedController {
       const sharedPost = await FeedService.share(postId, userId);
       res.status(201).send(sharedPost);
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }

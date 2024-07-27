@@ -89,8 +89,9 @@ module.exports = {
     if(context.vars.currentTokenIdx== null){
       context.vars.currentTokenIdx =0 ;
     }
-    context.vars.currentTokenIdx = context.vars.currentTokenIdx + 1;
-    //console.log("incrementing currentTokenIdx", context.vars.currentTokenIdx);
+    const tokens = checkIfContentExists(path.join(__dirname, "token.json"));
+    context.vars.currentTokenIdx =  Math.floor(Math.random() * tokens.length-1);
+    console.log("incrementing currentTokenIdx", context.vars.currentTokenIdx);
     done();
   },
   saveToken: function (context, events, done) {

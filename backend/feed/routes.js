@@ -9,6 +9,6 @@ const routes = Router();
 
 // ** Routes Feed ** //
 routes.get("/", AuthMiddleware, FeedController.getFeeds);
-routes.post("/share", validateSharePost, FeedController.sharePost);
+routes.post("/share", AuthMiddleware,validateSharePost, FeedController.sharePost);
 
 module.exports = routes;

@@ -3,8 +3,6 @@ config:
   phases:
     - duration: 10 # Run the test for 100 seconds
       arrivalRate: 5  # New users arrive at a rate of 50 per second
-  variables:
-    currentTokenIdx: 0
   plugins:
     ensure: {}
     apdex: {}
@@ -55,9 +53,9 @@ scenarios:
   - name: "Follow Users"
     flow:
       - function: "readUsersToFollow"
-      #- log: 'Users to follow {{ usersToFollow }}'
+      - log: 'Users to follow {{ usersToFollow }}'
       - loop:
-        - log: "Following user: {{ $loopElement }}"
+        #- log: "Following user: {{ $loopElement }}"
         - post:
             url: "/users/{{ $loopElement }}/follow"
             beforeRequest:
@@ -65,8 +63,39 @@ scenarios:
             headers:
               Authorization: "Bearer {{ loginToken }}"
         - think: 3   
-        over: "usersToFollow"          
-
+        over: "usersToFollow" 
+      - think: 2
+      - get:
+          url: "/feeds"
+          beforeRequest:
+            - "readToken"
+          headers:
+            Authorization: "Bearer {{ loginToken }}"
+      - think: 2
+      - post:
+          url: "/feeds/share"
+          beforeRequest:
+            - "readToken"
+            - "loadPostId"
+          json:
+            postId: "{{ postId }}"
+          headers:
+            Authorization: "Bearer {{ loginToken }}"
+                 
+  - name: "Unfollow Users"
+    flow:
+      - function: "readUsersToFollow"
+      #- log: 'Users to unfollow {{ usersToFollow }}'
+      - loop:
+        #- log: "Unfollowing user: {{ $loopElement }}"
+        - delete:
+            url: "/users/{{ $loopElement }}/unfollow"
+            beforeRequest:
+              - "readToken" 
+            headers:
+              Authorization: "Bearer {{ loginToken }}"
+        - think: 3   
+        over: "usersToFollow"
 
   - name: "Create posts"
     flow:
@@ -123,3 +152,6 @@ scenarios:
               text: "{{ postData }}"
               postId: "{{ postId }}" # Use the postId captured from the previous request
         count: 5 # Simulate creating 5 comments
+   
+
+        

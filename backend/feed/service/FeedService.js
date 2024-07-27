@@ -15,14 +15,11 @@ class FeedService {
   }
 
   static async share(postId,userId){
-    const post=await PostService.getById(postId);
+    const post=await PostService.getPostById(postId);
     if(!post){
       throw new NotFoundError("Post not found");
     }
-    const sharedPost=await PostService.create({
-      userId,
-      assetId:post.assetId,
-    });
+    const sharedPost=await PostService.createPost(post,userId);
     return sharedPost;
   }
    
