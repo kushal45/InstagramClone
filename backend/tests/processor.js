@@ -22,10 +22,16 @@ function checkIfContentExists(filePath) {
 
 function getToken(context) {
   const tokens = checkIfContentExists(path.join(__dirname, "token.json"));
-  const currentTokenIdx = context.vars.currentTokenIdx;
+  const currentTokenIdx = getRandomTokenIdx();
   //console.log("currentTokenIdx fetched", currentTokenIdx);
   const token = tokens[currentTokenIdx];
+  console.log("token fetched", token);
   return token;
+}
+
+function getRandomTokenIdx(){
+  const tokens = checkIfContentExists(path.join(__dirname, "token.json"));
+  return Math.floor(Math.random() * tokens.length);
 }
 
 async function deleteAllTablesData() {
@@ -89,9 +95,8 @@ module.exports = {
     if(context.vars.currentTokenIdx== null){
       context.vars.currentTokenIdx =0 ;
     }
-    const tokens = checkIfContentExists(path.join(__dirname, "token.json"));
-    context.vars.currentTokenIdx =  Math.floor(Math.random() * tokens.length-1);
-    console.log("incrementing currentTokenIdx", context.vars.currentTokenIdx);
+   
+    console.log("incrementing currentTokenIdx", context.vars.currentTokenIdx,"tokens length", tokens.length);
     done();
   },
   saveToken: function (context, events, done) {
@@ -106,7 +111,7 @@ module.exports = {
     done();
   },
   readToken: function (requestParams, context, ee, next) {
-    // Read the token from the file
+    console.log("reading url, ", requestParams.url);
     const token = getToken(context);
     context.vars.loginToken = token;
     return next();

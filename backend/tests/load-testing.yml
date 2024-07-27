@@ -18,7 +18,6 @@ config:
 scenarios:
   - name: "User Registration and Login Flow update user profile"
     flow:
-      - function : "incrementTokenIdx"
       - post: # User Registration
           url: "/user/register"
           beforeRequest:
@@ -52,8 +51,10 @@ scenarios:
     
   - name: "Follow Users"
     flow:
+     
+    - parallel:
       - function: "readUsersToFollow"
-      - log: 'Users to follow {{ usersToFollow }}'
+     #- log: 'Users to follow {{ usersToFollow }}'
       - loop:
         #- log: "Following user: {{ $loopElement }}"
         - post:
@@ -85,17 +86,18 @@ scenarios:
   - name: "Unfollow Users"
     flow:
       - function: "readUsersToFollow"
+      - parallel:
       #- log: 'Users to unfollow {{ usersToFollow }}'
-      - loop:
-        #- log: "Unfollowing user: {{ $loopElement }}"
-        - delete:
-            url: "/users/{{ $loopElement }}/unfollow"
-            beforeRequest:
-              - "readToken" 
-            headers:
-              Authorization: "Bearer {{ loginToken }}"
-        - think: 3   
-        over: "usersToFollow"
+        - loop:
+          #- log: "Unfollowing user: {{ $loopElement }}"
+          - delete:
+              url: "/users/{{ $loopElement }}/unfollow"
+              beforeRequest:
+                - "readToken" 
+              headers:
+                Authorization: "Bearer {{ loginToken }}"
+          - think: 3   
+          over: "usersToFollow"
 
   - name: "Create posts"
     flow:
