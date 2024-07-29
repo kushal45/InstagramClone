@@ -33,4 +33,8 @@ function extractKeywords(text) {
     return keywords;
   }
 
-  module.exports= generateTagsFromText;
+  module.exports= {
+    preprocessText,
+    extractKeywords,
+    generateTagsFromText
+  };
