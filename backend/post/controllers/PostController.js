@@ -44,8 +44,8 @@ module.exports = {
    */
   getPostById: async (req, res,next) => {
     try {
-      const post = PostService.getPostById(req.params.id);
-      res.status(200).send(post);
+      const post = await PostService.getPostById(req.params.id);
+      return res.status(200).send(post);
     } catch (error) {
       next(error);
     }

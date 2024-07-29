@@ -1,15 +1,14 @@
 
 //const assetConsumer = require("./asset/util/assetConsumerGptStrat");
 const assetConsumer = require("./asset/util/assetConsumerGenNLPStrat");
+const consumerServices = require("./config");
 const KafkaConsumer = require("./kafka/Consumer");
 const fs = require('fs').promises;
 const path = require('path');
 
 let isRunnable = true;
 
-const consumerServices =Object.freeze({
-  ASSETCONSUMER: 'assetConsumer'
-});
+
 
 const kafaConsumerInst = new KafkaConsumer("consumer-1");
 initializeConsumer(kafaConsumerInst);
@@ -27,15 +26,17 @@ async function initializeConsumer(kafaConsumerInst) {
 
 async function processConsumerInfinitely(kafaConsumerInst){
   while (isRunnable) {
-    if (process.env.CONSUMER_NAME === consumerServices.ASSETCONSUMER) {
-      await assetConsumer(kafaConsumerInst); 
-    }
-   
-   
+    _fetchConsumer(process.env.CONSUMER_NAME);
     const filePath = path.join(__dirname, 'example.txt');
     await touchFile(filePath);
     // Introduce a delay to prevent tight looping
     await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+}
+
+function _fetchConsumer(consumerName){
+  return {
+    [consumerServices.ASSETCONSUMER]: assetConsumer
   }
 }
 
@@ -59,23 +60,3 @@ async function touchFile(filePath) {
     }
   }
 }
-
-// Handle interrupt signals
-const handleSignal = (signal) => {
-  console.log(`Received ${signal}. Gracefully shutting down.`);
-  isRunnable = false;
-};
-
-process.on("SIGINT", handleSignal);
-process.on("SIGTERM", handleSignal);
-
-process.on("uncaughtException", (error) => {
-  console.error(`Uncaught Exception: ${error.message}`);
-  handleSignal(error.name);
-});
-
-// Handling unhandled promise rejections
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  handleSignal(error.name);
-});

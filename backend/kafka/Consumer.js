@@ -21,7 +21,7 @@ class KafkaConsumer {
     console.log(`Successfully subscribed to ${topic}`);
   }
 
-  async run(handler) {
+  async processMessage(handler) {
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
