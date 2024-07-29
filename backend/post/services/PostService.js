@@ -59,7 +59,7 @@ class PostService {
   }
 
   static async deletePost(postId) {
-    const post = await PostDao.getById(postId);
+    const post = await PostDAO.getById(postId);
     if (!post) {
       throw new NotFoundError("Post not found");
     }

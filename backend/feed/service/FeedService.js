@@ -11,7 +11,7 @@ class FeedService {
     const followingIds=followings.map(following=>following.followingId);
     //console.log("followingIds",followingIds);
     const postWithFollowings=await PostService.listPostsByUserIds(followingIds);
-    return[...postWithTags,...[postWithFollowings]];
+    return[...postWithTags,...postWithFollowings];
   }
 
   static async share(postId,userId){
