@@ -1,4 +1,4 @@
-const { PostDAO } = require("../../dao");
+const PostDAO  = require("../../post/dao/PostDao");
 const LikeDAO = require("../dao/LikeDao");
 const { NotFoundError } = require("../../errors");
 

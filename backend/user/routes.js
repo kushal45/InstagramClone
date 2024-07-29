@@ -12,7 +12,7 @@ const routes = Router();
 // ** Routes Authenticate ** //
 routes.post("/login", ValidationAuth.login, AuthController.login);
 routes.get(
-  "/auth",
+  "/howIam",
   AuthMiddleware,
   RedisMiddleware,
   CacheHowiam,
@@ -30,7 +30,7 @@ routes.put(
   UserController.update
 );
 routes.put(
-  "/password-update",
+  "/password",
   AuthMiddleware,
   ValidationsUser.password,
   UserController.updatePassword

@@ -1,4 +1,3 @@
-const { validationResult } = require("express-validator");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Utility = require("../utils/Utility");
@@ -16,30 +15,26 @@ class UserService {
 
     if (!user) throw new NotFoundError("User not found ");
 
-    const count_follows = await Follow.count({
-      where: { followerId: user.id },
-    });
-    const count_followers = await Follow.count({
-      where: { followingId: user.id },
-    });
+    // const count_follows = await Follow.count({
+    //   where: { followerId: user.id },
+    // });
+    // const count_followers = await Follow.count({
+    //   where: { followingId: user.id },
+    // });
 
     let isProfile = user.id === currentUserId;
 
     return {
       body: {
         user,
-        count_follows,
-        count_followers,
+        //count_follows,
+        //count_followers,
         isProfile,
       },
     };
   }
 
-  static async login(req) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) throw new NotFoundError(errors.array());
-
-    const { username, password } = req.body;
+  static async login(username, password) {
     let user = await UserDAO.findUserByQuery({ username });
     if (!user) throw new NotFoundError("User not found");
     const verifyPass = await bcryptjs.compare(password, user.password);
@@ -55,11 +50,7 @@ class UserService {
     return { body: { token } };
   }
 
-  static async registerUser(req) {
-    const { name, email, username, password } = req.body;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) throw new NotFoundError(JSON.stringify(errors.array()));
-
+  static async registerUser({name, email, username, password}) {
     let user = await UserDAO.findUserByEmailOrUsername(email, username);
 
     if (user) {
@@ -177,19 +168,19 @@ class UserService {
   }
 
   static async updateUser(userId, updateData) {
-    const user = await User.findByPk(userId);
+    const user = await UserDAO.findUserById(userId);
     if (!user) {
       throw new NotFoundError("User not found.");
     }
     if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 8);
+      updateData.password = await bcryptjs.hash(updateData.password, 8);
     }
     await user.update(updateData);
     return user;
   }
 
   static async deleteUser(userId) {
-    const user = await User.findByPk(userId);
+    const user = await UserDAO.findUserById(userId);
     if (!user) {
       throw new NotFoundError("User not found.");
     }

@@ -1,3 +1,4 @@
+const { validationResult } = require("express-validator");
 const  UserService  = require("../services/UserService");
 
 module.exports = {
@@ -13,7 +14,12 @@ module.exports = {
 
   async store(req, res,next) {
     try {
-      const result = await UserService.registerUser(req);
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) throw new NotFoundError(JSON.stringify(errors.array()));
+      const { username, password, name, email } = req.body;
+      const userData = { username, password, name };
+      if (email) userData.email = email;
+      const result = await UserService.registerUser(userData);
       return res.status(201).json(result.body);
     } catch (error) {
      next(error);
