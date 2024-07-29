@@ -2,7 +2,7 @@ const FollowerService = require('../services/FollowerService');
 
 class FollowerController {
   // List followers of a user
-  async listFollowers(req, res,next) {
+  static async listFollowers(req, res,next) {
     try {
       const followers=await FollowerService.listFollowers(req.params.userId);
       res.json(followers);
@@ -12,7 +12,7 @@ class FollowerController {
   }
 
   // List users that a specific user is following
-  async listFollowing(req, res,next) {
+  static async listFollowing(req, res,next) {
     try {
       const following = await FollowerService.listFollowing(req.params.userId);
       res.status(200).json(following);
@@ -22,7 +22,7 @@ class FollowerController {
   }
 
   // Follow another user
-  async followUser(req, res,next) {
+  static async followUser(req, res,next) {
     try {
       const followingId = req.params.userId;
       await FollowerService.followUser(req.userId, followingId);
@@ -34,7 +34,7 @@ class FollowerController {
   }
 
   // Unfollow a user
-  async unfollowUser(req, res,next) {
+  static async unfollowUser(req, res,next) {
     try {
       const followingId = req.params.userId;
       await FollowerService.unfollowUser(req.userId, followingId);
@@ -45,4 +45,4 @@ class FollowerController {
   }
 }
 
-module.exports = new FollowerController();
+module.exports = FollowerController;

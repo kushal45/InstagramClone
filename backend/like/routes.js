@@ -19,6 +19,6 @@ routes.post(
     LikeController.unlike
   );
   routes.get("/show", AuthMiddleware, LikeController.show);
-  routes.post("/remove", AuthMiddleware, LikeController.delete);
+  routes.delete("/like", AuthMiddleware, LikeController.delete);
 
   module.exports = routes;

@@ -25,7 +25,12 @@ class LikeService {
   }
 
   static async deleteLike(id) {
-   await LikeDAO.delete(id);
+    try {
+      await LikeDAO.delete(id);
+      return { message: "Like deleted successfully" };
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
