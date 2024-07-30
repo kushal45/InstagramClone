@@ -1,4 +1,6 @@
 const FollowerDao = require("../dao/FollowerDao");
+const KafkaProducer = require("../../kafka/Producer");
+const httpContext = require("express-http-context");
 
 
 class FollowerService {
@@ -26,7 +28,20 @@ class FollowerService {
   static async followUser(followerId, followingId) {
     try {
       const createdFollower = await FollowerDao.addFollower(followerId, followingId)
+      const kafkaProducer = new KafkaProducer();
+      const correlationId= httpContext.get("correlationId");
+      await kafkaProducer.produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST }, { correlationId });
       return createdFollower;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Get top users by followers
+  static async getTopUsersByFollowers(numList) {
+    try {
+      const topUsers = await FollowerDao.getTopUsersByFollowers(numList);
+      return topUsers;
     } catch (error) {
       throw error;
     }

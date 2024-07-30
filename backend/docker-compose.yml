@@ -30,6 +30,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       MODE: server
+      TOP_USER_FOLLOWERLIST: 5
     ports:
       - "3000:3000"
     command: npm run dev
@@ -52,17 +53,38 @@ services:
       #- kafka3
     environment:
       NODE_ENV: development
-      PORT: 3001
       MODE: consumer
       TOPIC: assetCreated
       GROUPID: assetConsumer
       CONSUMER_NAME: assetConsumer
-    ports:
-      - "3001:3001"
     command: npm run dev
     volumes:
       - .:/app/
       - /app/node_modules
+  
+  followerconsumer:
+    restart: on-failure
+    build: .
+    healthcheck:
+      test: ["CMD-SHELL", "if [ $(( $(date +%s) - $(stat -c %Y /app/examples.txt) )) -gt 5000 ]; then exit 1; else exit 0; fi"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      MODE: consumer
+      TOPIC: followerCreated
+      GROUPID: followerConsumer
+      CONSUMER_NAME: followerConsumer
+    command: npm run dev
+    volumes:
+      - .:/app/
+      - /app/node_modules
+
   postgres:
     image: postgres:14
     healthcheck:

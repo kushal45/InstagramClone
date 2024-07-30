@@ -1,6 +1,7 @@
 
 const consumerServices =Object.freeze({
-    ASSETCONSUMER: 'assetConsumer'
+    ASSETCONSUMER: 'assetConsumer',
+    TOPFOLLOWERCONSUMER: 'followerConsumer',
   });
 
 module.exports = consumerServices;

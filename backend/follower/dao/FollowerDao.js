@@ -1,5 +1,6 @@
 const  Follower = require('../models/Follower'); 
 const  User = require('../../user/models/User'); 
+const { Sequelize } = require('sequelize');
 
 class FollowerDao {
   // Add a new follower
@@ -26,6 +27,52 @@ class FollowerDao {
       return followers;
     } catch (error) {
       throw new I(error.toString());
+    }
+  }
+
+  static async getTopUsersByFollowers(numList) {
+    try {
+      const topUsers = await Follower.findAll({
+        attributes: [
+          'followingId',
+          [Sequelize.fn('COUNT', Sequelize.col('followerId')), 'followerCount'],
+          'FollowingUser.id',
+          'FollowingUser.name',
+          'FollowingUser.email',
+          'FollowingUser.username',
+          'FollowingUser.password',
+          'FollowingUser.avatarUrl',
+          'FollowingUser.bio',
+          'FollowingUser.website',
+          'FollowingUser.phone',
+          'FollowingUser.tags',
+          'FollowingUser.langPrefs',
+          'FollowingUser.createdAt',
+          'FollowingUser.updatedAt'
+        ],
+        group: [
+          'followingId',
+          'FollowingUser.id',
+          'FollowingUser.name',
+          'FollowingUser.email',
+          'FollowingUser.username',
+          'FollowingUser.password',
+          'FollowingUser.avatarUrl',
+          'FollowingUser.bio',
+          'FollowingUser.website',
+          'FollowingUser.phone',
+          'FollowingUser.tags',
+          'FollowingUser.langPrefs',
+          'FollowingUser.createdAt',
+          'FollowingUser.updatedAt'
+        ],
+        order: [[Sequelize.literal('"followerCount"'), 'DESC']],
+        limit: numList,
+        include: [{ model: User, as: 'FollowingUser' }]
+      });
+      return topUsers;
+    } catch (error) {
+      throw new Error(error.toString());
     }
   }
 
