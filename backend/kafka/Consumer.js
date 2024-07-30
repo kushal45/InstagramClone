@@ -4,6 +4,7 @@ require("dotenv").config();
 class KafkaConsumer {
   constructor(clientId) {
     this.kafkaBrokers = process.env.KAFKA_BROKERS.split(",");
+    this.isConsumerRunning = false;
     this.kafka = new Kafka({
       clientId,
       brokers: ["kafka1:9092"],
@@ -22,6 +23,12 @@ class KafkaConsumer {
   }
 
   async processMessage(handler) {
+    if (this.isConsumerRunning) {
+      console.warn("Consumer is already running");
+      return;
+    }
+
+    this.isConsumerRunning = true;
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
