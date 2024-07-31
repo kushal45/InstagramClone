@@ -1,7 +1,11 @@
 const FollowerService = require('../../services/FollowerService');
 const FollowerDao = require('../../dao/FollowerDao');
+const KafkaProducer = require('../../../kafka/Producer');
+const httpContext = require('express-http-context');
 
 jest.mock('../../dao/FollowerDao');
+jest.mock('../../../kafka/Producer');
+jest.mock('express-http-context');
 
 describe('FollowerService', () => {
   afterEach(() => {
@@ -50,7 +54,10 @@ describe('FollowerService', () => {
     it('should follow another user', async () => {
       const createdFollower = { id: 'follower1', followingId: 'user1' };
       FollowerDao.addFollower.mockResolvedValue(createdFollower);
-
+      KafkaProducer.mockImplementation(() => ({
+        produce: jest.fn(),
+      }));
+      httpContext.get.mockReturnValue('correlation-id');
       const result = await FollowerService.followUser('user2', 'user1');
 
       expect(FollowerDao.addFollower).toHaveBeenCalledWith('user2', 'user1');

@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const { Client } = require("pg");
@@ -11,10 +11,13 @@ function getRandomItems(items) {
 }
 
 function checkIfContentExists(filePath) {
-  if (fs.existsSync(filePath)) {
+  const doesFileExist = fs.pathExistsSync(filePath);
+  if (doesFileExist) {
     const fileContent = fs.readFileSync(filePath, "utf8");
     if (fileContent) {
-      return JSON.parse(fileContent);
+      const existingTokens= JSON.parse(fileContent);
+     // console.log("existingTokens", existingTokens);
+      return existingTokens;
     }
   }
   return [];
@@ -23,22 +26,23 @@ function checkIfContentExists(filePath) {
 function getToken(context) {
   const tokens = checkIfContentExists(path.join(__dirname, "token.json"));
   const currentTokenIdx = getRandomTokenIdx();
-  //console.log("currentTokenIdx fetched", currentTokenIdx);
-  const token = tokens[currentTokenIdx];
-  console.log("token fetched", token);
+ // console.log("currentTokenIdx fetched", currentTokenIdx, "tokens length", tokens.length);
+  const token = tokens[currentTokenIdx]!=null ? tokens[currentTokenIdx] : null;
+  //console.log("token fetched", token);
   return token;
 }
 
 function getRandomTokenIdx(){
   const tokens = checkIfContentExists(path.join(__dirname, "token.json"));
-  return Math.floor(Math.random() * tokens.length);
+  const tokenIdx = typeof(Math.floor(Math.random() * tokens.length)) === 'number' ? Math.floor(Math.random() * tokens.length) : 0;
+  return tokenIdx;
 }
 
 async function deleteAllTablesData() {
   const client = new Client({
     user: process.env.DB_USERNAME,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
+    host: process.env.EXTERNAL_DB_HOST,
+    database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
   });
@@ -50,7 +54,7 @@ async function deleteAllTablesData() {
     for (const table of tables) {
       await client.query(`DELETE FROM ${table}`);
     }
-   // console.log("All tables data deleted successfully.");
+   console.log("All tables data deleted successfully.");
   } catch (err) {
     //console.error("Error deleting tables data:", err);
   } finally {
@@ -64,7 +68,6 @@ module.exports = {
     await deleteAllTablesData();
     const token = [];
     const postIds = [];
-    context.vars.currentTokenIdx = -1;
     fs.writeFileSync(
       path.join(__dirname, "token.json"),
       JSON.stringify(token),
@@ -75,7 +78,6 @@ module.exports = {
       JSON.stringify(postIds),
       "utf8"
     );
-    done();
   },
   logRequest(requestParams, context, ee, next) {
    // console.log(`Requesting: ${requestParams.url}`);
@@ -101,6 +103,7 @@ module.exports = {
   },
   saveToken: function (context, events, done) {
     const tokens = checkIfContentExists(path.join(__dirname, "token.json"));
+    //console.log("tokens fetched", tokens);
     const token = context.vars.loginToken;
     tokens.push(token);
     fs.writeFileSync(
@@ -111,7 +114,7 @@ module.exports = {
     done();
   },
   readToken: function (requestParams, context, ee, next) {
-    console.log("reading url, ", requestParams.url);
+    //console.log("reading url, ", requestParams.url);
     const token = getToken(context);
     context.vars.loginToken = token;
     return next();

@@ -1,20 +1,24 @@
 config:
   target: "http://localhost:3000"
   phases:
-    - duration: 10 # Run the test for 100 seconds
-      arrivalRate: 5  # New users arrive at a rate of 50 per second
+    - duration: 50 # Run the test for 100 seconds
+      arrivalRate: 10  # New users arrive at a rate of 50 per second
   plugins:
     ensure: {}
     apdex: {}
     metrics-by-endpoint: {}
-    publish-metrics:
-      - type: influxdb-statsd # https://artillery.io/docs/guides/plugins/plugin-publish-metrics.html#InfluxDB-Telegraf
-        tags:
-          - "testId:weather-forecast"
-          - "reporterType:influxdb-statsd"
-        event:
-          priority: low
+    # publish-metrics:
+    #   - type: influxdb-statsd # https://artillery.io/docs/guides/plugins/plugin-publish-metrics.html#InfluxDB-Telegraf
+    #     tags:
+    #       - "testId:weather-forecast"
+    #       - "reporterType:influxdb-statsd"
+    #     event:
+    #       priority: low
   processor: "./processor.js"
+before :
+  flow:
+   - log : "Starting the test"
+   - function: "initialize"
 scenarios:
   - name: "User Registration and Login Flow update user profile"
     flow:

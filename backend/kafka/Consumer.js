@@ -24,7 +24,7 @@ class KafkaConsumer {
 
   async processMessage(handler) {
     if (this.isConsumerRunning) {
-      console.warn("Consumer is already running");
+     // console.warn("Consumer is already running");
       return;
     }
 
