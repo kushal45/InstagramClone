@@ -5,7 +5,7 @@ const { Client } = require("pg");
 require("dotenv").config();
 
 function getRandomItems(items) {
-  const numberOfItems = Math.floor(Math.random() * items.length) + 1; // Random number between 1 and tags.length
+  const numberOfItems = Math.floor(Math.random() * (items.length-2>1?items.length-2:1)) + 1; // Random number between 1 and tags.length
   const shuffledItems = items.sort(() => 0.5 - Math.random()); // Shuffle the array
   return shuffledItems.slice(0, numberOfItems); // Return a random subset
 }
