@@ -28,7 +28,7 @@ module.exports = {
   getAllPosts: async (req, res,next) => {
     try {
       console.log("get all posts for user",req.userId);
-      const userId=req.query.userId;
+      const userId=req.userId;
       const posts = await PostService.listPosts(userId);
       res.status(200).send(posts);
     } catch (error) {
