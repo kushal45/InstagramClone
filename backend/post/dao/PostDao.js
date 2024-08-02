@@ -44,7 +44,10 @@ class PostDao {
     //   offset,
     //   limit,
     // });
-    const posts = await PostPool.listPostsByUserids(userIds);
+   // const posts = await PostPool.listPostsByUserids(userIds);
+      const posts = await PostPool.listPostsByAttributeList([{
+        userId: userIds
+      }]);
     return posts;
   }
 

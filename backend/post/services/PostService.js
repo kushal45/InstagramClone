@@ -2,6 +2,7 @@ const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
 const KafkaProducer = require("../../kafka/Producer");
 const httpContext = require("express-http-context");
+const PostPool = require("../models/PostPool");
 
 class PostService {
   static async createPost(postData, userId) {
@@ -41,7 +42,12 @@ class PostService {
     let posts = [];
     if (attr.hasOwnProperty("tags")) {
       const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags);
-      posts = await PostDAO.listByAssets(assetIds);
+      //posts = await PostDAO.listByAssets(assetIds);
+      posts = await PostPool.listPostsByAttributeList([
+        {
+          assetId: assetIds,
+        },
+      ]);
     } else {
       posts = [...posts, ...(await PostDAO.listByAttr(attr))];
     }
