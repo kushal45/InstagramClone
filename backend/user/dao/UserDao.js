@@ -1,11 +1,14 @@
 const { Sequelize } = require("sequelize");
 const User = require("../models/User");
+const UserPool = require("../models/UserPool");
 
 class UserDAO {
   // Method to create a new user
   static async createUser(userData) {
     try {
-      const user = await User.create(userData);
+      console.log("userData",userData);
+     // const user = await User.create(userData);
+      const user = await UserPool.create(userData);
       return user;
     } catch (error) {
       console.error("Error creating user:", error);
@@ -16,7 +19,8 @@ class UserDAO {
   // Method to find a user by ID
   static async findUserById(id) {
     try {
-      const user = await User.findByPk(id);
+      //const user = await User.findByPk(id);
+      const user = await UserPool.findByPk(id);
       if (!user) {
         console.error("User not found");
         throw new Error("User not found");
@@ -30,11 +34,16 @@ class UserDAO {
 
   static async findUserList(userIds){
     try {
-      const users = await User.findAll({
+      // const users = await User.findAll({
+      //   where: {
+      //     id: {
+      //       [Sequelize.Op.in]: userIds
+      //     }
+      //   }
+      // });
+      const users = await UserPool.findAll({
         where: {
-          id: {
-            [Sequelize.Op.in]: userIds
-          }
+          id: userIds
         }
       });
       return users;

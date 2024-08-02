@@ -101,6 +101,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    environment:
+      DATABASE_URL: postgres://postgres:abcd1234@postgres:5432/instagram
+    ports:
+      - "6433:6432"
+    depends_on:
+      - postgres
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest

@@ -52,7 +52,7 @@ class UserService {
 
   static async registerUser({name, email, username, password}) {
     let user = await UserDAO.findUserByEmailOrUsername(email, username);
-
+    console.log("existing user", user);
     if (user) {
       if (user.email === email) {
         throw new BadRequestError("email already exists");

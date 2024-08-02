@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const { Asset, Post } = require("../../models");
+const PostPool = require("../models/PostPool");
 
 class PostDao {
   static async create(postData) {
@@ -33,16 +34,17 @@ class PostDao {
   }
 
   static async listByUsers(userIds, { offset = 0, limit = 10 } = {}) {
-    const posts = await Post.findAll({
-      where: {
-        userId: {
-          [Op.in]: userIds,
-        },
-      },
-      include: [{ model: Asset, as: "asset" }],
-      offset,
-      limit,
-    });
+    // const posts = await Post.findAll({
+    //   where: {
+    //     userId: {
+    //       [Op.in]: userIds,
+    //     },
+    //   },
+    //   include: [{ model: Asset, as: "asset" }],
+    //   offset,
+    //   limit,
+    // });
+    const posts = await PostPool.listPostsByUserids(userIds);
     return posts;
   }
 
