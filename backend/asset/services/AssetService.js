@@ -11,9 +11,25 @@ class AssetService {
   }
 
   // Find an asset by ID
-  static async findAssetById(assetId) {
+  static async findAssetById(assetId, redisClient) {
     try {
-      return await AssetDAO.findById(assetId);
+      const cacheKey = `asset:${assetId}`;
+      const cachedAsset = await new Promise((resolve, reject) => {
+        redisClient.get(cacheKey, (err, data) => {
+          if (err) return reject(err);
+          if (data) return resolve(JSON.parse(data));
+          resolve(null);
+        });
+      });
+
+      if (cachedAsset) {
+        return cachedAsset;
+      }
+      const asset = await AssetDAO.findById(assetId);
+      if (asset) {
+        redisClient.setex(cacheKey, 3600, JSON.stringify(asset)); // Cache for 1 hour
+      }
+      return asset;
     } catch (error) {
       throw error;
     }

@@ -29,7 +29,8 @@ module.exports = {
     try {
       console.log("get all posts for user",req.userId);
       const userId=req.userId;
-      const posts = await PostService.listPosts(userId);
+      const redisClient= req.redis;
+      const posts = await PostService.listPosts(userId,redisClient);
       res.status(200).send(posts);
     } catch (error) {
       console.log(error);

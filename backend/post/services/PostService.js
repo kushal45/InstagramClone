@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
 const KafkaProducer = require("../../kafka/Producer");
@@ -38,7 +39,23 @@ class PostService {
     return post;
   }
 
-  static async listPostsByAttr(attr) {
+  static async listPostsByAttr(attr, redisClient) {
+    const attrHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(attr))
+      .digest("hex");
+    const cacheKey = `posts:${attrHash}`;
+
+    // Check if the data is in the cache
+    const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+      if (err) return reject(err);
+      if (data) return resolve(JSON.parse(data));
+      resolve(null);
+    });
+
+    if (cachedPosts) {
+      return cachedPosts;
+    }
     let posts = [];
     if (attr.hasOwnProperty("tags")) {
       const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags);
@@ -51,7 +68,7 @@ class PostService {
     } else {
       posts = [...posts, ...(await PostDAO.listByAttr(attr))];
     }
-
+    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
     return posts;
   }
 
@@ -86,14 +103,31 @@ class PostService {
     }
   }
 
-  static async listPosts(userId, { page = 1, pageSize = 10 } = {}) {
+  static async listPosts(
+    userId,
+    redisClient,
+    { page = 1, pageSize = 10 } = {}
+  ) {
     const user = await UserDAO.findUserById(userId);
     if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
+    const cacheKey = `posts:${userId}:${page}:${pageSize}`;
+
+    const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+      if (err) return reject(err);
+      if (data) return resolve(JSON.parse(data));
+      resolve(null);
+    });
+
+    console.log("cachedPosts", cachedPosts);
+    if (cachedPosts) {
+      return cachedPosts;
+    }
     const posts = await PostDAO.listByUsers([user.id], {
       offset: skip,
       limit: pageSize,
     });
+    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
     return posts;
   }
 

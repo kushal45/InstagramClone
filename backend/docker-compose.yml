@@ -1,8 +1,7 @@
 volumes:
   postgres_data:  # Define a named volume for database persistence
-  influxdb2config:
-  influxdb2data:
   grafana-storage:
+  redis_data:
 
 networks:
   metrics:
@@ -18,6 +17,8 @@ services:
       retries: 3
       start_period: 40s
     depends_on:
+      redis:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       kafka1: 
@@ -26,6 +27,7 @@ services:
          condition: service_healthy
       kafka3:
           condition: service_healthy
+      
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -37,6 +39,19 @@ services:
     volumes:
       - .:/app/
       - /app/node_modules
+  
+  redis:
+    image: "redis:alpine"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   assetconsumer:
     restart: on-failure
     build: .

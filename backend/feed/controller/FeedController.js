@@ -22,7 +22,8 @@ class FeedController {
       const userTags = req.userTags;
       console.log("userTags", userTags);
       const userId = req.userId;
-      const feeds = await FeedService.fetch({ userTags, userId });
+      const redisClient = req.redis;
+      const feeds = await FeedService.fetch({ userTags, userId, redisClient });
       res.json(feeds);
     } catch (error) {
       console.log(error);

@@ -4,9 +4,11 @@ class FollowerController {
   // List followers of a user
   static async listFollowers(req, res,next) {
     try {
-      const followers=await FollowerService.listFollowers(req.params.userId);
+      const redisClient = req.redis;
+      const followers=await FollowerService.listFollowers(req.params.userId,redisClient);
       res.json(followers);
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }
@@ -14,9 +16,11 @@ class FollowerController {
   // List users that a specific user is following
   static async listFollowing(req, res,next) {
     try {
-      const following = await FollowerService.listFollowing(req.params.userId);
+      const redisClient = req.redis;
+      const following = await FollowerService.listFollowing(req.params.userId,redisClient);
       res.status(200).json(following);
     } catch (error) {
+      console.log(error);
       next(error);
     }
   }

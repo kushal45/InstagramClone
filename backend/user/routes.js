@@ -70,7 +70,6 @@ routes.post("/login", ValidationAuth.login, AuthController.login);
 routes.get(
   "/howIam",
   AuthMiddleware,
-  RedisMiddleware,
   CacheHowiam,
   AuthController.howIam
 );
