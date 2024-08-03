@@ -48,10 +48,8 @@ class AssetPool {
       }
 
       if (condition.contains) {
-        const pgArrayLiteral = condition.contains
-          .map((tag) => `'${tag}'::enum_assets_tags`)
-          .join(",");
-        conditions.push(`"${key}" && ARRAY[${pgArrayLiteral}]`);
+        conditions.push(`"${key}" && $${index}::enum_assets_tags[]`);
+        values.push(condition.contains);
         index++;
       }
 
