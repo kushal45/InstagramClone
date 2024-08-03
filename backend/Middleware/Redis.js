@@ -6,6 +6,7 @@ const REDIS_PORT = process.env.REDIS_PORT; // Config port of redis
 console.log("redis connection to be initiated");
 console.log("REDIS_PORT", REDIS_PORT);
 console.log("REDIS_HOST", process.env.REDIS_HOST);
+
 const client = redis.createClient({
   url: `redis://${process.env.REDIS_HOST || "redis"}:${
     process.env.REDIS_PORT || 6379
