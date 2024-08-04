@@ -154,12 +154,9 @@ scenarios:
     flow:
        - log: 'New virtual user running {{ userId }}'
        - get:
-            url: "/posts?userId={{ userId }}"
-            ifTrue: '{{ shouldRequestForPostComm }}'
+            url: "/posts"
             beforeRequest:
               - "readToken"
-              - "readUserIdFrmToken"
-              - "shouldSkipPostCommentScenario"
             headers:
                Authorization: "Bearer {{ loginToken }}"
 

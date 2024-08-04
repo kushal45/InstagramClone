@@ -50,13 +50,13 @@ async function deleteAllTablesData() {
   await client.connect();
 
   try {
-    const tables = ["users", "assets", "posts", "comments", "likes", "follows"];
+    const tables = ["users", "assets", "posts", "comments", "likes", "followers"];
     for (const table of tables) {
-      await client.query(`DELETE FROM ${table}`);
+      await client.query(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
     }
    console.log("All tables data deleted successfully.");
   } catch (err) {
-    //console.error("Error deleting tables data:", err);
+    console.error("Error deleting tables data:", err);
   } finally {
     await client.end();
   }

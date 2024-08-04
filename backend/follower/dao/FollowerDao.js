@@ -11,7 +11,8 @@ class FollowerDao {
       if (exists) {
         throw new Error('Already following this user.');
       }
-      return await Follower.create({ followerId, followingId });
+     // return await Follower.create({ followerId, followingId });
+      return await FollowerPool.insertFollower({followerId, followingId});
     } catch (error) {
       console.log(error);
       throw new Error(error.toString());

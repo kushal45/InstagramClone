@@ -29,6 +29,7 @@
     "jsonwebtoken": "^9.0.2",
     "kafkajs": "^2.2.4",
     "natural": "^7.1.0",
+    "openai": "^4.54.0",
     "pg": "^8.12.0",
     "redis": "^4.6.14",
     "sequelize": "^6.37.3",

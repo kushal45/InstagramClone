@@ -4,14 +4,19 @@ const PostService = require("../../post/services/PostService");
 
 class FeedService {
   static async fetch({ userTags, userId, redisClient }) {
-    const cacheKey = `feed:${userId}:${userTags.join(",")}`;
+    const cacheKey = `feed:${userId}:${(userTags != null ? userTags : []).join(
+      ","
+    )}`;
     const cachedData = await redisClient.hGetAll(cacheKey);
     //console.log("cached feedData", cachedData);
     if (Object.keys(cachedData).length > 0) {
       console.log("timestamp of cache", cachedData.timestamp);
       return JSON.parse(cachedData.data);
     }
-    const postWithTags = await PostService.listPostsByAttr({ tags: userTags },redisClient);
+    const postWithTags = await PostService.listPostsByAttr(
+      { tags: userTags },
+      redisClient
+    );
     const followings = await FollowerService.listFollowing(userId);
     //console.log("followings",followings);
     const followingIds = followings.map((following) => following.followingId);

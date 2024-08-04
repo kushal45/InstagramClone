@@ -1,6 +1,6 @@
 
-//const assetConsumer = require("./asset/util/assetConsumerGptStrat");
-const assetConsumer = require("./asset/util/assetConsumerGenNLPStrat");
+const assetConsumer = require("./asset/util/assetConsumerGptStrat");
+//const assetConsumer = require("./asset/util/assetConsumerGenNLPStrat");
 const consumerServices = require("./config");
 const topFollowerConsumer = require("./follower/util/topFollowerConsumer");
 const KafkaConsumer = require("./kafka/Consumer");
@@ -27,7 +27,8 @@ async function initializeConsumer(kafaConsumerInst) {
 
 async function processConsumerInfinitely(kafaConsumerInst){
   while (isRunnable) {
-   // console.log(process.env.CONSUMER_NAME);
+   //console.log(kafaConsumerInst);
+    console.log(process.env.CONSUMER_NAME);
     _fetchConsumer()[process.env.CONSUMER_NAME](kafaConsumerInst);
     const filePath = path.join(__dirname, 'example.txt');
     await touchFile(filePath);
