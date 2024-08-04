@@ -27,8 +27,6 @@ async function initializeConsumer(kafaConsumerInst) {
 
 async function processConsumerInfinitely(kafaConsumerInst){
   while (isRunnable) {
-   //console.log(kafaConsumerInst);
-    console.log(process.env.CONSUMER_NAME);
     _fetchConsumer()[process.env.CONSUMER_NAME](kafaConsumerInst);
     const filePath = path.join(__dirname, 'example.txt');
     await touchFile(filePath);

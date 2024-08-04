@@ -31,7 +31,8 @@ function extractArrayFromText(text) {
   if (!arrayStringMatch) {
     throw new Error("Array string not found in the text");
   }
-  const arrayString = arrayStringMatch[0];
+  let arrayString = arrayStringMatch[0];
+  arrayString = arrayString.replace(/'([^']*)'/g, '"$1"');
 
   // Step 3: Parse the array string into a JavaScript array
   const array = JSON.parse(arrayString);
