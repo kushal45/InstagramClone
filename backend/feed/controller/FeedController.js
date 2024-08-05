@@ -10,6 +10,7 @@
 const { validationResult } = require("express-validator");
 const FeedService = require("../service/FeedService");
 const { BadRequestError } = require("../../errors");
+const logger = require("../../logger/logger");
 
 class FeedController {
   // Get all feeds for a user
@@ -20,13 +21,13 @@ class FeedController {
         throw new BadRequestError(JSON.stringify(errors.array()));
       }
       const userTags = req.userTags;
-      console.log("userTags", userTags);
+      logger.debug("userTags", userTags);
       const userId = req.userId;
       const redisClient = req.redis;
       const feeds = await FeedService.fetch({ userTags, userId, redisClient });
       res.json(feeds);
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       next(error);
     }
   }
@@ -43,7 +44,7 @@ class FeedController {
       const sharedPost = await FeedService.share(postId, userId);
       res.status(201).send(sharedPost);
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       next(error);
     }
   }

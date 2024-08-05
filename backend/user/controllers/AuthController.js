@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const UserService = require("../services/UserService");
+const logger = require("../../logger/logger");
 
 module.exports = {
   async howIam(req, res,next) {
@@ -13,6 +14,7 @@ module.exports = {
   
       return res.json(user);
     } catch (error) {
+       logger.error(error);
        next(error)
     }
    
@@ -25,6 +27,7 @@ module.exports = {
       const result = await UserService.login(req.body.username, req.body.password);
       return res.status(200).json(result.body);
     } catch (error) {
+      logger.error(error);
       next(error);
     }
   },

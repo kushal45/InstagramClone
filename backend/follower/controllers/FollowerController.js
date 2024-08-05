@@ -1,4 +1,5 @@
 const FollowerService = require('../services/FollowerService');
+const logger = require('../../logger/logger');
 
 class FollowerController {
   // List followers of a user
@@ -8,7 +9,7 @@ class FollowerController {
       const followers=await FollowerService.listFollowers(req.params.userId,redisClient);
       res.json(followers);
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       next(error);
     }
   }
@@ -20,7 +21,7 @@ class FollowerController {
       const following = await FollowerService.listFollowing(req.params.userId,redisClient);
       res.status(200).json(following);
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       next(error);
     }
   }

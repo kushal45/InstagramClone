@@ -1,5 +1,7 @@
 const { validationResult } = require("express-validator");
 const  UserService  = require("../services/UserService");
+const { NotFoundError } = require("../../errors");
+const logger = require("../../logger/logger");
 
 module.exports = {
   async show(req, res,next) {
@@ -8,6 +10,7 @@ module.exports = {
       const result = await UserService.getUserProfile(username, req.userId);
       return res.status(200).send(result.body);
     } catch (error) {
+      logger.error(error);
       next(error);
     }
   },
@@ -22,6 +25,7 @@ module.exports = {
       const result = await UserService.registerUser(userData);
       return res.status(201).json(result.body);
     } catch (error) {
+     logger.error(error);
      next(error);
     }
   },
@@ -34,7 +38,7 @@ module.exports = {
       );
       res.status(200).json(response);
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       next(error);
     }
   },
@@ -51,6 +55,7 @@ module.exports = {
       );
       res.json(response);
     } catch (error) {
+      logger.error(error);
       next(error);
     }
   },

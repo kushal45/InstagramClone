@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const Utility = require("../utils/Utility");
 const  UserDAO  = require("../dao/UserDao");
 const { BadRequestError, NotFoundError } = require("../../errors");
+const logger = require("../../logger/logger");
 
 class UserService {
   static async getUserProfile(username, currentUserId) {
@@ -23,7 +24,7 @@ class UserService {
     // });
 
     let isProfile = user.id === currentUserId;
-
+    logger.debug("user profile", user, isProfile);
     return {
       body: {
         user,
@@ -46,6 +47,7 @@ class UserService {
     const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {
       expiresIn: 86400,
     });
+    logger.debug("token:", token);
 
     return { body: { token } };
   }
@@ -143,7 +145,7 @@ class UserService {
         new Set(profileData.tags),
         new Set(user.tags)
       );
-      console.log("tags", profileData.tags, deltaTagsSet);
+      logger.debug("tags", profileData.tags, deltaTagsSet);
       if (deltaTagsSet.size > 0) {
         updatedFields.tags = profileData.tags;
       }
@@ -154,7 +156,7 @@ class UserService {
         new Set(profileData.langPrefs),
         new Set(user.langPrefs)
       );
-      console.log("langPrefs", profileData.langPrefs, deltaLangPrefsSet);
+      logger.debug("langPrefs", profileData.langPrefs, deltaLangPrefsSet);
       if (deltaLangPrefsSet.size > 0) {
         updatedFields.langPrefs = profileData.langPrefs;
       }

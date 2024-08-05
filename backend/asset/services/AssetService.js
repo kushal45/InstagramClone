@@ -1,4 +1,5 @@
 const AssetDAO = require('../dao/AssetDao');
+const logger = require('../../logger/logger');
 
 class AssetService {
   // Create a new asset
@@ -23,6 +24,7 @@ class AssetService {
       });
 
       if (cachedAsset) {
+        logger.debug('Cache hit', cachedAsset);
         return cachedAsset;
       }
       const asset = await AssetDAO.findById(assetId);

@@ -1,6 +1,7 @@
 const { NotFoundError } = require("../../errors");
 const FollowerService = require("../../follower/services/FollowerService");
 const PostService = require("../../post/services/PostService");
+const logger = require("../../logger/logger");
 
 class FeedService {
   static async fetch({ userTags, userId, redisClient }) {
@@ -8,9 +9,8 @@ class FeedService {
       ","
     )}`;
     const cachedData = await redisClient.hGetAll(cacheKey);
-    //console.log("cached feedData", cachedData);
+    logger.debug("cached feedData", cachedData);
     if (Object.keys(cachedData).length > 0) {
-      console.log("timestamp of cache", cachedData.timestamp);
       return JSON.parse(cachedData.data);
     }
     const postWithTags = await PostService.listPostsByAttr(

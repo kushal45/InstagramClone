@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const PostService  = require("../services/PostService");
 const { BadRequestError } = require("../../errors");
+const logger = require("../../logger/logger");
 module.exports = {
   /**
    * Create a new post
@@ -16,6 +17,7 @@ module.exports = {
       const post = await PostService.createPost(req.body, req.userId);
       res.status(201).send({ message: "Post created successfully", post });
     } catch (error) {
+      logger.error(error);
       next(error);
     }
   },
@@ -33,7 +35,7 @@ module.exports = {
       const posts = await PostService.listPosts(userId,redisClient);
       res.status(200).send(posts);
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       next(error);
     }
   },
@@ -48,6 +50,7 @@ module.exports = {
       const post = await PostService.getPostById(req.params.id);
       return res.status(200).send(post);
     } catch (error) {
+      logger.error(error);  
       next(error);
     }
   },
@@ -63,6 +66,7 @@ module.exports = {
       const response = await PostService.updatePost(req.params.id, req.body);
       res.status(200).send(response);
     } catch (error) {
+      logger.error(error);
       next(error);
     }
   },
@@ -78,6 +82,7 @@ module.exports = {
       const response = await PostService.deletePost(req.params.id);
       res.status(204).send(response);
     } catch (error) {
+      logger.error(error);
       next(error);
     }
   },

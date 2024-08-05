@@ -1,4 +1,5 @@
 const pool = require("../../database/connectionPool");
+const logger = require("../../logger/logger");
  class PostPool {
     
     static async insertPost({ assetId, postId }) {
@@ -13,7 +14,7 @@ const pool = require("../../database/connectionPool");
           const res = await pool.query(query, values);
           return res.rows[0];
         } catch (error) {
-          console.error("Error inserting post:", error);
+          logger.error("Error inserting post:", error);
           throw error;
         }
       }
@@ -31,7 +32,7 @@ const pool = require("../../database/connectionPool");
           const res = await pool.query(query, values);
           return res.rows;
         } catch (error) {
-          console.error("Error fetching post by ID:", error);
+          logger.error("Error fetching post by ID:", error);
           throw error;
         }
       }
@@ -92,7 +93,7 @@ const pool = require("../../database/connectionPool");
           const res = await pool.query(query, values);
           return res.rows;
         } catch (error) {
-          console.error("Error fetching posts by attributes:", error);
+          logger.error("Error fetching posts by attributes:", error);
           throw error;
         }
       }

@@ -4,6 +4,7 @@ const { NotFoundError } = require("../../errors");
 const KafkaProducer = require("../../kafka/Producer");
 const httpContext = require("express-http-context");
 const PostPool = require("../models/PostPool");
+const logger = require("../../logger/logger");
 
 class PostService {
   static async createPost(postData, userId) {
@@ -119,7 +120,7 @@ class PostService {
       resolve(null);
     });
 
-    console.log("cachedPosts", cachedPosts);
+    logger.debug("cachedPosts", cachedPosts);
     if (cachedPosts) {
       return cachedPosts;
     }

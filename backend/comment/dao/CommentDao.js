@@ -1,4 +1,6 @@
 const { Comment, Asset } = require("../../models");
+const { NotFoundError } = require("../../errors");
+const logger = require("../../logger/logger");
 
 class CommentDao {
     static async create({ userId, postId, assetId  }) {
@@ -7,6 +9,7 @@ class CommentDao {
         postId,
         assetId,
       });
+      logger.debug(`Comment created with ID: ${comment.id}`);
       return comment;
     }
   

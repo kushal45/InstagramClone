@@ -1,4 +1,5 @@
 const LikeService = require("../services/LikeService");
+const logger = require("../../logger/logger");
 
 module.exports = {
    async show(req, res,next) {
@@ -6,6 +7,7 @@ module.exports = {
       const likes = await LikeService.getLikesByPostId(req.query.postId);
       return res.json(likes);
     } catch (err) {
+      logger.error(err);
       next(err)
     }
   },
@@ -14,6 +16,7 @@ module.exports = {
       const like = await LikeService.likePost(req.body.postId);
       return res.json(like);
     } catch (err) {
+      logger.error(err);
       next(err);
     }
   },
@@ -22,6 +25,7 @@ module.exports = {
       const like = await LikeService.unlikePost(req.body.postId);
       return res.json(like);
     } catch (err) {
+      logger.error(err);
       next(err);
     }
   },
@@ -30,6 +34,7 @@ module.exports = {
       const message = await LikeService.deleteLike(req.params.id);
       return res.status(200).json(message);
     } catch (err) {
+      logger.error(err);
       next(err)
     }
   },
