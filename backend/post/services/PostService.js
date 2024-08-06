@@ -1,9 +1,10 @@
-
-const assetConsumer = require("../../asset/util/assetConsumer");
+const crypto = require("crypto");
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
 const KafkaProducer = require("../../kafka/Producer");
-const emitEvent = require("../../kafka/Producer");
+const httpContext = require("express-http-context");
+const PostPool = require("../models/PostPool");
+const logger = require("../../logger/logger");
 
 class PostService {
   static async createPost(postData, userId) {
@@ -11,18 +12,22 @@ class PostService {
     if (!user) {
       throw new NotFoundError("User not found");
     }
-    const asset = await AssetDAO.create(postData);
+    let assetId = postData.assetId;
+    if (assetId == null) {
+      const asset = await AssetDAO.create(postData);
+      assetId = asset.id;
+      // Publish the event to Kafka
+      const topic = "assetCreated";
+      //await emitEvent(topic,asset);
+      const kafkaProducerInst = new KafkaProducer("producer-1");
+      const correlationId = httpContext.get("correlationId");
+      await kafkaProducerInst.produce(topic, asset, { correlationId });
+    }
     const post = await PostDAO.create({
       userId: user.id,
-      assetId: asset.id,
+      assetId,
     });
 
-    // Publish the event to Kafka
-    const topic="assetCreated";
-    //await emitEvent(topic,asset);
-    const kafkaProducerInst= new KafkaProducer("producer-1");
-    await kafkaProducerInst.produce(topic,asset);
-   // await assetConsumer(topic,"assetConsumerGroup");
     return post;
   }
 
@@ -35,6 +40,39 @@ class PostService {
     return post;
   }
 
+  static async listPostsByAttr(attr, redisClient) {
+    const attrHash = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(attr))
+      .digest("hex");
+    const cacheKey = `posts:${attrHash}`;
+
+    // Check if the data is in the cache
+    const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+      if (err) return reject(err);
+      if (data) return resolve(JSON.parse(data));
+      resolve(null);
+    });
+
+    if (cachedPosts) {
+      return cachedPosts;
+    }
+    let posts = [];
+    if (attr.hasOwnProperty("tags")) {
+      const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags||[]);
+      //posts = await PostDAO.listByAssets(assetIds);
+      posts = await PostPool.listPostsByAttributeList([
+        {
+          assetId: assetIds,
+        },
+      ]);
+    } else {
+      posts = [...posts, ...(await PostDAO.listByAttr(attr))];
+    }
+    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
+    return posts;
+  }
+
   static async updatePost(postId, updateData) {
     // Logic to update a post
     const post = await PostDAO.update(postId, updateData);
@@ -45,7 +83,7 @@ class PostService {
   }
 
   static async deletePost(postId) {
-    const post = await PostDao.getById(postId);
+    const post = await PostDAO.getById(postId);
     if (!post) {
       throw new NotFoundError("Post not found");
     }
@@ -66,13 +104,44 @@ class PostService {
     }
   }
 
-  static async listPosts(userId,{ page = 1, pageSize = 10 } = {}) {
+  static async listPosts(
+    userId,
+    redisClient,
+    { page = 1, pageSize = 10 } = {}
+  ) {
     const user = await UserDAO.findUserById(userId);
     if (!user) throw new NotFoundError("User not found");
     const skip = (page - 1) * pageSize;
-    const posts = await PostDAO.list(user.id, { offset: skip, limit: pageSize });
+    const cacheKey = `posts:${userId}:${page}:${pageSize}`;
+
+    const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+      if (err) return reject(err);
+      if (data) return resolve(JSON.parse(data));
+      resolve(null);
+    });
+
+    logger.debug("cachedPosts", cachedPosts);
+    if (cachedPosts) {
+      return cachedPosts;
+    }
+    const posts = await PostDAO.listByUsers([user.id], {
+      offset: skip,
+      limit: pageSize,
+    });
+    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
+    return posts;
+  }
+
+  static async listPostsByUserIds(userIds) {
+    const userList = await UserDAO.findUserList(userIds);
+    if (!userList) {
+      throw new NotFoundError("Users not found");
+    }
+    const filteredUserIds = userList.map((user) => user.id);
+    //console.log("filteredUserIds",filteredUserIds);
+    const posts = await PostDAO.listByUsers(filteredUserIds);
     return posts;
   }
 }
 
-module.exports =  PostService;
+module.exports = PostService;

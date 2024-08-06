@@ -1,49 +1,53 @@
-const { Follower, User } = require('../../models');
+const FollowerService = require('../services/FollowerService');
+const logger = require('../../logger/logger');
 
 class FollowerController {
   // List followers of a user
-  async listFollowers(req, res) {
+  static async listFollowers(req, res,next) {
     try {
-      const userId = req.params.userId;
-      const followers = await Follower.findAll({
-        where: { followingId: userId },
-        include: [{ model: User, as: 'FollowerDetails' }]
-      });
+      const redisClient = req.redis;
+      const followers=await FollowerService.listFollowers(req.params.userId,redisClient);
       res.json(followers);
     } catch (error) {
-      res.status(500).send(error.toString());
+      logger.error(error);
+      next(error);
     }
   }
 
   // List users that a specific user is following
-  async listFollowing(req, res) {
+  static async listFollowing(req, res,next) {
     try {
-      const userId = req.params.userId;
-      const following = await Follower.findAll({
-        where: { followerId: userId },
-        include: [{ model: User, as: 'FollowingDetails' }]
-      });
-      res.json(following);
+      const redisClient = req.redis;
+      const following = await FollowerService.listFollowing(req.params.userId,redisClient);
+      res.status(200).json(following);
     } catch (error) {
-      res.status(500).send(error.toString());
+      logger.error(error);
+      next(error);
     }
   }
 
   // Follow another user
-  async followUser(req, res) {
+  static async followUser(req, res,next) {
     try {
-      const { followingId } = req.body;
-      const followerId = req.userId;
-      const exists = await Follower.findOne({ where: { followerId, followingId } });
-      if (exists) {
-        return res.status(400).send('Already following this user.');
-      }
-      await Follower.create({ followerId, followingId });
+      const followingId = req.params.userId;
+      await FollowerService.followUser(req.userId, followingId);
       res.status(201).send('Followed successfully.');
     } catch (error) {
-      res.status(500).send(error.toString());
+      console.log(error);
+      next(error);
+    }
+  }
+
+  // Unfollow a user
+  static async unfollowUser(req, res,next) {
+    try {
+      const followingId = req.params.userId;
+      await FollowerService.unfollowUser(req.userId, followingId);
+      res.send('Unfollowed successfully.');
+    } catch (error) {
+      next(error);
     }
   }
 }
 
-module.exports = new FollowerController();
+module.exports = FollowerController;

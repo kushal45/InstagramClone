@@ -1,4 +1,4 @@
-const { PostDAO } = require("../../dao");
+const PostDAO  = require("../../post/dao/PostDao");
 const LikeDAO = require("../dao/LikeDao");
 const { NotFoundError } = require("../../errors");
 
@@ -25,7 +25,12 @@ class LikeService {
   }
 
   static async deleteLike(id) {
-   await LikeDAO.delete(id);
+    try {
+      await LikeDAO.delete(id);
+      return { message: "Like deleted successfully" };
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

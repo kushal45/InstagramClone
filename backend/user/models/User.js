@@ -46,14 +46,14 @@ class User extends Model {
     //   foreignKey: "user_id",
     //   as: "getComments"
     // });
-    // this.hasMany(models.Follow, {
-    //   foreignKey: "user_from",
-    //   as: "getFollows"
-    // });
-    // this.hasMany(models.Follow, {
-    //   foreignKey: "user_to",
-    //   as: "getFollowers"
-    // });
+    this.hasMany(models.Follower, {
+      foreignKey: "followerId",
+      as: "followerDetails"
+    });
+    this.hasMany(models.Follower, {
+      foreignKey: "followingId",
+      as: "followingDetails"
+    });
   }
 }
 

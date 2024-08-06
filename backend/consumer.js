@@ -1,9 +1,15 @@
-const assetConsumer = require("./asset/util/assetConsumer");
+
+const assetConsumer = require("./asset/util/assetConsumerGptStrat");
+//const assetConsumer = require("./asset/util/assetConsumerGenNLPStrat");
+const consumerServices = require("./config");
+const topFollowerConsumer = require("./follower/util/topFollowerConsumer");
 const KafkaConsumer = require("./kafka/Consumer");
 const fs = require('fs').promises;
 const path = require('path');
 
 let isRunnable = true;
+
+
 
 const kafaConsumerInst = new KafkaConsumer("consumer-1");
 initializeConsumer(kafaConsumerInst);
@@ -21,14 +27,18 @@ async function initializeConsumer(kafaConsumerInst) {
 
 async function processConsumerInfinitely(kafaConsumerInst){
   while (isRunnable) {
-    if (process.env.TOPIC === "assetCreated") {
-      await assetConsumer(kafaConsumerInst); // Ensure this is async or has some delay
-    }
-   
-   
+    _fetchConsumer()[process.env.CONSUMER_NAME](kafaConsumerInst);
     const filePath = path.join(__dirname, 'example.txt');
     await touchFile(filePath);
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Introduce a delay to prevent tight looping
+    // Introduce a delay to prevent tight looping
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+}
+
+function _fetchConsumer(){
+  return {
+    [consumerServices.ASSETCONSUMER]: assetConsumer,
+    [consumerServices.TOPFOLLOWERCONSUMER]: topFollowerConsumer
   }
 }
 
@@ -52,23 +62,3 @@ async function touchFile(filePath) {
     }
   }
 }
-
-// Handle interrupt signals
-const handleSignal = (signal) => {
-  console.log(`Received ${signal}. Gracefully shutting down.`);
-  isRunnable = false;
-};
-
-process.on("SIGINT", handleSignal);
-process.on("SIGTERM", handleSignal);
-
-process.on("uncaughtException", (error) => {
-  console.error(`Uncaught Exception: ${error.message}`);
-  handleSignal(error.name);
-});
-
-// Handling unhandled promise rejections
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  handleSignal(error.name);
-});

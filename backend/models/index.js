@@ -5,4 +5,5 @@ module.exports = {
     User: require("../user/models/User"),
     Comment: require("../comment/models/Comment"),
     Like: require("../like/models/Like"),
+    Follower: require("../follower/models/Follower"),
   };

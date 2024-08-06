@@ -1,5 +1,6 @@
+const { Op } = require("sequelize");
 const { Asset, Post } = require("../../models");
-
+const PostPool = require("../models/PostPool");
 
 class PostDao {
   static async create(postData) {
@@ -10,11 +11,9 @@ class PostDao {
     return post;
   }
 
-  static async  getById(postId) {
+  static async getById(postId) {
     const post = await Post.findByPk(postId, {
-      include: [
-        { model: Asset, as: "asset" },
-      ],
+      include: [{ model: Asset, as: "asset" }],
     });
     return post;
   }
@@ -34,15 +33,52 @@ class PostDao {
     return post;
   }
 
-  static async list(userId, { offset = 0, limit = 10 } = {}) {
+  static async listByUsers(userIds, { offset = 0, limit = 10 } = {}) {
+    // const posts = await Post.findAll({
+    //   where: {
+    //     userId: {
+    //       [Op.in]: userIds,
+    //     },
+    //   },
+    //   include: [{ model: Asset, as: "asset" }],
+    //   offset,
+    //   limit,
+    // });
+   // const posts = await PostPool.listPostsByUserids(userIds);
+      const posts = await PostPool.listPostsByAttributeList([{
+        userId: userIds
+      }]);
+    return posts;
+  }
+
+  static async listByAssets(assetIds) {
     const posts = await Post.findAll({
-      where: { userId },
+      where: {
+        assetId: {
+          [Op.in]: assetIds,
+        },
+      },
       include: [{ model: Asset, as: "asset" }],
-      offset,
-      limit,
+    });
+    return posts;
+  }
+
+  static async listByAttr(attr) {
+    const whereClause = {};
+
+    // Dynamically build the where clause based on the provided attributes
+    for (const key in attr) {
+      if (attr.hasOwnProperty(key)) {
+        whereClause[key] = attr[key];
+      }
+    }
+
+    const posts = await Post.findAll({
+      where: whereClause,
+      include: [{ model: Asset, as: "asset" }],
     });
     return posts;
   }
 }
 
-module.exports =  PostDao ;
+module.exports = PostDao;

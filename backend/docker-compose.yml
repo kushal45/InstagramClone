@@ -1,6 +1,11 @@
 volumes:
   postgres_data:  # Define a named volume for database persistence
-  
+  grafana-storage:
+  redis_data:
+
+networks:
+  metrics:
+    external: false 
 services:
   app:
     restart: on-failure
@@ -12,6 +17,8 @@ services:
       retries: 3
       start_period: 40s
     depends_on:
+      redis:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       kafka1: 
@@ -20,16 +27,34 @@ services:
          condition: service_healthy
       kafka3:
           condition: service_healthy
+      
     environment:
       NODE_ENV: development
+      ERROR_LOG_PATH:  "./logs/error.log"
+      COMBINED_LOG_PATH: "./logs/combined.log"
+      EXCEPTION_LOG_PATH: "./logs/exceptions.log"
       PORT: 3000
       MODE: server
+      TOP_USER_FOLLOWERLIST: 5
     ports:
       - "3000:3000"
     command: npm run dev
     volumes:
       - .:/app/
       - /app/node_modules
+  
+  redis:
+    image: "redis:alpine"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   assetconsumer:
     restart: on-failure
     build: .
@@ -46,16 +71,38 @@ services:
       #- kafka3
     environment:
       NODE_ENV: development
-      PORT: 3001
       MODE: consumer
       TOPIC: assetCreated
       GROUPID: assetConsumer
-    ports:
-      - "3001:3001"
+      CONSUMER_NAME: assetConsumer
     command: npm run dev
     volumes:
       - .:/app/
       - /app/node_modules
+  
+  followerconsumer:
+    restart: on-failure
+    build: .
+    healthcheck:
+      test: ["CMD-SHELL", "if [ $(( $(date +%s) - $(stat -c %Y /app/examples.txt) )) -gt 5000 ]; then exit 1; else exit 0; fi"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      MODE: consumer
+      TOPIC: followerCreated
+      GROUPID: followerConsumer
+      CONSUMER_NAME: followerConsumer
+    command: npm run dev
+    volumes:
+      - .:/app/
+      - /app/node_modules
+
   postgres:
     image: postgres:14
     healthcheck:
@@ -64,15 +111,27 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: abcd1234
       POSTGRES_DB: instagram
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist data
-      - ./backend/init-db.sql:/docker-entrypoint-initdb.d  # init script for db setup
-    
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    environment:
+      DATABASE_URL: postgres://postgres:abcd1234@postgres:5432/instagram
+    ports:
+      - "6433:6432"
+    depends_on:
+      - postgres
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     healthcheck:

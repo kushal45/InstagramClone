@@ -2,20 +2,30 @@ config:
   target: "http://localhost:3000"
   phases:
     - duration: 30 # Run the test for 100 seconds
-      arrivalRate: 5  # New users arrive at a rate of 50 per second
+      arrivalRate: 10  # New users arrive at a rate of 50 per second
   plugins:
     ensure: {}
     apdex: {}
     metrics-by-endpoint: {}
+    # publish-metrics:
+    #   - type: influxdb-statsd # https://artillery.io/docs/guides/plugins/plugin-publish-metrics.html#InfluxDB-Telegraf
+    #     tags:
+    #       - "testId:weather-forecast"
+    #       - "reporterType:influxdb-statsd"
+    #     event:
+    #       priority: low
   processor: "./processor.js"
-  hooks:
-   beforeRequest: ["logRequest"]
-   afterResponse: ["logResponse"]
+before :
+  flow:
+   - log : "Starting the test"
+   - function: "initialize"
 scenarios:
-  - name: "User Registration and Login Flow"
+  - name: "User Registration and Login Flow update user profile"
     flow:
       - post: # User Registration
           url: "/user/register"
+          beforeRequest:
+             - 'logRequest'
           json:
             name: "User {{ $uuid }}"
             email: "user_{{ $uuid }}@gmail.com"
@@ -32,49 +42,132 @@ scenarios:
             as: "loginToken" # Save it as loginToken
       - function: "saveToken" # Call the saveToken function defined in processors.js
       - think: 1
-
-  - name: "Create posts"
+      #- log: "User token for user update is {{ loginToken }}"
+      - put: # Update User Profile
+          url: "/user/update"
+          beforeRequest:
+             - "fetchUserProfileDataToUpdate"
+          headers:
+            Authorization: "Bearer {{ loginToken }}"
+          json:
+            tags: "{{ tags }}"
+            langPrefs: "{{ langPrefs }}"
     
+  - name: "Follow Users"
     flow:
-      - function: "readToken"
-      - function: "loadPostData"
+     
+      - function: "readUsersToFollow"
+     #- log: 'Users to follow {{ usersToFollow }}'
       - loop:
+        - parallel:
+        #- log: "Following user: {{ $loopElement }}"
           - post:
-              url: "/posts"
+              url: "/users/{{ $loopElement }}/follow"
+              beforeRequest:
+                - "readToken" 
               headers:
                 Authorization: "Bearer {{ loginToken }}"
-              json:
-                text: "{{ postData }}"
-                imageUrl: "https://source.unsplash.com/random/800x600"
-                videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
-              capture:
-                json: "$.post.id" # Capture the postId from the response
-                as: "postId" # Save it as postId
-          - function: "savePostId"
-          - log: 'post id saved  {{ postId }}'
-          - think: 2
-        count: 5 # Simulate creating 5 posts
+          - think: 3   
+        over: "usersToFollow" 
+      - think: 2
+      - get:
+          url: "/feeds"
+          beforeRequest:
+            - "readToken"
+          headers:
+            Authorization: "Bearer {{ loginToken }}"
+      - think: 2
+      - loop:
+        - parallel:
+            - log: "Creating post {{ postData }}"
+            - post:
+                url: "/posts"
+                beforeRequest:
+                  - "readToken"
+                  - "loadPostData"
+                afterResponse: "savePostId"
+                headers:
+                  Authorization: "Bearer {{ loginToken }}"
+                json:
+                  text: "{{ postData }}"
+                  imageUrl: "https://source.unsplash.com/random/800x600"
+                  videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
+                capture:
+                  json: "$.post.id" # Capture the postId from the response
+                  as: "postId" # Save it as postId
+            #- log: 'post id saved  {{ postId }}'
+            - think: 2
+        count: 5 
+      - post:
+          url: "/feeds/share"
+          beforeRequest:
+            - "readToken"
+            - "loadPostId"
+          json:
+            postId: "{{ postId }}"
+          headers:
+            Authorization: "Bearer {{ loginToken }}"
+                 
+  # - name: "Unfollow Users"
+  #   flow:
+  #     - function: "readUsersToFollow"
+  #     #- log: 'Users to unfollow {{ usersToFollow }}'
+  #     - loop:
+  #         #- log: "Unfollowing user: {{ $loopElement }}"
+  #        - parallel:
+  #           - delete:
+  #               url: "/users/{{ $loopElement }}/unfollow"
+  #               beforeRequest:
+  #                 - "readToken" 
+  #               headers:
+  #                 Authorization: "Bearer {{ loginToken }}"
+  #           - think: 3   
+  #       over: "usersToFollow"
+
+  # - name: "Create posts"
+  #   flow:
+  #     - loop:
+  #       - parallel:
+  #           - log: "Creating post {{ postData }}"
+  #           - post:
+  #               url: "/posts"
+  #               beforeRequest:
+  #                 - "readToken"
+  #                 - "loadPostData"
+  #               afterResponse: "savePostId"
+  #               headers:
+  #                 Authorization: "Bearer {{ loginToken }}"
+  #               json:
+  #                 text: "{{ postData }}"
+  #                 imageUrl: "https://source.unsplash.com/random/800x600"
+  #                 videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
+  #               capture:
+  #                 json: "$.post.id" # Capture the postId from the response
+  #                 as: "postId" # Save it as postId
+  #           #- log: 'post id saved  {{ postId }}'
+  #           - think: 2
+  #       count: 5 # Simulate creating 5 posts
       
   
 
   - name: "Get all posts"
     flow:
-       - function: "readToken"
-       - function: "readUserIdFrmToken"
        - log: 'New virtual user running {{ userId }}'
        - get:
-            url: "/posts?userId={{ userId }}"
+            url: "/posts"
+            beforeRequest:
+              - "readToken"
             headers:
                Authorization: "Bearer {{ loginToken }}"
 
   - name: "Create Comments on a Post"
     flow:
-      - function: "readToken"
-      - function: "loadPostData"
-      - function: "loadPostId"
-      - log: 'post id given  {{ postId }}'
       - loop:
          - post:
+            beforeRequest:
+              - "readToken"
+              - "loadPostData"
+              - "loadPostId"
             url: "/comments"
             headers:
              Authorization: "Bearer {{ loginToken }}"
@@ -82,3 +175,6 @@ scenarios:
               text: "{{ postData }}"
               postId: "{{ postId }}" # Use the postId captured from the previous request
         count: 5 # Simulate creating 5 comments
+   
+
+        

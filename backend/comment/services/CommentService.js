@@ -1,5 +1,6 @@
 const { NotFoundError } = require('../../errors');
 const { UserDAO, AssetDAO, CommentDAO,PostDAO } = require("../../dao");
+const logger = require('../../logger/logger');
 
 
 class CommentService {
@@ -8,7 +9,7 @@ class CommentService {
       const user = await UserDAO.findUserById(userId);
       if (!user)throw new NotFoundError("User not found");
       
-      console.log("post id to fetch",postId);
+      logger.debug("post id to fetch",postId);
       const post = await PostDAO.getById(postId);
       if (!post) throw new NotFoundError("Post not found");
       const tags = ["other"];

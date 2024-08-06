@@ -1,11 +1,16 @@
+const { Op } = require('sequelize');
 const { NotFoundError } = require('../../errors');
 const  Asset  = require('../model/Asset'); 
+const AssetPool = require('../model/AssetPool');
+const logger = require('../../logger/logger');
 
 class AssetDAO {
   // Method to create a new asset
   static async create({imageUrl, videoUrl, text}) {
     try {
-      const asset = await Asset.create({imageUrl, videoUrl, text });
+      //const asset = await Asset.create({imageUrl, videoUrl, text });
+      const asset = await AssetPool.insertAsset({imageUrl, videoUrl, text });
+      logger.info(`Asset created with ID: ${asset.id}`);
       return asset;
     } catch (error) {
       throw error;
@@ -15,12 +20,41 @@ class AssetDAO {
   
   static async findById(id) {
     try {
-      const asset = await Asset.findByPk(id);
+      //const asset = await Asset.findByPk(id);
+      const asset = await AssetPool.findAssetById(id);
+      logger.debug(`Asset found with asset`, asset);
       if (!asset) {
         throw new NotFoundError('Asset not found');
       }
       return asset;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  static async findAssetIdsByTag(tags){
+    try{
+      // const assets=await Asset.findAll({
+      //   where: {
+      //     tags: {
+      //       [Op.contains]: tags
+      //     }
+      //   }
+      // });
+      const assets=await AssetPool.findAll({
+        where: {
+          tags: {
+            contains: tags
+          }
+        }
+      });
+      let assetIds=[];
+      if (assets.length>0){
+        assetIds=assets.map(asset=>asset.id);
+      }
+      logger.debug(`Asset found with assetIds`, assetIds);
+      return assetIds;
+    }catch(error){
       throw error;
     }
   }

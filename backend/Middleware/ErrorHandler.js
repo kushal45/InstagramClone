@@ -11,7 +11,7 @@ const errorHandler = (err, req, res, next) => {
   if (errorResponse) {
     return res.status(errorResponse.statusCode).send({ message: err.message || errorResponse.message });
   } else {
-    return res.status(500).send({ message: "An unexpected error occurred" });
+    return res.status(500).send({ message: "Internal server error" });
   }
 };
 

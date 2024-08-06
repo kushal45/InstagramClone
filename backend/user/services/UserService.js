@@ -1,9 +1,9 @@
-const { validationResult } = require("express-validator");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Utility = require("../utils/Utility");
 const  UserDAO  = require("../dao/UserDao");
 const { BadRequestError, NotFoundError } = require("../../errors");
+const logger = require("../../logger/logger");
 
 class UserService {
   static async getUserProfile(username, currentUserId) {
@@ -16,53 +16,45 @@ class UserService {
 
     if (!user) throw new NotFoundError("User not found ");
 
-    const count_follows = await Follow.count({
-      where: { followerId: user.id },
-    });
-    const count_followers = await Follow.count({
-      where: { followingId: user.id },
-    });
+    // const count_follows = await Follow.count({
+    //   where: { followerId: user.id },
+    // });
+    // const count_followers = await Follow.count({
+    //   where: { followingId: user.id },
+    // });
 
     let isProfile = user.id === currentUserId;
-
+    logger.debug("user profile", user, isProfile);
     return {
       body: {
         user,
-        count_follows,
-        count_followers,
+        //count_follows,
+        //count_followers,
         isProfile,
       },
     };
   }
 
-  static async login(req) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) throw new NotFoundError(errors.array());
-
-    const { username, password } = req.body;
+  static async login(username, password) {
     let user = await UserDAO.findUserByQuery({ username });
     if (!user) throw new NotFoundError("User not found");
-
     const verifyPass = await bcryptjs.compare(password, user.password);
     if (!verifyPass)
       throw new NotFoundError("Verification Password not matched");
 
     //JWT
-    const payload = { id: user.id, username: user.username };
+    const payload = { id: user.id, username: user.username, tags: user.tags };
     const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {
       expiresIn: 86400,
     });
+    logger.debug("token:", token);
 
     return { body: { token } };
   }
 
-  static async registerUser(req) {
-    const { name, email, username, password } = req.body;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) throw new NotFoundError(JSON.stringify(errors.array()));
-
+  static async registerUser({name, email, username, password}) {
     let user = await UserDAO.findUserByEmailOrUsername(email, username);
-
+    console.log("existing user", user);
     if (user) {
       if (user.email === email) {
         throw new BadRequestError("email already exists");
@@ -83,7 +75,7 @@ class UserService {
     });
 
     // JWT
-    const payload = { id: user.id, username: user.username };
+    const payload = { id: user.id, username: user.username, tags: user.tags };
     const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {
       expiresIn: 86400,
     });
@@ -141,7 +133,7 @@ class UserService {
   }
 
   static async updateUserProfile(userId, profileData) {
-    const user = await UserDAO.findByPk(userId);
+    const user = await UserDAO.findUserById(userId);
     if (!user) {
       throw new NotFoundError("User not found");
     }
@@ -153,7 +145,7 @@ class UserService {
         new Set(profileData.tags),
         new Set(user.tags)
       );
-      console.log("tags", profileData.tags, deltaTagsSet);
+      logger.debug("tags", profileData.tags, deltaTagsSet);
       if (deltaTagsSet.size > 0) {
         updatedFields.tags = profileData.tags;
       }
@@ -164,7 +156,7 @@ class UserService {
         new Set(profileData.langPrefs),
         new Set(user.langPrefs)
       );
-      console.log("langPrefs", profileData.langPrefs, deltaLangPrefsSet);
+      logger.debug("langPrefs", profileData.langPrefs, deltaLangPrefsSet);
       if (deltaLangPrefsSet.size > 0) {
         updatedFields.langPrefs = profileData.langPrefs;
       }
@@ -174,23 +166,23 @@ class UserService {
       throw new BadRequestError("No fields to update");
     }
 
-    await UserDAO.updateUser(userId, updatedFields);
+    return await UserDAO.updateUser(userId, updatedFields);
   }
 
   static async updateUser(userId, updateData) {
-    const user = await User.findByPk(userId);
+    const user = await UserDAO.findUserById(userId);
     if (!user) {
       throw new NotFoundError("User not found.");
     }
     if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 8);
+      updateData.password = await bcryptjs.hash(updateData.password, 8);
     }
     await user.update(updateData);
     return user;
   }
 
   static async deleteUser(userId) {
-    const user = await User.findByPk(userId);
+    const user = await UserDAO.findUserById(userId);
     if (!user) {
       throw new NotFoundError("User not found.");
     }

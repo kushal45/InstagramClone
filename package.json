@@ -1,5 +1,11 @@
 {
   "dependencies": {
-    "kafkajs": "^2.2.4"
+    "fs-extra": "^11.2.0",
+    "kafkajs": "^2.2.4",
+    "winston3-logstash-transport": "^1.2.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }

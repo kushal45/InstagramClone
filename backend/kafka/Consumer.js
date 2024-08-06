@@ -4,6 +4,7 @@ require("dotenv").config();
 class KafkaConsumer {
   constructor(clientId) {
     this.kafkaBrokers = process.env.KAFKA_BROKERS.split(",");
+    this.isConsumerRunning = false;
     this.kafka = new Kafka({
       clientId,
       brokers: ["kafka1:9092"],
@@ -21,11 +22,18 @@ class KafkaConsumer {
     console.log(`Successfully subscribed to ${topic}`);
   }
 
-  async run(handler) {
+  async processMessage(handler) {
+    if (this.isConsumerRunning) {
+     // console.warn("Consumer is already running");
+      return;
+    }
+
+    this.isConsumerRunning = true;
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
-          // Attempt to process the message
+          const correlationId = message.headers['correlation-id'] ? message.headers['correlation-id'].toString() : null;
+          console.log(`Received message: ${message.offset} with correlation ID: ${correlationId}`);
           const eventData = JSON.parse(message.value.toString());
           await handler(eventData);
         } catch (error) {
