@@ -30,6 +30,9 @@ services:
       
     environment:
       NODE_ENV: development
+      ERROR_LOG_PATH:  "./logs/error.log"
+      COMBINED_LOG_PATH: "./logs/combined.log"
+      EXCEPTION_LOG_PATH: "./logs/exceptions.log"
       PORT: 3000
       MODE: server
       TOP_USER_FOLLOWERLIST: 5

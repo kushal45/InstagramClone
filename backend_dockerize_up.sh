@@ -1,7 +1,7 @@
 cd backend
 if docker ps -a | grep -q 'backend'; then
-    docker stop backend
-    docker rm backend
+    docker stop backend-*
+    docker rm backend-*
     docker volume prune
 fi
 docker image prune -f
@@ -15,6 +15,6 @@ else
 fi
 
 #DEBUG=1 docker-compose up -d --remove-orphans --force-recreate
-docker-compose -f docker-compose.yml -f docker-compose-inflx-grafana-telegraf.yml up  -d --build
+docker-compose -f docker-compose.yml -f docker-compose-inflx-grafana.yml -f docker-compose-elk.yml up  -d --build
 node run-migrations.js
 
