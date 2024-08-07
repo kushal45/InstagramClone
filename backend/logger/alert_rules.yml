@@ -1,0 +1,29 @@
+groups:
+  - name: http_response_alerts
+    rules:
+      - alert: HighHttpResponseDuration
+        expr: http_response_duration_seconds_bucket{le="1.0"} > 0.2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP Response Duration"
+          description: "More than 20% of HTTP responses are taking longer than 1 second."
+      - alert: HighHttpRequestDuration
+        expr: http_request_duration_seconds_bucket{le="0.5"} > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP Request Duration"
+          description: "More than 10% of HTTP requests are taking longer than 0.5 seconds."
+  - name: high_request_rate_alerts
+    rules:
+      - alert: HighRequestRate
+        expr: rate(http_requests_total[1m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High rate of HTTP requests"
+          description: "The rate of HTTP requests has exceeded 120 requests per minute over the last 1 minute."

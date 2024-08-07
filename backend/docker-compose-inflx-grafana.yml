@@ -4,6 +4,8 @@ services:
   influxdb:
     image: influxdb:2.0
     restart: always
+    networks:
+      - elk
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
@@ -26,6 +28,8 @@ services:
   grafana:
     image: grafana/grafana:latest
     restart: always
+    networks:
+      - elk
     ports:
       - "3002:3000"
     environment:
@@ -46,3 +50,9 @@ volumes:
   influxdb2config:
   influxdb2data:
   grafana-storage:
+
+networks:
+  elk:
+    driver: bridge
+  default:
+    driver: bridge

@@ -121,14 +121,15 @@ class PostService {
     });
 
     logger.debug("cachedPosts", cachedPosts);
-    if (cachedPosts) {
-      return cachedPosts;
-    }
+    // if (cachedPosts) {
+    //   return cachedPosts;
+    // }
+    
     const posts = await PostDAO.listByUsers([user.id], {
       offset: skip,
       limit: pageSize,
     });
-    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
+    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 10);
     return posts;
   }
 

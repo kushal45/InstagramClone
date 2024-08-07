@@ -8,6 +8,7 @@ const errorHandler = require("./middleware/ErrorHandler");
 const correlationIdMiddleware = require("./middleware/CorrelationIdHandler");
 const metricsMiddleware = require("./middleware/MetricsMiddleWare");
 const RedisMiddleware = require("./middleware/Redis");
+const { prometheusMiddleware, metricsEndpoint } = require('./middleware/PrometheusMiddleWare');
 const httpContext = require('express-http-context');
 
 const PORT = process.env.PORT || 3000;
@@ -30,7 +31,9 @@ app.use(
     "/files",
     express.static(path.resolve(__dirname, "..", "tmp", "uploads"))
 );
+app.use(prometheusMiddleware);
 app.use(routes);
 app.use(errorHandler);
+app.use(metricsEndpoint);
 app.listen(PORT);
 console.log(`Server running on port ${PORT}`);

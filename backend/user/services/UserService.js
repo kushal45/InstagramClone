@@ -41,7 +41,12 @@ class UserService {
     const verifyPass = await bcryptjs.compare(password, user.password);
     if (!verifyPass)
       throw new NotFoundError("Verification Password not matched");
-
+    const sleep = (ms) => {
+      return new Promise(resolve => setTimeout(resolve, ms));
+  };
+  
+  // Usage in an async function
+  await sleep(5000);
     //JWT
     const payload = { id: user.id, username: user.username, tags: user.tags };
     const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {

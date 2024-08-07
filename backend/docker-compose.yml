@@ -4,8 +4,8 @@ volumes:
   redis_data:
 
 networks:
-  metrics:
-    external: false 
+  elk:
+    driver: bridge
 services:
   app:
     restart: on-failure
@@ -38,10 +38,31 @@ services:
       TOP_USER_FOLLOWERLIST: 5
     ports:
       - "3000:3000"
+    networks:
+      - elk
     command: npm run dev
     volumes:
       - .:/app/
       - /app/node_modules
+  
+  prometheus:
+    image: prom/prometheus
+    depends_on:
+     - app
+    networks:
+      - elk 
+    
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://app:3000/health || exit 1"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - ./logger/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./logger/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    ports:
+      - "9090:9090"
   
   redis:
     image: "redis:alpine"
@@ -50,6 +71,8 @@ services:
       interval: 20s
       timeout: 5s
       retries: 5
+    networks:
+      - elk
     ports:
       - "6379:6379"
     volumes:
@@ -75,6 +98,8 @@ services:
       TOPIC: assetCreated
       GROUPID: assetConsumer
       CONSUMER_NAME: assetConsumer
+    networks:
+      - elk
     command: npm run dev
     volumes:
       - .:/app/
@@ -92,6 +117,8 @@ services:
     depends_on:
       app:
         condition: service_healthy
+    networks:
+      - elk
     environment:
       NODE_ENV: development
       MODE: consumer
@@ -116,6 +143,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: abcd1234
       POSTGRES_DB: instagram
+    networks:
+      - elk
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
@@ -127,6 +156,8 @@ services:
       - "6433:6432"
     depends_on:
       - postgres
+    networks:
+      - elk
     volumes:
       - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
       - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
@@ -139,6 +170,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - elk
     ports:
       - "2181:2181"
     environment:
@@ -152,6 +185,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - elk
     ports:
       #- "9092:9092"
       - "9093:9093"
@@ -181,6 +216,8 @@ services:
     ports:
       - "9094:9094"
       - "9095:9095"
+    networks:
+      - elk
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -200,6 +237,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - elk
     ports:
       - "9096:9096"
       - "9097:9097"
@@ -224,6 +263,8 @@ services:
         condition: service_healthy
       kafka3:
         condition: service_healthy
+    networks:
+      - elk
     ports:
       - "9000:9000"
     environment:
