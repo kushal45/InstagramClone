@@ -2,6 +2,7 @@ volumes:
   postgres_data:  # Define a named volume for database persistence
   grafana-storage:
   redis_data:
+  alertmanager_data:
 
 networks:
   elk:
@@ -63,6 +64,18 @@ services:
       - ./logger/alert_rules.yml:/etc/prometheus/alert_rules.yml
     ports:
       - "9090:9090"
+  
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes:
+      - alertmanager_data:/alertmanager
+      - ./alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    ports:
+      - "9089:9093"
+    networks:
+      - elk
   
   redis:
     image: "redis:alpine"
@@ -129,6 +142,60 @@ services:
     volumes:
       - .:/app/
       - /app/node_modules
+  
+  dlqassetconsumer:
+      restart: on-failure
+      build: .
+      healthcheck:
+        test: ["CMD-SHELL", "if [ $(( $(date +%s) - $(stat -c %Y /app/examples.txt) )) -gt 5000 ]; then exit 1; else exit 0; fi"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 10s
+      depends_on:
+        app:
+          condition: service_healthy
+        #- kafka2
+        #- kafka3
+      environment:
+        NODE_ENV: development
+        MODE: consumer
+        TOPIC: dlQAssetCreated
+        GROUPID: dlqAssetConsumer
+        CONSUMER_NAME: dlqAssetConsumer
+      networks:
+        - elk
+      command: npm run dev
+      volumes:
+        - .:/app/
+        - /app/node_modules
+  
+  dlqfollowerconsumer:
+      restart: on-failure
+      build: .
+      healthcheck:
+        test: ["CMD-SHELL", "if [ $(( $(date +%s) - $(stat -c %Y /app/examples.txt) )) -gt 5000 ]; then exit 1; else exit 0; fi"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 10s
+      depends_on:
+        app:
+          condition: service_healthy
+        #- kafka2
+        #- kafka3
+      environment:
+        NODE_ENV: development
+        MODE: consumer
+        TOPIC: dlQFollowerCreated
+        GROUPID: dlqFollowerConsumer
+        CONSUMER_NAME: dlqFollowerConsumer
+      networks:
+        - elk
+      command: npm run dev
+      volumes:
+        - .:/app/
+        - /app/node_modules
 
   postgres:
     image: postgres:14

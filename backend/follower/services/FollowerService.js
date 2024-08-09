@@ -40,11 +40,19 @@ class FollowerService {
   static async followUser(followerId, followingId) {
     try {
       const createdFollower = await FollowerDao.addFollower(followerId, followingId)
-      const kafkaProducer = new KafkaProducer();
+      const kafkaProducer = new KafkaProducer("producer-2");
       const correlationId= httpContext.get("correlationId");
       await kafkaProducer.produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST}, { correlationId });
       return createdFollower;
     } catch (error) {
+      const dlqTopic = "dlQFollowerCreated"; 
+      const kafkaProducerInst = new KafkaProducer("dlQProducer2");
+      const correlationId = httpContext.get("correlationId");
+      await kafkaProducerInst.produce(
+        dlqTopic,
+        { message: error.message },
+        { correlationId }
+      );
       throw error;
     }
   }

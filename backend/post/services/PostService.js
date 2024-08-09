@@ -8,27 +8,39 @@ const logger = require("../../logger/logger");
 
 class PostService {
   static async createPost(postData, userId) {
-    const user = await UserDAO.findUserById(userId);
-    if (!user) {
-      throw new NotFoundError("User not found");
-    }
-    let assetId = postData.assetId;
-    if (assetId == null) {
-      const asset = await AssetDAO.create(postData);
-      assetId = asset.id;
-      // Publish the event to Kafka
-      const topic = "assetCreated";
-      //await emitEvent(topic,asset);
-      const kafkaProducerInst = new KafkaProducer("producer-1");
-      const correlationId = httpContext.get("correlationId");
-      await kafkaProducerInst.produce(topic, asset, { correlationId });
-    }
-    const post = await PostDAO.create({
-      userId: user.id,
-      assetId,
-    });
+    try {
+      const user = await UserDAO.findUserById(userId);
+      if (!user) {
+        throw new NotFoundError("User not found");
+      }
+      let assetId = postData.assetId;
+      if (assetId == null) {
+        const asset = await AssetDAO.create(postData);
+        assetId = asset.id;
+        // Publish the event to Kafka
+        const topic = "assetCreated";
+        //await emitEvent(topic,asset);
+        const kafkaProducerInst = new KafkaProducer("producer-1");
+        const correlationId = httpContext.get("correlationId");
+        await kafkaProducerInst.produce(topic, asset, { correlationId });
+      }
+      const post = await PostDAO.create({
+        userId: user.id,
+        assetId,
+      });
 
-    return post;
+      return post;
+    } catch (error) {
+      const dlqTopic = "dlQAssetCreated"; 
+      const kafkaProducerInst = new KafkaProducer("dlQProducer1");
+      const correlationId = httpContext.get("correlationId");
+      await kafkaProducerInst.produce(
+        dlqTopic,
+        { message: error.message },
+        { correlationId }
+      );
+      throw error;
+    }
   }
 
   static async getPostById(postId) {
@@ -59,7 +71,7 @@ class PostService {
     }
     let posts = [];
     if (attr.hasOwnProperty("tags")) {
-      const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags||[]);
+      const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags || []);
       //posts = await PostDAO.listByAssets(assetIds);
       posts = await PostPool.listPostsByAttributeList([
         {
@@ -124,7 +136,7 @@ class PostService {
     // if (cachedPosts) {
     //   return cachedPosts;
     // }
-    
+
     const posts = await PostDAO.listByUsers([user.id], {
       offset: skip,
       limit: pageSize,

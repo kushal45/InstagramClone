@@ -1,7 +1,22 @@
 
 const assetConsumer = require("./asset/util/assetConsumerGptStrat");
+
+process.on('uncaughtException', (err) => {
+  console.error('There was an uncaught error', err);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
+
+// Add event listener for unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
+
 //const assetConsumer = require("./asset/util/assetConsumerGenNLPStrat");
 const consumerServices = require("./config");
+const failureFollowerConsumer = require("./follower/util/failureFollowerConsumer");
 const topFollowerConsumer = require("./follower/util/topFollowerConsumer");
 const KafkaConsumer = require("./kafka/Consumer");
 const fs = require('fs').promises;
@@ -38,7 +53,8 @@ async function processConsumerInfinitely(kafaConsumerInst){
 function _fetchConsumer(){
   return {
     [consumerServices.ASSETCONSUMER]: assetConsumer,
-    [consumerServices.TOPFOLLOWERCONSUMER]: topFollowerConsumer
+    [consumerServices.TOPFOLLOWERCONSUMER]: topFollowerConsumer,
+    [consumerServices.DQLFOLLOWERCONSUMER]: failureFollowerConsumer
   }
 }
 
@@ -62,3 +78,5 @@ async function touchFile(filePath) {
     }
   }
 }
+
+
