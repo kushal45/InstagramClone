@@ -214,7 +214,9 @@ services:
       - elk
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist data
+      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf # custom config
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
+    command: ["postgres", "-c", "wal_level=logical"]
   pgbouncer:
     image: edoburu/pgbouncer:latest
     environment:
@@ -339,3 +341,27 @@ services:
       #KAFKA_BROKERCONNECT: "host.docker.internal:29092"
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
+  connector:
+    image: debezium/connect:latest
+    ports:
+      - "8084:8083"
+    networks:
+      - elk
+    environment:
+      BOOTSTRAP_SERVERS:  "host.docker.internal:29092,host.docker.internal:9095,host.docker.internal:9097"
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_config
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_status
+      KEY_CONVERTER_SCHEMAS_ENABLE: false
+      VALUE_CONVERTER_SCHEMAS_ENABLE: false
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_PLUGIN_PATH: /kafka/connect
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3

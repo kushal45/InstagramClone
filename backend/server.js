@@ -8,32 +8,53 @@ const errorHandler = require("./middleware/ErrorHandler");
 const correlationIdMiddleware = require("./middleware/CorrelationIdHandler");
 const metricsMiddleware = require("./middleware/MetricsMiddleWare");
 const RedisMiddleware = require("./middleware/Redis");
-const { prometheusMiddleware, metricsEndpoint } = require('./middleware/PrometheusMiddleWare');
-const httpContext = require('express-http-context');
+const {
+  prometheusMiddleware,
+  metricsEndpoint,
+} = require("./middleware/PrometheusMiddleWare");
+const httpContext = require("express-http-context");
+const configureDebeziumConnector = require("./database/confDebeziumConnector");
+
+process.on("uncaughtException", (err) => {
+  console.error("There was an uncaught error", err);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
+
+// Add event listener for unhandled promise rejections
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
 
 const PORT = process.env.PORT || 3000;
 
-// Use httpContext middleware
-app.use(metricsMiddleware);
-app.use(RedisMiddleware);
-app.use(httpContext.middleware);
+try {
+  // Use httpContext middleware
+  app.use(metricsMiddleware);
+  app.use(RedisMiddleware);
+  app.use(httpContext.middleware);
 
-// Use correlation ID middleware
-app.use(correlationIdMiddleware);
-app.use(
+  // Use correlation ID middleware
+  app.use(correlationIdMiddleware);
+  app.use(
     cors({ origin: [process.env.CORS_ORIGIN, process.env.CORS_ORIGIN_IP] })
-);
+  );
 
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(
     "/files",
     express.static(path.resolve(__dirname, "..", "tmp", "uploads"))
-);
-app.use(prometheusMiddleware);
-app.use(routes);
-app.use(errorHandler);
-app.use(metricsEndpoint);
-app.listen(PORT);
-console.log(`Server running on port ${PORT}`);
+  );
+  app.use(prometheusMiddleware);
+  app.use(routes);
+  app.use(errorHandler);
+  app.use(metricsEndpoint);
+  configureDebeziumConnector().catch(console.error);
+  app.listen(PORT);
+  console.log(`Server running on port ${PORT}`);
+} catch (error) {
+  console.error("server error:", error);
+}
