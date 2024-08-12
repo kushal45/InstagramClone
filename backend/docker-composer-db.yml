@@ -1,0 +1,71 @@
+version: '3.8'
+
+volumes:
+  postgres_data:
+  mongo_data:
+  mongo_config:
+
+
+services:
+  postgres:
+    image: postgres:14
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: abcd1234
+      POSTGRES_DB: instagram
+    networks:
+      - elk
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persist data
+      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf # custom config
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
+    command: ["postgres", "-c", "wal_level=logical"]
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    environment:
+      DATABASE_URL: postgres://postgres:abcd1234@postgres:5432/instagram
+    ports:
+      - "6433:6432"
+    depends_on:
+      - postgres
+    networks:
+      - elk
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+
+  mongo:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: abcd1234
+    networks:
+      - elk
+    volumes:
+      - mongo_data:/data/db  # Persist data
+      - mongo_config:/data/configdb  # Persist config data
+      - ./mongo/mongod.conf:/etc/mongo/mongod.conf # custom config
+      - ./mongo/mongo-keyfile:/etc/mongo-keyfile/mongo-keyfile # key file for internal authentication
+      - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js # init script for replica set
+    command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+   
+
+
+networks:
+  elk:
+    driver: bridge

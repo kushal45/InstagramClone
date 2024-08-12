@@ -1,6 +1,4 @@
 volumes:
-  postgres_data:  # Define a named volume for database persistence
-  grafana-storage:
   redis_data:
   alertmanager_data:
 
@@ -19,8 +17,6 @@ services:
       start_period: 40s
     depends_on:
       redis:
-        condition: service_healthy
-      postgres:
         condition: service_healthy
       kafka1: 
          condition: service_healthy 
@@ -143,7 +139,7 @@ services:
       - .:/app/
       - /app/node_modules
   
-  dlqassetconsumer:
+  mongoconsumer:
       restart: on-failure
       build: .
       healthcheck:
@@ -159,10 +155,8 @@ services:
         #- kafka3
       environment:
         NODE_ENV: development
-        MODE: consumer
-        TOPIC: dlQAssetCreated
-        GROUPID: dlqAssetConsumer
-        CONSUMER_NAME: dlqAssetConsumer
+        MODE: connectorConsumer
+        CONSUMER_NAME: mongoConsumer
       networks:
         - elk
       command: npm run dev
@@ -197,39 +191,6 @@ services:
         - .:/app/
         - /app/node_modules
 
-  postgres:
-    image: postgres:14
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: abcd1234
-      POSTGRES_DB: instagram
-    networks:
-      - elk
-    volumes:
-      - postgres_data:/var/lib/postgresql/data  # Persist data
-      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf # custom config
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
-    command: ["postgres", "-c", "wal_level=logical"]
-  pgbouncer:
-    image: edoburu/pgbouncer:latest
-    environment:
-      DATABASE_URL: postgres://postgres:abcd1234@postgres:5432/instagram
-    ports:
-      - "6433:6432"
-    depends_on:
-      - postgres
-    networks:
-      - elk
-    volumes:
-      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
-      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
 
 
   zookeeper:

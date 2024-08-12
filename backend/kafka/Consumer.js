@@ -11,14 +11,18 @@ class KafkaConsumer {
     });
   }
 
-  async subscribe(topic, groupId) {
-    console.log("Subscribing to topic", topic, "with group ID", groupId);
+  fetchAdminClient(){
+    return this.kafka.admin();
+  }
+
+  async subscribe({topics, groupId}) {
+    console.log("Subscribing to topic", topics, "with group ID", groupId);
     this.consumer = this.kafka.consumer({ groupId });
     await this.consumer.connect();
     this.consumer.on('consumer.crash', (err) => {
       console.error(`Error in consumer: ${err.message}`);
     });
-    await this.consumer.subscribe({ topic, fromBeginning: true });
+    await this.consumer.subscribe({ topics, fromBeginning: true });
     console.log(`Successfully subscribed to ${topic}`);
   }
 
@@ -35,7 +39,7 @@ class KafkaConsumer {
           const correlationId = message.headers['correlation-id'] ? message.headers['correlation-id'].toString() : null;
           console.log(`Received message: ${message.offset} with correlation ID: ${correlationId}`);
           const eventData = JSON.parse(message.value.toString());
-          await handler(eventData);
+          await handler(eventData,topic);
         } catch (error) {
           console.error(`Error processing message: ${error.message}`);
           // Implement retry logic here
