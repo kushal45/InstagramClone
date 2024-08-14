@@ -42,7 +42,7 @@ async function validateAndConfigure(connectorConfig) {
 
 const configureDebeziumConnector = async () => {
   const connectorConfig = {
-    name: "postgres-connector3",
+    name: "postgres-connector",
     config: {
       "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
       "tasks.max": "5",

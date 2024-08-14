@@ -65,7 +65,7 @@ async function fetchTopicsWithPrefix({ prefix, kafkaConusmer }) {
       await kafkaConusmer.subscribe({ topic, groupId: "mongo-consumer" });
       processKafkaMessage(kafkaConusmer);
       subscribedPrefixTopics.add(topic);
-      logger.debug(`Subscribed to topic ${topic}`);
+      logger.debug(`Subscribed to topic ${topic} from Kafka`);
     } else {
       deltaTopics.push(topic);
     }

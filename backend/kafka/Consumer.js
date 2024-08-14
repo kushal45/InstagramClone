@@ -1,4 +1,4 @@
-const { Kafka } = require("kafkajs");
+const { Kafka, AssignerProtocol } = require("kafkajs");
 require("dotenv").config();
 
 class KafkaConsumer {
@@ -11,24 +11,30 @@ class KafkaConsumer {
     });
   }
 
-  fetchAdminClient(){
+  fetchAdminClient() {
     return this.kafka.admin();
   }
 
-  async subscribe({topics, groupId}) {
-    console.log("Subscribing to topic", topics, "with group ID", groupId);
-    this.consumer = this.kafka.consumer({ groupId });
-    await this.consumer.connect();
-    this.consumer.on('consumer.crash', (err) => {
-      console.error(`Error in consumer: ${err.message}`);
-    });
-    await this.consumer.subscribe({ topics, fromBeginning: true });
-    console.log(`Successfully subscribed to ${topic}`);
+  async subscribe({ topics, groupId }) {
+    try {
+      console.log("Subscribing to topic", topics, "with group ID", groupId);
+      this.consumer = this.kafka.consumer({ groupId });
+      await this.consumer.connect();
+      this.consumer.on("consumer.crash", (err) => {
+        console.error(`Error in consumer: ${err.message}`);
+      });
+      await this.consumer.subscribe({ topics, fromBeginning: true });
+    } catch (error) {
+      console.error(
+        "Error subscribing to topics from KafKaConsumer class:",
+        error.message
+      );
+    }
   }
 
   async processMessage(handler) {
     if (this.isConsumerRunning) {
-     // console.warn("Consumer is already running");
+      // console.warn("Consumer is already running");
       return;
     }
 
@@ -36,10 +42,14 @@ class KafkaConsumer {
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         try {
-          const correlationId = message.headers['correlation-id'] ? message.headers['correlation-id'].toString() : null;
-          console.log(`Received message: ${message.offset} with correlation ID: ${correlationId}`);
+          const correlationId = message.headers["correlation-id"]
+            ? message.headers["correlation-id"].toString()
+            : null;
+          console.log(
+            `Received message: ${message.offset} with correlation ID: ${correlationId}`
+          );
           const eventData = JSON.parse(message.value.toString());
-          await handler(eventData,topic);
+          await handler(eventData, topic);
         } catch (error) {
           console.error(`Error processing message: ${error.message}`);
           // Implement retry logic here
@@ -55,38 +65,81 @@ class KafkaConsumer {
         console.log(`Retry attempt ${attempt} for message ${message.offset}`);
         const eventData = JSON.parse(message.value.toString());
         await handler(eventData);
-        console.log(`Message ${message.offset} processed successfully on attempt ${attempt}`);
+        console.log(
+          `Message ${message.offset} processed successfully on attempt ${attempt}`
+        );
         break; // Break out of the loop if processing succeeds
       } catch (error) {
         console.error(`Attempt ${attempt} failed: ${error.message}`);
-        if (attempt === retries) throw new Error(`Failed after ${retries} retries`);
+        if (attempt === retries)
+          throw new Error(`Failed after ${retries} retries`);
         // Wait for a specified delay before retrying
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
-  
+
   async createTopics(topic) {
     const admin = this.kafka.admin();
     await admin.connect();
-    const topics= await admin.listTopics();
-    if(! topics.includes(topic)){
-      const isTopicCreated=await admin.createTopics({
+    const topics = await admin.listTopics();
+    if (!topics.includes(topic)) {
+      const isTopicCreated = await admin.createTopics({
         topics: [
           { topic, numPartitions: 1, replicationFactor: 1 },
           // Add more topics here if needed
         ],
       });
-      console.log("isTopic created",topic,isTopicCreated);
-     
+      console.log("isTopic created", topic, isTopicCreated);
     }
     await admin.disconnect();
   }
 
+  async unsubscribe() {
+    if (this.consumer) {
+      console.log("Stopping the consumer...");
+      await this.consumer.stop();
+      console.log("Disconnecting the consumer...");
+      await this.consumer.disconnect();
+      console.log("Successfully unsubscribed from topics");
+    } else {
+      console.error("No active consumer to unsubscribe");
+    }
+  }
+
+  async isSubscribedToTopics(groupId, topics) {
+    let isTopicsSubscribed = false;
+    const admin = this.fetchAdminClient();
+    await admin.connect();
+    const groupDescription = await admin.describeGroups([groupId]);
+    console.log("Group description with members:", groupDescription);
+    await admin.disconnect();
+
+    const subscribedTopics = new Set();
+    groupDescription.groups.forEach((group) => {
+      console.log("each group details", group);
+      group.members.forEach((member) => {
+        const memberAssignmentBuffer = member.memberAssignment;
+        const assignment = AssignerProtocol.MemberAssignment.decode(
+          memberAssignmentBuffer
+        );
+        if(!assignment){
+          return false;
+        }
+        console.log("assignment", assignment);
+        const topics = Object.keys(assignment.assignment);
+        topics.forEach((tp) => {
+          subscribedTopics.add(tp);
+        });
+      });
+      isTopicsSubscribed= topics.every((topic) => subscribedTopics.has(topic))
+      console.log(
+        "fetched subscribed topics in kafka consumer",
+        subscribedTopics,isTopicsSubscribed
+      );
+    });
+    return isTopicsSubscribed;
+  }
 }
-
-
-
-
 
 module.exports = KafkaConsumer;

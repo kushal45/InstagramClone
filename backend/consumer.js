@@ -34,7 +34,7 @@ async function initializeConsumer(kafaConsumerInst) {
     await kafaConsumerInst.createTopics(process.env.TOPIC);
     await kafaConsumerInst.subscribe({topics:process.env.TOPIC,groupId: process.env.GROUPID});
     await processConsumerInfinitely(kafaConsumerInst);
-    console.log("Successfully subscribed to topic");
+    //console.log("Successfully subscribed to topic");
   } catch (error) {
     console.error(error);
   }

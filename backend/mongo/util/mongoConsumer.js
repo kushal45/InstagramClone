@@ -4,6 +4,7 @@ const KafkaTopicNotifier = require('../observer/kafkaTopicNotifier');
 const KafkaMongoObserver = require('../observer/debeziumMongoObserver');
 const { connectToMongo } = require('../mongoClient');
 const logger = require('../../logger/logger');
+const { log } = require('winston');
 
 async function createCollectionsAndConsume() {
   try {
@@ -12,7 +13,6 @@ async function createCollectionsAndConsume() {
     const kafkaMongoObserver = new KafkaMongoObserver();
 
     kafkaTopicNotifier.addObserver(kafkaMongoObserver);
-
     const connectHost = process.env.CONNECT_REST_ADVERTISED_HOST_NAME || 'connector';
     const connectorsResponse = await axios.get(`http://${connectHost}:8083/connectors`);
     const connectors = connectorsResponse.data;
