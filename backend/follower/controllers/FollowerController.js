@@ -30,7 +30,8 @@ class FollowerController {
   static async followUser(req, res,next) {
     try {
       const followingId = req.params.userId;
-      await FollowerService.followUser(req.userId, followingId);
+      const redisClient= req.redis;
+      await FollowerService.followUser(req.userId, followingId,redisClient);
       res.status(201).send('Followed successfully.');
     } catch (error) {
       console.log(error);

@@ -22,7 +22,8 @@ class PostService {
         //await emitEvent(topic,asset);
         const kafkaProducerInst = new KafkaProducer("producer-1");
         const correlationId = httpContext.get("correlationId");
-        await kafkaProducerInst.produce(topic, asset, { correlationId });
+       // await kafkaProducerInst.produce(topic, asset, { correlationId });
+       await this.retryProduce(kafkaProducerInst, topic, asset, { correlationId });
       }
       const post = await PostDAO.create({
         userId: user.id,
@@ -40,6 +41,22 @@ class PostService {
         { correlationId }
       );
       throw error;
+    }
+  }
+
+  static async retryProduce(producer, topic, message, options, retries = 10, delay = 1000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await producer.produce(topic, message, options);
+        return;
+      } catch (error) {
+        if (attempt === retries) {
+          logger.error(`Failed to produce message after ${retries} attempts: ${error.message}`);
+          throw error;
+        }
+        logger.warn(`Retrying produce message (attempt ${attempt}): ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
   }
 

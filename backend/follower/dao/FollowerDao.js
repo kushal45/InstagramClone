@@ -11,8 +11,23 @@ class FollowerDao {
       if (exists) {
         throw new Error('Already following this user.');
       }
-     // return await Follower.create({ followerId, followingId });
-      return await FollowerPool.insertFollower({followerId, followingId});
+     const follower= await Follower.create(
+      { followerId, followingId },
+      {
+        include: [
+          { model: User, as: 'FollowerUser' },
+          { model: User, as: 'FollowingUser' }
+        ]
+      }
+    );
+     return await Follower.findOne({
+        where: { id: follower.id },
+        include: [
+          { model: User, as: 'FollowerUser' },
+          { model: User, as: 'FollowingUser' }
+        ]
+      });
+      //return await FollowerPool.insertFollower({followerId, followingId});
     } catch (error) {
       console.log(error);
       throw new Error(error.toString());
@@ -76,7 +91,7 @@ class FollowerDao {
       const topUsers = await FollowerPool.getTopUsersByFollowers(numList);
       return topUsers;
     } catch (error) {
-      throw new Error(error.toString());
+      throw error;
     }
   }
 

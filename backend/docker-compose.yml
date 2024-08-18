@@ -6,6 +6,17 @@ networks:
   elk:
     driver: bridge
 services:
+  startup:
+    depends_on:
+      app:
+        condition: service_healthy
+    image: node:21
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    command: npm run startup
+    networks:
+      - elk
   app:
     restart: on-failure
     build: .

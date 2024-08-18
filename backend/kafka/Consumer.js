@@ -97,11 +97,8 @@ class KafkaConsumer {
 
   async unsubscribe() {
     if (this.consumer) {
-      console.log("Stopping the consumer...");
       await this.consumer.stop();
-      console.log("Disconnecting the consumer...");
       await this.consumer.disconnect();
-      console.log("Successfully unsubscribed from topics");
     } else {
       console.error("No active consumer to unsubscribe");
     }
@@ -126,7 +123,7 @@ class KafkaConsumer {
         if(!assignment){
           return false;
         }
-        console.log("assignment", assignment);
+        //console.log("assignment", assignment);
         const topics = Object.keys(assignment.assignment);
         topics.forEach((tp) => {
           subscribedTopics.add(tp);

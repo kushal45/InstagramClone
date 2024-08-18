@@ -1,6 +1,7 @@
 const FollowerDao = require("../dao/FollowerDao");
 const KafkaProducer = require("../../kafka/Producer");
 const httpContext = require("express-http-context");
+const logger = require("../../logger/logger");
 
 
 class FollowerService {
@@ -37,11 +38,13 @@ class FollowerService {
   }
 
   // Follow another user
-  static async followUser(followerId, followingId) {
+  static async followUser(followerId, followingId,redisClient) {
     try {
-      const createdFollower = await FollowerDao.addFollower(followerId, followingId)
+      const createdFollower = await FollowerDao.addFollower(followerId, followingId);
       const kafkaProducer = new KafkaProducer("producer-2");
       const correlationId= httpContext.get("correlationId");
+      logger.debug("following info", createdFollower);
+      await redisClient.zIncrBy('topUsers', 1, createdFollower.FollowingUser.name);
       await kafkaProducer.produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST}, { correlationId });
       return createdFollower;
     } catch (error) {

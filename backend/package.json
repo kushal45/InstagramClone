@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "node entrypoint.js",
-    "dev": "nodemon entrypoint.js"
+    "dev": "nodemon entrypoint.js",
+    "startup": "nodemon  runStartScript.js"
   },
   "nodemonConfig": {
     "ignore": [

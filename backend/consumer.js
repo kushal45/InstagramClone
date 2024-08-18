@@ -1,5 +1,6 @@
 
-const assetConsumer = require("./asset/util/assetConsumerGptStrat");
+require('dotenv').config();
+const assetConsumerGPT = require("./asset/util/assetConsumerGptStrat");
 
 process.on('uncaughtException', (err) => {
   console.error('There was an uncaught error', err);
@@ -32,7 +33,7 @@ initializeConsumer(kafaConsumerInst);
 async function initializeConsumer(kafaConsumerInst) {
   try {
     await kafaConsumerInst.createTopics(process.env.TOPIC);
-    await kafaConsumerInst.subscribe({topics:process.env.TOPIC,groupId: process.env.GROUPID});
+    await kafaConsumerInst.subscribe({topics:[process.env.TOPIC],groupId: process.env.GROUPID});
     await processConsumerInfinitely(kafaConsumerInst);
     //console.log("Successfully subscribed to topic");
   } catch (error) {
@@ -52,7 +53,7 @@ async function processConsumerInfinitely(kafaConsumerInst){
 
 function _fetchConsumer(){
   return {
-    [consumerServices.ASSETCONSUMER]: assetConsumer,
+    [consumerServices.ASSETCONSUMER]: assetConsumerGPT,
     [consumerServices.TOPFOLLOWERCONSUMER]: topFollowerConsumer,
     [consumerServices.DQLFOLLOWERCONSUMER]: failureFollowerConsumer
   }
