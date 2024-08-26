@@ -33,22 +33,34 @@ class PostDao {
     return post;
   }
 
-  static async listByUsers(userIds, { offset = 0, limit = 10 } = {}) {
-    // const posts = await Post.findAll({
-    //   where: {
-    //     userId: {
-    //       [Op.in]: userIds,
-    //     },
-    //   },
-    //   include: [{ model: Asset, as: "asset" }],
-    //   offset,
-    //   limit,
-    // });
-   // const posts = await PostPool.listPostsByUserids(userIds);
-      const posts = await PostPool.listPostsByAttributeList([{
-        userId: userIds
-      }]);
-    return posts;
+  static async listByUsers(userIds, {cursor, limit } = {}) {
+    const where = {
+      userId: {
+        [Op.in]: userIds,
+      },
+    };
+    if (cursor) {
+      const decodedCursor = Buffer.from(cursor, 'base64').toString('ascii');
+      where.id = {
+        [Op.lt]: decodedCursor, // Assuming 'id' is the cursor field
+      };
+    }
+    const posts = await Post.findAll({
+      where,
+      include: [{ model: Asset, as: "asset" }],
+      limit,
+      order:["id","DESC"]
+    });
+    let nextCursor = null;
+    if (posts.length > 0) {
+      const lastPost = posts[posts.length - 1];
+      nextCursor = Buffer.from(lastPost.id.toString()).toString('base64');
+    }
+
+    return {
+      posts,
+      nextCursor,
+    };
   }
 
   static async listByAssets(assetIds) {

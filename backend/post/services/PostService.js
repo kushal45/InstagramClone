@@ -97,8 +97,14 @@ class PostService {
     return posts;
   }
 
+  /**
+   * 
+   * @param {number} postId - The ID of the post to update.
+   * @param {object} updateData - post data to update ex:- tags,text,imageUrl, videoUrl.
+   * @returns {Promise<object>} The updated post.
+   * @throws {NotFoundError} If the post is not found.
+   */
   static async updatePost(postId, updateData) {
-    // Logic to update a post
     const post = await PostDAO.update(postId, updateData);
     if (!post) {
       throw new NotFoundError("Post not found");
@@ -106,6 +112,12 @@ class PostService {
     return post;
   }
 
+  /**
+ * Deletes a post and its associated asset.
+ * @param {number} postId - The ID of the post to delete.
+ * @returns {Promise<void>}
+ * @throws {NotFoundError} If the post or associated asset is not found.
+ */
   static async deletePost(postId) {
     const post = await PostDAO.getById(postId);
     if (!post) {
@@ -128,15 +140,25 @@ class PostService {
     }
   }
 
+
+  /**
+   * Lists posts for a given user with cursor-based pagination and caching.
+   * @param {number} userId - The ID of the user.
+   * @param {object} redisClient - The Redis client instance.
+   * @param {object} options - Pagination options.
+   * @param {string} [options.cursor=''] - The opaque cursor for pagination.
+   * @param {number} [options.pageSize=10] - The number of posts per page.
+   * @returns {Promise<object>} The paginated posts and the next cursor.
+   * @throws {NotFoundError} If the user is not found.
+   */
   static async listPosts(
     userId,
     redisClient,
-    { page = 1, pageSize = 10 } = {}
+    { cursor='', pageSize=10 } = {}
   ) {
     const user = await UserDAO.findUserById(userId);
     if (!user) throw new NotFoundError("User not found");
-    const skip = (page - 1) * pageSize;
-    const cacheKey = `posts:${userId}:${page}:${pageSize}`;
+    const cacheKey = `posts:${userId}:${cursor}:${pageSize}`;
 
     const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
       if (err) return reject(err);
@@ -144,28 +166,40 @@ class PostService {
       resolve(null);
     });
 
-    logger.debug("cachedPosts", cachedPosts);
-    // if (cachedPosts) {
-    //   return cachedPosts;
-    // }
+    //logger.debug("cachedPosts", cachedPosts);
+    if (cachedPosts) {
+      return cachedPosts;
+    }
 
-    const posts = await PostDAO.listByUsers([user.id], {
-      offset: skip,
-      limit: pageSize,
+    const postResults = await PostDAO.listByUsers([user.id], {
+     cursor,
+      pageSize, 
     });
-    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 10);
-    return posts;
+    redisClient.set(cacheKey, JSON.stringify(postResults), "EX", 10);
+    return postResults;
   }
 
-  static async listPostsByUserIds(userIds) {
+   /**
+   * Lists posts for multiple users with cursor-based pagination.
+   * @param {number[]} userIds - The IDs of the users.
+   * @param {object} options - Pagination options.
+   * @param {string} [options.cursor] - The cursor for pagination.
+   * @param {number} [options.pageSize] - The number of posts per page.
+   * @returns {Promise<object>} The paginated posts and the next cursor.
+   * @throws {NotFoundError} If the users are not found.
+   */
+  static async listPostsByUserIds(userIds, { cursor, pageSize } = {}) {
     const userList = await UserDAO.findUserList(userIds);
     if (!userList) {
       throw new NotFoundError("Users not found");
     }
     const filteredUserIds = userList.map((user) => user.id);
     //console.log("filteredUserIds",filteredUserIds);
-    const posts = await PostDAO.listByUsers(filteredUserIds);
-    return posts;
+    const paginatedPosts = await PostDAO.listByUsers(filteredUserIds,{
+      cursor,
+      pageSize
+    });
+    return paginatedPosts;
   }
 }
 
