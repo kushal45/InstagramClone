@@ -58,8 +58,22 @@ class PostDao {
           [Op.in]: assetIds,
         },
       },
-      include: [{ model: Asset, as: "asset" }],
+      include: [
+        {
+          model: Asset,
+          as: "asset",
+          required: true, // Ensures only rows with matching associations are returned
+          attributes: [ 'imageUrl', 'videoUrl','tags','text'] // Select only necessary fields from Asset
+        }
+      ],
+      attributes: ['id', 'title', 'content'], // Select only necessary fields from Post
+      subQuery: false // Avoid subqueries if possible
     });
+    // const posts = await PostPool.listPostsByAttributeList([
+    //   {
+    //     assetId: assetIds,
+    //   },
+    // ]);
     return posts;
   }
 
