@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const { Asset, Post } = require("../../models");
 const PostPool = require("../models/PostPool");
+const Cursor = require("../../database/cursor");
 
 class PostDao {
   static async create(postData) {
@@ -34,42 +35,62 @@ class PostDao {
   }
 
   static async listByUsers(userIds, {cursor, limit } = {}) {
+    try {
+      const where = {
+        userId: {
+          [Op.in]: userIds,
+        },
+      };
+      if (cursor) {
+        const decodedCursor = Cursor.decode(cursor);
+        where.id = {
+          [Op.lt]: decodedCursor.id, // Assuming 'id' is the cursor field
+        };
+      }
+      const posts = await Post.findAll({
+        where,
+        include: [{ model: Asset, as: "asset" }],
+        limit,
+        order: [["id", "DESC"]],
+      });
+      console.log("users posts", posts);
+      let nextCursor = null;
+      if (posts.length > 0) {
+        const lastPost = posts[posts.length - 1];
+        nextCursor = Cursor.encode(lastPost);
+      }
+  
+      return {
+        posts,
+        nextCursor,
+      };
+    } catch (error) {
+       console.log(error);
+       //throw error;
+    }
+    
+  }
+
+  static async listByAssets(assetIds, { cursor, limit } = {}) {
+    if(assetIds.length === 0) {
+      return {
+        posts: [],
+        nextCursor: null,
+      };
+    }
     const where = {
-      userId: {
-        [Op.in]: userIds,
-      },
-    };
+        assetId: {
+          [Op.in]: assetIds,
+        }
+    }
     if (cursor) {
-      const decodedCursor = Buffer.from(cursor, 'base64').toString('ascii');
+      const decodedCursor = Cursor.decode(cursor);
       where.id = {
-        [Op.lt]: decodedCursor, // Assuming 'id' is the cursor field
+        [Op.lt]: decodedCursor.id,
       };
     }
     const posts = await Post.findAll({
       where,
-      include: [{ model: Asset, as: "asset" }],
-      limit,
-      order:["id","DESC"]
-    });
-    let nextCursor = null;
-    if (posts.length > 0) {
-      const lastPost = posts[posts.length - 1];
-      nextCursor = Buffer.from(lastPost.id.toString()).toString('base64');
-    }
-
-    return {
-      posts,
-      nextCursor,
-    };
-  }
-
-  static async listByAssets(assetIds) {
-    const posts = await Post.findAll({
-      where: {
-        assetId: {
-          [Op.in]: assetIds,
-        },
-      },
       include: [
         {
           model: Asset,
@@ -79,14 +100,24 @@ class PostDao {
         }
       ],
       attributes: ['id', 'title', 'content'], // Select only necessary fields from Post
-      subQuery: false // Avoid subqueries if possible
+      subQuery: false, // Avoid subqueries if possible,
+      limit,
+      order: [["id", "DESC"]],
     });
+    let nextCursor = null;
+    if (posts.length > 0) {
+      const lastPost = posts[posts.length - 1];
+      nextCursor = Cursor.encode(lastPost);
+    }
     // const posts = await PostPool.listPostsByAttributeList([
     //   {
     //     assetId: assetIds,
     //   },
     // ]);
-    return posts;
+    return {
+      posts,
+      nextCursor,
+    };
   }
 
   static async listByAttr(attr) {

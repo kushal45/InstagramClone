@@ -6,14 +6,21 @@ const logger = require("../../logger/logger");
 
 class FollowerService {
   // List followers of a user
-  static async listFollowers(userId,redisClient) {
+  static async listFollowers(userId,redisClient,{
+    cursor,
+    pageSize,
+  }={
+    cursor: "",
+    pageSize: 10,
+  }) {
     try {
-      const cachedKey = `followers:${userId}`;
+      const cachedKey = `followers:${userId}:${cursor}`;
       const cachedFollowers = await redisClient.get(cachedKey);
       if (cachedFollowers) {
         return JSON.parse(cachedFollowers);
       }
-      const followers = await FollowerDao.listFollowers(userId);
+      logger.debug("current cursor", cursor);
+      const followers = await FollowerDao.listFollowers(userId,{ cursor, pageSize });
       redisClient.set(cachedKey, JSON.stringify(followers), "EX", 3600); // Cache for 1 hour
       return followers;
     } catch (error) {
@@ -22,16 +29,20 @@ class FollowerService {
   }
 
   // List users that a specific user is following
-  static async listFollowing(userId,redisClient) {
+  static async listFollowing(userId,redisClient,{ cursor ,pageSize} = {
+    cursor: "",
+    pageSize: 10,
+  }) {
     try {
-      const cachedKey = `following:${userId}`;
-      const cachedFollowing = await redisClient.get(cachedKey);
-      if (cachedFollowing) {
-        return JSON.parse(cachedFollowing);
-      }
-      const following = await FollowerDao.listFollowing(userId);
-      redisClient.set(cachedKey, JSON.stringify(following), "EX", 3600); // Cache for 1 hour
-      return following;
+      const cachedKey = `following:${userId}:${cursor}`;
+     // const cachedFollowing = await redisClient.get(cachedKey);
+      // if (cachedFollowing) {
+      //   return JSON.parse(cachedFollowing);
+      // }
+      logger.debug("current cursor", cursor);
+      const paginatedFollowings = await FollowerDao.listFollowing(userId,{ cursor, pageSize });
+      redisClient.set(cachedKey, JSON.stringify(paginatedFollowings), "EX", 3600); // Cache for 1 hour
+      return paginatedFollowings;
     } catch (error) {
       throw error;
     }

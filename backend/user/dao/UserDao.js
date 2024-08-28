@@ -34,18 +34,18 @@ class UserDAO {
 
   static async findUserList(userIds){
     try {
-      // const users = await User.findAll({
-      //   where: {
-      //     id: {
-      //       [Sequelize.Op.in]: userIds
-      //     }
-      //   }
-      // });
-      const users = await UserPool.findAll({
+      const users = await User.findAll({
         where: {
-          id: userIds
+          id: {
+            [Sequelize.Op.in]: userIds
+          }
         }
       });
+      // const users = await UserPool.findAll({
+      //   where: {
+      //     id: userIds
+      //   }
+      // });
       return users;
     } catch (error) {
       console.error("Error finding users:", error);

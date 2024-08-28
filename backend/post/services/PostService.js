@@ -69,31 +69,36 @@ class PostService {
     return post;
   }
 
-  static async listPostsByAttr(attr, redisClient) {
+  static async listPostsByAttr(attr, redisClient,{ cursor, pageSize } = {
+    cursor: "",
+    pageSize: 10,
+  }) {
     const attrHash = crypto
       .createHash("sha256")
       .update(JSON.stringify(attr))
       .digest("hex");
     const cacheKey = `posts:${attrHash}`;
 
-    // Check if the data is in the cache
-    const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
-      if (err) return reject(err);
-      if (data) return resolve(JSON.parse(data));
-      resolve(null);
-    });
+    // // Check if the data is in the cache
+    // const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+    //   if (err) return reject(err);
+    //   if (data) return resolve(JSON.parse(data));
+    //   resolve(null);
+    // });
 
-    if (cachedPosts) {
-      return cachedPosts;
-    }
+    // if (cachedPosts) {
+    //   return cachedPosts;
+    // }
     let posts = [];
     if (attr.hasOwnProperty("tags")) {
       const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags || []);
-      posts = await PostDAO.listByAssets(assetIds);
+      console.log("assetIds", assetIds);
+      posts = await PostDAO.listByAssets(assetIds, { cursor, limit: pageSize });
     } else {
       posts = [...posts, ...(await PostDAO.listByAttr(attr))];
     }
-    redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
+    //console.log("posts with tags", posts);
+   // redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
     return posts;
   }
 
@@ -171,12 +176,12 @@ class PostService {
       return cachedPosts;
     }
 
-    const postResults = await PostDAO.listByUsers([user.id], {
+    const paginatedPosts = await PostDAO.listByUsers([user.id], {
      cursor,
       pageSize, 
     });
-    redisClient.set(cacheKey, JSON.stringify(postResults), "EX", 10);
-    return postResults;
+    redisClient.set(cacheKey, JSON.stringify(paginatedPosts), "EX", 10);
+    return paginatedPosts;
   }
 
    /**

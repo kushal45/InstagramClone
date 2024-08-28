@@ -1,31 +1,29 @@
-const  Follower = require('../models/Follower'); 
-const  User = require('../../user/models/User'); 
-const { Sequelize } = require('sequelize');
-const FollowerPool = require('../models/FollowerPool');
+const Follower = require("../models/Follower");
+const User = require("../../user/models/User");
+const { Sequelize } = require("sequelize");
+const FollowerPool = require("../models/FollowerPool");
+const Cursor = require("../../database/cursor");
+const Logger = require("../../logger/logger");
 
 class FollowerDao {
   // Add a new follower
   static async addFollower(followerId, followingId) {
     try {
-      const exists = await Follower.findOne({ where: { followerId, followingId } });
+      const exists = await Follower.findOne({
+        where: { followerId, followingId },
+      });
       if (exists) {
-        throw new Error('Already following this user.');
+        throw new Error("Already following this user.");
       }
-     const follower= await Follower.create(
-      { followerId, followingId },
-      {
-        include: [
-          { model: User, as: 'FollowerUser' },
-          { model: User, as: 'FollowingUser' }
-        ]
-      }
-    );
-     return await Follower.findOne({
+      const follower = await Follower.create(
+        { followerId, followingId },
+      );
+      return await Follower.findOne({
         where: { id: follower.id },
         include: [
-          { model: User, as: 'FollowerUser' },
-          { model: User, as: 'FollowingUser' }
-        ]
+          { model: User, as: "FollowerUser" },
+          { model: User, as: "FollowingUser" },
+        ],
       });
       //return await FollowerPool.insertFollower({followerId, followingId});
     } catch (error) {
@@ -35,14 +33,30 @@ class FollowerDao {
   }
 
   // List followers of a user
-  static async listFollowers(userId) {
+  static async listFollowers(userId, { cursor, pageSize }) {
     try {
-      // const followers = await Follower.findAll({
-      //   where: { followingId: userId },
-      //   include: [{ model: User, as: 'FollowerDetails' }]
-      // });
-      const followers = await FollowerPool.fetchFollowersByUserId(userId);
-      return followers;
+      const where = {
+        followingId: userId,
+      };
+      if (cursor) {
+        const decodedCursor = Cursor.decode(cursor);
+        where.id = {
+          [Sequelize.Op.gt]: decodedCursor,
+        };
+      }
+      const followers = await Follower.findAll({
+        where,
+        include: [{ model: User, as: "FollowerDetails", attributes: ["id", "name", "email"] }],
+        limit: pageSize,
+        order: [["id", "ASC"]],
+      });
+      // const followers = await FollowerPool.fetchFollowersByUserId(userId);
+      const newCursor = followers.length > 0 ? followers[followers.length - 1].id : null;
+      const nextCursor = Cursor.encode(newCursor);
+      return {
+        followers,
+        nextCursor,
+      };
     } catch (error) {
       throw new I(error.toString());
     }
@@ -95,15 +109,37 @@ class FollowerDao {
     }
   }
 
-  // List users that a specific user is following
-  static async listFollowing(userId) {
+  /**
+   *
+   * @param {*} userId
+   * @param {*} { cursor, pageSize}
+   * @returns object containing followings and next cursor
+   */
+  static async listFollowing(
+    userId,
+    { cursor, pageSize } = { cursor: "", pageSize: 10 }
+  ) {
     try {
-      // const following = await Follower.findAll({
-      //   where: { followerId: userId },
-      //   include: [{ model: User, as: 'FollowingUser' }]
-      // });
-      const following = await FollowerPool.fetchFollowingListByFollowerId(userId);
-      return following;
+      const where = {
+        followerId: userId,
+      };
+      if (cursor) {
+        const decodedCursor = Cursor.decode(cursor);
+        Logger.debug("Decoded cursor", decodedCursor);
+        where.id = {
+          [Sequelize.Op.gt]: decodedCursor.id,
+        };
+      }
+      const followings = await Follower.findAll({
+        where,
+        include: [{ model: User, as: "FollowingUser" }],
+        order: [["id", "ASC"]],
+        limit: pageSize,
+      });
+      const newCursor =
+        followings.length > 0 ? followings[followings.length - 1].id : null;
+      const newFollowingCursor = Cursor.encode(newCursor);
+      return { followings, nextCursor: newFollowingCursor };
     } catch (error) {
       throw new Error(error.toString());
     }
@@ -112,9 +148,11 @@ class FollowerDao {
   // Remove a follower
   static async removeFollower(followerId, followingId) {
     try {
-      const result = await Follower.destroy({ where: { followerId, followingId } });
+      const result = await Follower.destroy({
+        where: { followerId, followingId },
+      });
       if (result === 0) {
-        throw new Error('No such follower exists.');
+        throw new Error("No such follower exists.");
       }
     } catch (error) {
       throw new Error(error.toString());

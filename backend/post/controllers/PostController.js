@@ -26,13 +26,16 @@ module.exports = {
    * Get all posts
    * @param {Object} req - Request object
    * @param {Object} res - Response object
+   * @param {Object} next - Next middleware
+   * @returns {Object} - List of posts
    */
   getAllPosts: async (req, res,next) => {
     try {
-      console.log("get all posts for user",req.userId);
+      //console.log("get all posts for user",req.userId);
       const userId=req.userId;
       const redisClient= req.redis;
-      const posts = await PostService.listPosts(userId,redisClient);
+      const cursor = req.query.cursor;
+      const posts = await PostService.listPosts(userId,redisClient,{cursor});
       res.status(200).send(posts);
     } catch (error) {
       logger.error(error);

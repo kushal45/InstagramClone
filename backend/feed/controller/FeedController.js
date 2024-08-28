@@ -16,6 +16,7 @@ class FeedController {
   // Get all feeds for a user
   static async getFeeds(req, res, next) {
     try {
+      const cursor = req.query.cursor;
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         throw new BadRequestError(JSON.stringify(errors.array()));
@@ -24,10 +25,11 @@ class FeedController {
       logger.debug("userTags", userTags);
       const userId = req.userId;
       const redisClient = req.redis;
-      const feeds = await FeedService.fetch({ userTags, userId, redisClient });
+      const feeds = await FeedService.fetch({ userTags, userId, redisClient, cursor });
       res.json(feeds);
     } catch (error) {
-      logger.error(error);
+      //logger.error(error);
+      console.log(error);
       next(error);
     }
   }
