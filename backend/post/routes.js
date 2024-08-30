@@ -107,6 +107,13 @@ routes.post(
  *     tags: [Posts]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: The cursor for pagination
  *     responses:
  *       200:
  *         description: A list of posts

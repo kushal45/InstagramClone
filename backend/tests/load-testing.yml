@@ -2,18 +2,20 @@ config:
   target: "http://localhost:3000"
   phases:
     - duration: 10 # Run the test for 100 seconds
-      arrivalRate: 10  # New users arrive at a rate of 50 per second
+      arrivalRate: 4  # New users arrive at a rate of 50 per second
   plugins:
     ensure: {}
     apdex: {}
     metrics-by-endpoint: {}
-    # publish-metrics:
-    #   - type: influxdb-statsd # https://artillery.io/docs/guides/plugins/plugin-publish-metrics.html#InfluxDB-Telegraf
-    #     tags:
-    #       - "testId:weather-forecast"
-    #       - "reporterType:influxdb-statsd"
-    #     event:
-    #       priority: low
+    expect: 
+      reportFailuresAsErrors: true
+      outputFormat: prettyError
+  apdex:
+    threshold: 100
+  ensure:
+    thresholds:
+      - http.response_time.p99: 250
+      - http.response_time.p95: 75
   processor: "./processor.js"
 before :
   flow:
@@ -96,6 +98,9 @@ scenarios:
                   json: "$.post.id" # Capture the postId from the response
                   as: "postId" # Save it as postId
             #- log: 'post id saved  {{ postId }}'
+                expect:
+                  - statusCode: 201
+                  - contentType: json
             - think: 2
         count: 5 
       - post:

@@ -30,6 +30,12 @@ const router = express.Router();
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: The cursor for pagination
  *       - in: path
  *         name: userId
  *         schema:

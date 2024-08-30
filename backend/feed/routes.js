@@ -73,6 +73,13 @@ const routes = Router();
  *     tags: [Feeds]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: The cursor for pagination
  *     responses:
  *       200:
  *         description: Feeds retrieved successfully
