@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 const path = require("path");
 const app = express();
 const cors = require("cors");
@@ -8,6 +10,7 @@ const errorHandler = require("./middleware/ErrorHandler");
 const correlationIdMiddleware = require("./middleware/CorrelationIdHandler");
 const metricsMiddleware = require("./middleware/MetricsMiddleWare");
 const RedisMiddleware = require("./middleware/Redis");
+const helmet = require('helmet');
 const {
   prometheusMiddleware,
   metricsEndpoint,
@@ -33,8 +36,16 @@ const PORT = process.env.PORT || 3000;
 try {
   // Use httpContext middleware
   app.use(metricsMiddleware);
+  app.use(compression());
   app.use(RedisMiddleware);
   app.use(httpContext.middleware);
+  app.use(helmet());
+
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  });
+  app.use(limiter);
 
   // Use correlation ID middleware
   app.use(correlationIdMiddleware);

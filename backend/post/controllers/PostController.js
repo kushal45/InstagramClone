@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 const PostService  = require("../services/PostService");
 const { BadRequestError } = require("../../errors");
 const logger = require("../../logger/logger");
+const ResponseFormatter = require("../../util/ResponseFormatter");
 module.exports = {
   /**
    * Create a new post
@@ -15,7 +16,7 @@ module.exports = {
         throw new BadRequestError(JSON.stringify(errors.array()));
       }
       const post = await PostService.createPost(req.body, req.userId);
-      res.status(201).send({ message: "Post created successfully", post });
+      res.status(201).json(ResponseFormatter.success(post, 'Post created successfully'));
     } catch (error) {
       logger.error(error);
       next(error);
@@ -36,7 +37,7 @@ module.exports = {
       const redisClient= req.redis;
       const cursor = req.query.cursor;
       const posts = await PostService.listPosts(userId,redisClient,{cursor});
-      res.status(200).send(posts);
+      res.status(200).json(ResponseFormatter.success(posts, 'Posts retrieved successfully'));
     } catch (error) {
       logger.error(error);
       next(error);
@@ -51,7 +52,7 @@ module.exports = {
   getPostById: async (req, res,next) => {
     try {
       const post = await PostService.getPostById(req.params.id);
-      return res.status(200).send(post);
+      return res.status(200).send(ResponseFormatter.success(post, 'Post retrieved successfully'));
     } catch (error) {
       logger.error(error);  
       next(error);
@@ -67,7 +68,7 @@ module.exports = {
     try {
       // Logic to update a post
       const response = await PostService.updatePost(req.params.id, req.body);
-      res.status(200).send(response);
+      res.status(200).json(ResponseFormatter.success(post, 'Post updated successfully'));
     } catch (error) {
       logger.error(error);
       next(error);

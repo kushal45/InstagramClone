@@ -1,15 +1,30 @@
 const { Op } = require("sequelize");
 const { Asset, Post } = require("../../models");
-const PostPool = require("../models/PostPool");
+//const PostPool = require("../models/PostPool");
 const Cursor = require("../../database/cursor");
+const sequelize = require("../../database");
+const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
 
 class PostDao {
   static async create(postData) {
-    const post = await Post.create({
-      userId: postData.userId,
-      assetId: postData.assetId,
-    });
-    return post;
+    const logLocation = "PostDao.create";
+    const transaction = await sequelize.transaction();
+    try {
+      const post = await Post.create({
+        userId: postData.userId,
+        assetId: postData.assetId,
+      });
+      await transaction.commit();
+      return post;
+    } catch (error) {
+      await transaction.rollback();
+      throw new ErrorWithContext(error,
+        new ErrorContext(logLocation,{
+          postId
+        }),__filename
+      ).wrap();
+    }
+    
   }
 
   static async getById(postId) {
@@ -20,18 +35,45 @@ class PostDao {
   }
 
   static async update(postId, updateData) {
-    const post = await Post.update(updateData, {
-      where: { id: postId },
-      returning: true,
-    });
-    return post[1][0]; // Sequelize returns an array where the second element contains the affected rows
+    const logLocation ="PostDao.update";
+    const transaction = await sequelize.transaction();
+    try {
+      const post = await Post.update(updateData, {
+        where: { id: postId },
+        returning: true,
+      });
+      await transaction.commit();
+      return post[1][0]; // Sequelize returns an array where the second element contains the affected rows
+    } catch (error) {
+      await transaction.rollback();
+      throw new ErrorWithContext(error,
+        new ErrorContext(logLocation,{
+          postId
+        }),__filename
+      ).wrap();
+    }
+    
   }
 
   static async delete(postId) {
-    const post = await Post.destroy({
-      where: { id: postId },
-    });
-    return post;
+    const logLocation ="PostDao.delete";
+    const transaction = await sequelize.transaction();
+    try {
+      const post = await Post.destroy({
+        where: { id: postId },
+      });
+      await transaction.commit();
+      return post;
+    } catch (error) {
+      console.
+      transaction.rollback();
+      throw new ErrorWithContext(error,
+        new ErrorContext(logLocation,{
+          postId
+        }),__filename
+      ).wrap();
+    }
+   
   }
 
   static async listByUsers(userIds, {cursor, limit } = {}) {

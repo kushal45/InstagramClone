@@ -27,7 +27,7 @@ class Logger {
       const errorLogPath = path.resolve(__dirname, "../logs/error.log");
       this.logger =  createLogger({
         level: "debug",
-        format: format.combine(format.timestamp(), format.json()),
+        format: format.combine(format.timestamp()),
         defaultMeta: { service: "user-service" },
         transports: [
           new transports.Console(),

@@ -191,7 +191,7 @@ module.exports = {
     return next();
   },
   savePostId: function (requestParams,response, context,events, done) {
-    console.log("saving postIds",response);
+    console.log("saving postIds",response.data);
     const filePath = path.join(__dirname, "postIds.json");
 
     // Step 1 & 2: Read the file and parse the content if it exists
