@@ -86,7 +86,8 @@ class PostDao {
    
   }
 
-  static async listByUsers(userIds, {cursor, limit } = {}) {
+  static async listByUsers(userIds, {cursor, pageSize } = {}) {
+    const logLocation = "PostDao.listByUsers";
     try {
       const where = {
         userId: {
@@ -102,10 +103,10 @@ class PostDao {
       const posts = await Post.findAll({
         where,
         include: [{ model: Asset, as: "asset" }],
-        limit,
+        limit: pageSize,
         order: [["id", "DESC"]],
       });
-      console.log("users posts", posts);
+      //console.log("users posts", posts);
       let nextCursor = null;
       if (posts.length > 0) {
         const lastPost = posts[posts.length - 1];
@@ -117,8 +118,13 @@ class PostDao {
         nextCursor,
       };
     } catch (error) {
-       console.log(error);
-       //throw error;
+      throw new ErrorWithContext(error,
+        new ErrorContext(logLocation,{
+          userIds,
+          cursor,
+          limit
+        }),__filename
+      ).wrap();
     }
     
   }

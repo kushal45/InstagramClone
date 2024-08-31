@@ -240,24 +240,25 @@ class PostService {
     try {
       const user = await UserDAO.findUserById(userId);
       if (!user) throw new NotFoundError("User not found");
-      const cacheKey = `posts:${userId}:${cursor}:${pageSize}`;
+      // const cacheKey = `posts:${userId}:${cursor}:${pageSize}`;
 
-      const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
-        if (err) return reject(err);
-        if (data) return resolve(JSON.parse(data));
-        resolve(null);
-      });
+      // const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+      //   if (err) return reject(err);
+      //   if (data) return resolve(JSON.parse(data));
+      //   resolve(null);
+      // });
 
       //logger.debug("cachedPosts", cachedPosts);
-      if (cachedPosts) {
-        return cachedPosts;
-      }
+      // if (cachedPosts) {
+      //   return cachedPosts;
+      // }
 
       const paginatedPosts = await PostDAO.listByUsers([user.id], {
         cursor,
         pageSize,
       });
-      redisClient.set(cacheKey, JSON.stringify(paginatedPosts), "EX", 10);
+      logger.debug("paginatedPosts", paginatedPosts);
+      //redisClient.set(cacheKey, JSON.stringify(paginatedPosts), "EX", 10);
       return paginatedPosts;
     } catch (error) {
       throw new ErrorWithContext(
