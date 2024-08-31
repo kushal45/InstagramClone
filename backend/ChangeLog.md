@@ -25,6 +25,9 @@ kafka
 -**Pagination Integration** - Using Cursor implementation for paginating the fetch response for fetching lardge datasets of fetch endpoints.
 (skip offset functionality of pagination withing db queries has been removed since those are not recommended for large datasets since in that case we do full table scans even if skip with offset is used so cursor implementation needs to be done such that we jump to that particular cursor if valid cursor string is provided which makes the query effecient and optimized)
 
+-**assertion and plugins used in load testing** - adding ensure and assertion plugins of artillery load testing to assert checks for each endpoint 
+and adding threshold response ms of p95 and p99 requests
+
 
 ### New Features
 **Prometheus integration** : Added prometheus integration to alert for any anomalies like response time threshold / app server down in the 
