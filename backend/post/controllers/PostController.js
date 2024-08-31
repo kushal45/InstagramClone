@@ -54,7 +54,7 @@ module.exports = {
       const post = await PostService.getPostById(req.params.id);
       return res.status(200).send(ResponseFormatter.success(post, 'Post retrieved successfully'));
     } catch (error) {
-      logger.error(error);  
+      logger.error(error);
       next(error);
     }
   },

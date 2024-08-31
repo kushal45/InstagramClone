@@ -87,12 +87,24 @@ class PostService {
   }
 
   static async getPostById(postId) {
-    // Logic to fetch a post by ID
-    const post = await PostDAO.getById(postId);
-    if (!post) {
-      throw new NotFoundError("Post not found");
+    const logLocation = this.getLogLocation("getPostById");
+    try {
+      const post = await PostDAO.getById(postId);
+      if (!post) {
+        throw new NotFoundError("Post not found");
+      }
+      return post;
+    } catch (error) {
+      throw new ErrorWithContext(
+        error,
+        new ErrorContext(logLocation, {
+          postId,
+        }),
+        __filename
+      ).wrap();
+      
     }
-    return post;
+   
   }
 
   /**

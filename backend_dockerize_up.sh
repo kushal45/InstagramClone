@@ -15,6 +15,6 @@ else
 fi
 
 #DEBUG=1 docker-compose up -d --remove-orphans --force-recreate
-docker-compose -f docker-compose.yml -f docker-composer-db.yml -f docker-compose-inflx-grafana.yml -f docker-compose-elk.yml   up --remove-orphans --force-recreate -d
+docker-compose -f docker-compose.yml -f docker-composer-db.yml -f docker-compose-inflx-grafana.yml -f docker-compose-elk.yml   up --remove-orphans --force-recreate --build -d
 node run-migrations.js
 

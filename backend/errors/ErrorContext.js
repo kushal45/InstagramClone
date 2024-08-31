@@ -7,14 +7,14 @@ class ErrorContext {
        location,
         attributes,
     ) {
-        Object.freeze({
-            location,
-            attributes,
-        });
+        this.location = location;
+        this.attributes = attributes;
     }
 }
 class ErrorWithContext extends Error {
   constructor(error, context,filePath) {
+    //console.log("error",error);
+    super(error.message);
     this.contextStack = [];
     this.error = error;
     this.context = context;
@@ -23,9 +23,9 @@ class ErrorWithContext extends Error {
   }
 
   wrap() {
-    if (error instanceof ErrorWithContext) {
-        error.addContext(this.context);
-        return error;
+    if (this.error instanceof ErrorWithContext) {
+        this.error.addContext(this.context);
+        return this.error;
     }
     if (
       (this.error instanceof BadRequestError) |
@@ -39,10 +39,9 @@ class ErrorWithContext extends Error {
     }
     if (this.error instanceof Error) {
       return new ErrorWithContext(
-        this.error.name,
-        this.error.message,
-        context,
-        error,
+       this.error,
+        this.context,
+        this.filePath,
       );
     }
   }

@@ -31,7 +31,4 @@ class Post extends Model {
      
   }
   
-  module.exports = {
-    Post,
-    sequelize
-  };
+  module.exports = Post;

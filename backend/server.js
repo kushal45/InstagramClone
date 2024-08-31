@@ -1,3 +1,17 @@
+process.on("uncaughtException", (err) => {
+  console.error("There was an uncaught error", err);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
+
+// Add event listener for unhandled promise rejections
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
+
+
 require("dotenv").config();
 const express = require("express");
 const rateLimit = require('express-rate-limit');
@@ -18,18 +32,6 @@ const {
 const httpContext = require("express-http-context");
 const configureDebeziumConnector = require("./database/confDebeziumConnector");
 
-process.on("uncaughtException", (err) => {
-  console.error("There was an uncaught error", err);
-  // Perform any necessary cleanup
-  process.exit(1); // Exit the application
-});
-
-// Add event listener for unhandled promise rejections
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  // Perform any necessary cleanup
-  process.exit(1); // Exit the application
-});
 
 const PORT = process.env.PORT || 3000;
 

@@ -28,10 +28,20 @@ class PostDao {
   }
 
   static async getById(postId) {
-    const post = await Post.findByPk(postId, {
-      include: [{ model: Asset, as: "asset" }],
-    });
-    return post;
+    const logLocation = "PostDao.getById";
+    try {
+      const post = await Post.findByPk(postId, {
+        include: [{ model: Asset, as: "asset" }],
+      });
+      return post;
+    } catch (error) {
+      throw new ErrorWithContext(error,
+        new ErrorContext(logLocation,{
+          postId
+        }),__filename
+      ).wrap();
+    }
+   
   }
 
   static async update(postId, updateData) {

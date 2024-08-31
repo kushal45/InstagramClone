@@ -5,9 +5,8 @@ const { User, Asset, Post, Comment, Like,Follower } = require("../models");
 // const Photo = require("../models/Photo");
 // const Like = require("../models/Like");
 //
-
-
-console.log("configDB", ConfigDB);
+try {
+    console.log("configDB", ConfigDB);
 const connection = new Sequelize(ConfigDB);
 
 User.init(connection);
@@ -35,3 +34,8 @@ User.associate(connection.models);
 // Follow.associate(connection.models);
 
 module.exports = connection;
+} catch (error) {
+    console.error("database error:", error);
+}
+
+
