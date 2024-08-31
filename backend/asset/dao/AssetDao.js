@@ -34,19 +34,13 @@ class AssetDAO {
 
   static async findAssetIdsByTag(tags){
     try{
-      // const assets=await Asset.findAll({
-      //   where: {
-      //     tags: {
-      //       [Op.contains]: tags
-      //     }
-      //   }
-      // });
-      const assets=await AssetPool.findAll({
+      const assets=await Asset.findAll({
         where: {
           tags: {
-            contains: tags
+            [Op.contains]: tags
           }
-        }
+        },
+        attributes: ['id','text','imageUrl','videoUrl']
       });
       let assetIds=[];
       if (assets.length>0){

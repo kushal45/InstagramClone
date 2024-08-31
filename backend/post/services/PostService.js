@@ -142,8 +142,8 @@ class PostService {
       // }
       let posts = [];
       if (attr.hasOwnProperty("tags")) {
-        const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags || []);
-        console.log("assetIds", assetIds);
+        const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags);
+
         posts = await PostDAO.listByAssets(assetIds, {
           cursor,
           limit: pageSize,
