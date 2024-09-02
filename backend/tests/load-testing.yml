@@ -1,8 +1,12 @@
 config:
   target: "http://localhost:3000"
   phases:
-    - duration: 10 # Run the test for 100 seconds
-      arrivalRate: 4  # New users arrive at a rate of 50 per second
+    - duration: 30 # Run the test for 100 seconds
+      arrivalRate: 5  # New users arrive at a rate of 50 per second
+  headers:
+      Content-Type: "application/json"
+  http:
+      timeout: 30000
   plugins:
     ensure: {}
     apdex: {}
@@ -91,7 +95,7 @@ scenarios:
                 headers:
                   Authorization: "Bearer {{ loginToken }}"
                 json:
-                  text: "{{ postData }}"
+                  text: "{{ postData.text }}"
                   imageUrl: "https://source.unsplash.com/random/800x600"
                   videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
                 capture:

@@ -1,4 +1,6 @@
 const { InfluxDB, Point } = require("@influxdata/influxdb-client");
+const retry = require('async-retry');
+const os= require('os');
 
 class Metrics {
   constructor() {
@@ -10,7 +12,7 @@ class Metrics {
     this.writeApi.useDefaultTags({ host: "host1" });
   }
 
-  capture(options) {
+  async capture(options) {
     const point = new Point("api_metrics");
     for (let key in options) {
       if (key !== "response_time_ms" || key !== "status_code") {
@@ -23,8 +25,43 @@ class Metrics {
         point.intField(key, options[key]);
       }
     }
+     // Capture CPU and memory usage
+     const cpuUsage = this.getCpuUsage();
+     const memoryUsage = this.getMemoryUsage();
+     point.floatField('cpu_usage', cpuUsage);
+     point.floatField('memory_usage', memoryUsage);
+    await retry(async () => {
     this.writeApi.writePoint(point);
     this.writeApi.flush();
+  }, {
+    retries: 5, // Number of retries
+    minTimeout: 1000, // Minimum timeout between retries
+    maxTimeout: 5000 // Maximum timeout between retries
+  });
+  }
+
+  getCpuUsage() {
+    const cpus = os.cpus();
+    let user = 0;
+    let nice = 0;
+    let sys = 0;
+    let idle = 0;
+    let irq = 0;
+    for (let cpu of cpus) {
+      user += cpu.times.user;
+      nice += cpu.times.nice;
+      sys += cpu.times.sys;
+      idle += cpu.times.idle;
+      irq += cpu.times.irq;
+    }
+    const total = user + nice + sys + idle + irq;
+    return ((total - idle) / total) * 100;
+  }
+
+  getMemoryUsage() {
+    const totalMemory = os.totalmem();
+    const freeMemory = os.freemem();
+    return ((totalMemory - freeMemory) / totalMemory) * 100;
   }
 
   fetchDurationMs(start){
