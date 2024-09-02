@@ -40,7 +40,7 @@ async function postAssetExtraction(asset){
     const metrics = new Metrics();
     const durationMs = metrics.fetchDurationMs(start);
     options.response_time_ms = durationMs;
-    metrics.capture(options);
+    await metrics.capture(options);
 }
 
 module.exports = postAssetExtraction;

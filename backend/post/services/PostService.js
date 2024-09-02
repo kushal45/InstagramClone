@@ -16,9 +16,11 @@ class PostService {
         throw new NotFoundError("User not found");
       }
       let assetId = postData.assetId;
+      let transaction = null;
       if (assetId == null) {
-        const asset = await AssetDAO.create(postData);
+        const {transaction: postTransaction,asset} = await AssetDAO.create(postData);
         assetId = asset.id;
+        transaction = postTransaction;
         // Publish the event to Kafka
         const topic = "assetCreated";
         //await emitEvent(topic,asset);
@@ -32,6 +34,7 @@ class PostService {
       const post = await PostDAO.create({
         userId: user.id,
         assetId,
+        transaction,
       });
 
       return post;
@@ -51,7 +54,7 @@ class PostService {
           userId,
         }),
         __filename
-      ).wrap();
+      )
     }
   }
 
@@ -101,7 +104,7 @@ class PostService {
           postId,
         }),
         __filename
-      ).wrap();
+      )
       
     }
    
@@ -128,7 +131,7 @@ class PostService {
         .createHash("sha256")
         .update(JSON.stringify(attr))
         .digest("hex");
-      const cacheKey = `posts:${attrHash}`;
+      const cacheKey = `posts:${attrHash}:${cursor}:${pageSize}`;
 
       // // Check if the data is in the cache
       // const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
@@ -163,7 +166,7 @@ class PostService {
           pageSize,
         }),
         __filename
-      ).wrap();
+      )
     }
   }
 
@@ -217,7 +220,7 @@ class PostService {
          postId
         }),
         __filename
-      ).wrap();
+      )
     }
   }
 
@@ -240,25 +243,25 @@ class PostService {
     try {
       const user = await UserDAO.findUserById(userId);
       if (!user) throw new NotFoundError("User not found");
-      // const cacheKey = `posts:${userId}:${cursor}:${pageSize}`;
+      const cacheKey = `posts:${userId}:${cursor}:${pageSize}`;
 
-      // const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
-      //   if (err) return reject(err);
-      //   if (data) return resolve(JSON.parse(data));
-      //   resolve(null);
-      // });
+      const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+        if (err) return reject(err);
+        if (data) return resolve(JSON.parse(data));
+        resolve(null);
+      });
 
-      //logger.debug("cachedPosts", cachedPosts);
-      // if (cachedPosts) {
-      //   return cachedPosts;
-      // }
+      logger.debug("cachedPosts", cachedPosts);
+      if (cachedPosts) {
+        return cachedPosts;
+      }
 
       const paginatedPosts = await PostDAO.listByUsers([user.id], {
         cursor,
         pageSize,
       });
       logger.debug("paginatedPosts", paginatedPosts);
-      //redisClient.set(cacheKey, JSON.stringify(paginatedPosts), "EX", 10);
+      redisClient.set(cacheKey, JSON.stringify(paginatedPosts), "EX", 10);
       return paginatedPosts;
     } catch (error) {
       throw new ErrorWithContext(
@@ -269,7 +272,7 @@ class PostService {
           pageSize,
         }),
         __filename
-      ).wrap();
+      )
     }
   }
 
@@ -311,7 +314,7 @@ class PostService {
           pageSize,
         }),
         __filename
-      ).wrap();
+      )
     }
   }
 }

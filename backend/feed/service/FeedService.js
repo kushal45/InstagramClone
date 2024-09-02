@@ -56,7 +56,7 @@ class FeedService {
         }),
       };
     } catch (error) {
-      throw new ErrorWithContext(error, new ErrorContext(logLocation, { userTags, userId, cursor })).wrap();
+      throw new ErrorWithContext(error, new ErrorContext(logLocation, { userTags, userId, cursor }))
     }
   }
 
@@ -70,7 +70,7 @@ class FeedService {
       const sharedPost = await PostService.createPost(post, userId);
       return sharedPost;
     } catch (error) {
-      throw new ErrorWithContext(error, new ErrorContext(logLocation, { postId, userId })).wrap();
+      throw new ErrorWithContext(error, new ErrorContext(logLocation, { postId, userId }))
     }
   }
 }

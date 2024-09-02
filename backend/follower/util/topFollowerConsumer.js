@@ -23,7 +23,7 @@ async function topFollowerConsumer(kafaConsumerInst) {
     const metrics = new Metrics();
     const durationMs = metrics.fetchDurationMs(start);
     options.response_time_ms = durationMs;
-    metrics.capture(options);
+    await metrics.capture(options);
   });
 }
 

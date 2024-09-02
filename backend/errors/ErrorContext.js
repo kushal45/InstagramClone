@@ -20,6 +20,7 @@ class ErrorWithContext extends Error {
     this.context = context;
     this.addContext(this.context);
     this.filePath = filePath;
+    this.wrap();
   }
 
   wrap() {

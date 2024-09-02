@@ -4,25 +4,28 @@ const { Asset, Post } = require("../../models");
 const Cursor = require("../../database/cursor");
 const sequelize = require("../../database");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
+const { InternalServerError } = require("../../errors");
 
 class PostDao {
   static async create(postData) {
     const logLocation = "PostDao.create";
-    const transaction = await sequelize.transaction();
     try {
       const post = await Post.create({
         userId: postData.userId,
         assetId: postData.assetId,
       });
-      await transaction.commit();
+      if(postData.transaction== null){
+         throw new InternalServerError("Transaction not found");
+      }
+      await postData.transaction.commit();
       return post;
     } catch (error) {
-      await transaction.rollback();
+      //await transaction.rollback();
       throw new ErrorWithContext(error,
         new ErrorContext(logLocation,{
           postId
         }),__filename
-      ).wrap();
+      )
     }
     
   }
@@ -39,7 +42,7 @@ class PostDao {
         new ErrorContext(logLocation,{
           postId
         }),__filename
-      ).wrap();
+      )
     }
    
   }
@@ -60,7 +63,7 @@ class PostDao {
         new ErrorContext(logLocation,{
           postId
         }),__filename
-      ).wrap();
+      )
     }
     
   }
@@ -81,7 +84,7 @@ class PostDao {
         new ErrorContext(logLocation,{
           postId
         }),__filename
-      ).wrap();
+      )
     }
    
   }
@@ -124,7 +127,7 @@ class PostDao {
           cursor,
           limit
         }),__filename
-      ).wrap();
+      )
     }
     
   }

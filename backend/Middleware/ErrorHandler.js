@@ -7,7 +7,7 @@ const errorResponseMap = new Map([
 ]);
 
 const errorHandler = (err, req, res, next) => {
-  console.log("error caugth from errorHandler",err.error.constructor);
+  console.log("error caugth from errorHandler",err);
   const errorResponse = errorResponseMap.get(err.error.constructor);
   if (errorResponse) {
     return res.status(errorResponse.statusCode).send({ message: err.message || errorResponse.message });

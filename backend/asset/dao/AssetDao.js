@@ -3,15 +3,17 @@ const { NotFoundError } = require('../../errors');
 const  Asset  = require('../model/Asset'); 
 const AssetPool = require('../model/AssetPool');
 const logger = require('../../logger/logger');
+const sequelize = require('../../database');
 
 class AssetDAO {
   // Method to create a new asset
   static async create({imageUrl, videoUrl, text}) {
+    const transaction = await sequelize.transaction();
     try {
-      //const asset = await Asset.create({imageUrl, videoUrl, text });
-      const asset = await AssetPool.insertAsset({imageUrl, videoUrl, text });
+      const asset = await Asset.create({imageUrl, videoUrl, text });
+     // const asset = await AssetPool.insertAsset({imageUrl, videoUrl, text });
       logger.info(`Asset created with ID: ${asset.id}`);
-      return asset;
+      return {asset, transaction};
     } catch (error) {
       throw error;
     }
