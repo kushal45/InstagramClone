@@ -31,9 +31,13 @@ This document serves as a detailed log of all significant changes made to the pr
 ---
 
 ## [1.0.2] - 2024-08-03 (Branch: `instagramV2`)
-
+[#1]https://github.com/kushal45/InstagramClone/pull/1 - Changes implemented in this version
 ### Enhancements
-- **Asset Consumer Strategy Pattern**: Introduced a strategy pattern for asset filtering using either a generic NLP algorithm or a ChatGPT implementation (the latter is a WIP without a fallback mechanism).
+- **Asset Consumer Strategy Pattern**: 
+  - Introduced a strategy pattern for asset filtering.
+  - Implemented two filtering strategies:
+    - A generic NLP algorithm.
+    - A ChatGPT-based implementation (lacked a fallback mechanism).
 
 ### New Features
 - **Load Testing**: Configured Artillery for load testing various scenarios, including user registration, login, profile updates, post creation, and feed retrieval.
