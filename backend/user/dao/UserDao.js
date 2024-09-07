@@ -39,7 +39,8 @@ class UserDAO {
           id: {
             [Sequelize.Op.in]: userIds
           }
-        }
+        },
+        attributes: ['name','username']
       });
       // const users = await UserPool.findAll({
       //   where: {

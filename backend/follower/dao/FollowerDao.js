@@ -4,6 +4,7 @@ const { Sequelize } = require("sequelize");
 const FollowerPool = require("../models/FollowerPool");
 const Cursor = require("../../database/cursor");
 const Logger = require("../../logger/logger");
+const { fetchLastCursor } = require("../../asset/util/Utility");
 
 class FollowerDao {
   // Add a new follower
@@ -50,9 +51,7 @@ class FollowerDao {
         limit: pageSize,
         order: [["id", "ASC"]],
       });
-      // const followers = await FollowerPool.fetchFollowersByUserId(userId);
-      const newCursor = followers.length > 0 ? followers[followers.length - 1].id : null;
-      const nextCursor = Cursor.encode(newCursor);
+      const nextCursor=fetchLastCursor(followers);
       return {
         followers,
         nextCursor,
@@ -132,13 +131,11 @@ class FollowerDao {
       }
       const followings = await Follower.findAll({
         where,
-        include: [{ model: User, as: "FollowingUser" }],
+        include: [{ model: User, as: "FollowingUser", attributes: ["id","name"] }],
         order: [["id", "ASC"]],
         limit: pageSize,
       });
-      const newCursor =
-        followings.length > 0 ? followings[followings.length - 1].id : null;
-      const newFollowingCursor = Cursor.encode(newCursor);
+      const newFollowingCursor = fetchLastCursor(followings);
       return { followings, nextCursor: newFollowingCursor };
     } catch (error) {
       throw new Error(error.toString());

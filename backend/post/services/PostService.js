@@ -6,6 +6,7 @@ const httpContext = require("express-http-context");
 const PostPool = require("../models/PostPool");
 const logger = require("../../logger/logger");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
+const { deducePostWithTags } = require("./InternalPostCursorService");
 
 class PostService {
   static async createPost(postData, userId) {
@@ -18,7 +19,9 @@ class PostService {
       let assetId = postData.assetId;
       let transaction = null;
       if (assetId == null) {
-        const {transaction: postTransaction,asset} = await AssetDAO.create(postData);
+        const { transaction: postTransaction, asset } = await AssetDAO.create(
+          postData
+        );
         assetId = asset.id;
         transaction = postTransaction;
         // Publish the event to Kafka
@@ -54,7 +57,7 @@ class PostService {
           userId,
         }),
         __filename
-      )
+      );
     }
   }
 
@@ -104,25 +107,24 @@ class PostService {
           postId,
         }),
         __filename
-      )
-      
+      );
     }
-   
   }
 
   /**
-   * 
+   *
    * @param {*} attr  attributes with which to list the posts
    * @param {*} redisClient redisClient object
-   * @param {*} {cursor,pageSize}  
+   * @param {*} {cursor,pageSize}
    * @returns list of posts matching the attributes passed in the query
    */
   static async listPostsByAttr(
     attr,
     redisClient,
-    { cursor, pageSize } = {
+    { cursor, pageSize, sortOrder } = {
       cursor: "",
       pageSize: 10,
+      sortOrder: "asc",
     }
   ) {
     const logLocation = this.getLogLocation("listPostsByAttr");
@@ -133,24 +135,26 @@ class PostService {
         .digest("hex");
       const cacheKey = `posts:${attrHash}:${cursor}:${pageSize}`;
 
-      // // Check if the data is in the cache
-      // const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
-      //   if (err) return reject(err);
-      //   if (data) return resolve(JSON.parse(data));
-      //   resolve(null);
-      // });
-
-      // if (cachedPosts) {
-      //   return cachedPosts;
-      // }
-      let posts = [];
-      if (attr.hasOwnProperty("tags")) {
-        const assetIds = await AssetDAO.findAssetIdsByTag(attr.tags);
-
-        posts = await PostDAO.listByAssets(assetIds, {
-          cursor,
-          limit: pageSize,
+      // Check if the data is in the cache
+      if (redisClient) {
+        const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+          if (err) return reject(err);
+          if (data) return resolve(JSON.parse(data));
+          resolve(null);
         });
+
+        if (cachedPosts) {
+          return cachedPosts;
+        }
+      }
+      let postResult = {};
+      const options = {
+        cursor,
+        limit: pageSize,
+        sortOrder,
+      };
+      if (attr.hasOwnProperty("tags")) {
+         postResult= deducePostWithTags(attr.tags, options);
       } else {
         posts = [...posts, ...(await PostDAO.listByAttr(attr))];
       }
@@ -166,7 +170,7 @@ class PostService {
           pageSize,
         }),
         __filename
-      )
+      );
     }
   }
 
@@ -217,10 +221,10 @@ class PostService {
       throw new ErrorWithContext(
         error,
         new ErrorContext(logLocation, {
-         postId
+          postId,
         }),
         __filename
-      )
+      );
     }
   }
 
@@ -272,7 +276,7 @@ class PostService {
           pageSize,
         }),
         __filename
-      )
+      );
     }
   }
 
@@ -314,7 +318,7 @@ class PostService {
           pageSize,
         }),
         __filename
-      )
+      );
     }
   }
 }

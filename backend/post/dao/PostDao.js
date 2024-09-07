@@ -5,6 +5,7 @@ const Cursor = require("../../database/cursor");
 const sequelize = require("../../database");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
 const { InternalServerError } = require("../../errors");
+const { populateSelectOptions } = require("../../asset/util/Utility");
 
 class PostDao {
   static async create(postData) {
@@ -105,16 +106,11 @@ class PostDao {
       }
       const posts = await Post.findAll({
         where,
-        include: [{ model: Asset, as: "asset" }],
+        include: [{ model: Asset, as: "asset" , attributes: ['imageUrl', 'videoUrl','text']}],
         limit: pageSize,
         order: [["id", "DESC"]],
       });
-      //console.log("users posts", posts);
-      let nextCursor = null;
-      if (posts.length > 0) {
-        const lastPost = posts[posts.length - 1];
-        nextCursor = Cursor.encode(lastPost);
-      }
+      const nextCursor=fetchLastCursor(posts);
   
       return {
         posts,
@@ -139,19 +135,12 @@ class PostDao {
         nextCursor: null,
       };
     }
-    const where = {
+    const selectOpt = {
+      where: {
         assetId: {
           [Op.in]: assetIds,
-        }
-    }
-    if (cursor) {
-      const decodedCursor = Cursor.decode(cursor);
-      where.id = {
-        [Op.lt]: decodedCursor.id,
-      };
-    }
-    const posts = await Post.findAll({
-      where,
+        },
+      },
       include: [
         {
           model: Asset,
@@ -160,21 +149,13 @@ class PostDao {
           attributes: [ 'imageUrl', 'videoUrl','tags','text'] // Select only necessary fields from Asset
         }
       ],
-      attributes: ['id', 'title', 'content'], // Select only necessary fields from Post
-      subQuery: false, // Avoid subqueries if possible,
-      limit,
-      order: [["id", "DESC"]],
-    });
-    let nextCursor = null;
-    if (posts.length > 0) {
-      const lastPost = posts[posts.length - 1];
-      nextCursor = Cursor.encode(lastPost);
-    }
-    // const posts = await PostPool.listPostsByAttributeList([
-    //   {
-    //     assetId: assetIds,
-    //   },
-    // ]);
+      attributes: ['id', 'userId', 'assetId'],
+      subQuery: false,
+    };
+    populateSelectOptions(selectOpt, { cursor, limit });
+    const posts = await Post.findAll(selectOpt);
+    
+    const nextCursor=fetchLastCursor(posts);
     return {
       posts,
       nextCursor,
