@@ -4,7 +4,7 @@ const Asset = require("../model/Asset");
 const AssetPool = require("../model/AssetPool");
 const logger = require("../../logger/logger");
 const sequelize = require("../../database");
-const {  populateSelectOptions,fetchLastCursor } = require("../util/Utility");
+const {  populateSelectOptions,fetchLastCursor } = require("../../util/Utility");
 
 class AssetDAO {
   // Method to create a new asset
@@ -37,16 +37,19 @@ class AssetDAO {
   static async findAssetIdsByTag(tags, options) {
     try {
       // default select options with which to query Assets table
+      logger.debug(`Fetching assets by tags:`, tags);
       const selectOpt = {
         where: {
           tags: {
-            [Op.contains]: tags,
+            [Op.overlap]: tags,
           },
         },
         attributes: ["id"],
         order: [["createdAt", "ASC"]],
       };
+      console.log("options",selectOpt);
       populateSelectOptions(selectOpt, options);
+      logger.debug(`Select options for findAssetIdsByTag`, selectOpt);
       const assets = await Asset.findAll(selectOpt);
       let assetIds = [];
       if (assets.length > 0) {

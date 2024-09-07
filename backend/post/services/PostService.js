@@ -121,11 +121,7 @@ class PostService {
   static async listPostsByAttr(
     attr,
     redisClient,
-    { cursor, pageSize, sortOrder } = {
-      cursor: "",
-      pageSize: 10,
-      sortOrder: "asc",
-    }
+    { cursor="", pageSize=10, sortOrder="ASC" }
   ) {
     const logLocation = this.getLogLocation("listPostsByAttr");
     try {
@@ -153,14 +149,11 @@ class PostService {
         limit: pageSize,
         sortOrder,
       };
-      if (attr.hasOwnProperty("tags")) {
-         postResult= deducePostWithTags(attr.tags, options);
-      } else {
-        posts = [...posts, ...(await PostDAO.listByAttr(attr))];
-      }
+      postResult= deducePostWithTags(attr.tags, options);
+      
       //console.log("posts with tags", posts);
       // redisClient.set(cacheKey, JSON.stringify(posts), "EX", 3600);
-      return posts;
+      return postResult;
     } catch (error) {
       throw new ErrorWithContext(
         error,
@@ -291,10 +284,7 @@ class PostService {
    */
   static async listPostsByUserIds(
     userIds,
-    { cursor, pageSize } = {
-      cursor: "",
-      pageSize: 10,
-    }
+    { cursor="", pageSize=10 }
   ) {
     const logLocation = this.getLogLocation("listPostsByUserIds");
     try {
@@ -303,17 +293,17 @@ class PostService {
         throw new NotFoundError("Users not found");
       }
       const filteredUserIds = userList.map((user) => user.id);
-      //console.log("filteredUserIds",filteredUserIds);
       const paginatedPosts = await PostDAO.listByUsers(filteredUserIds, {
         cursor,
         pageSize,
       });
+      //logger.debug("paginatedPosts", paginatedPosts);
       return paginatedPosts;
     } catch (error) {
       throw new ErrorWithContext(
         error,
         new ErrorContext(logLocation, {
-          userId,
+          userIds,
           cursor,
           pageSize,
         }),

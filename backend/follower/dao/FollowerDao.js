@@ -4,7 +4,7 @@ const { Sequelize } = require("sequelize");
 const FollowerPool = require("../models/FollowerPool");
 const Cursor = require("../../database/cursor");
 const Logger = require("../../logger/logger");
-const { fetchLastCursor } = require("../../asset/util/Utility");
+const { fetchLastCursor } = require("../../util/Utility");
 
 class FollowerDao {
   // Add a new follower

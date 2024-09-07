@@ -1,10 +1,9 @@
 const { NotFoundError } = require("../../errors");
-const FollowerService = require("../../follower/services/FollowerService");
 const PostService = require("../../post/services/PostService");
 const logger = require("../../logger/logger");
 const Cursor = require("../../database/cursor");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
-const { fetchPostsByTags, fetchFollowingsAndPosts } = require("./InternalFeedCursorService");
+const { fetchPostsByTags, fetchFollowingsAndPosts, fetchParentDecodedCursor } = require("./InternalFeedCursorService");
 
 class FeedService {
   /**
@@ -26,55 +25,55 @@ class FeedService {
   }) {
     const logLocation = "FeedService.fetch";
     try {
+      logger.debug("userTags from fetch", userTags);
       const cacheKey = `feed:${userId}:${(userTags != null
         ? userTags
         : []
       ).join(",")}:${cursor}:${sortOrder}`;
-      let followingCursor = null;
-      let postFollowingCursor = null;
-      let postTagsCursor = null;
-      if (cursor) {
-        const decodeCursor = Cursor.decode(cursor);
-        followingCursor = decodeCursor.followingCursor;
-        postFollowingCursor = decodeCursor.postFollowingCursor;
-        postTagsCursor = decodeCursor.postTagsCursor;
-      }
+    
       const cachedData = await redisClient.hGetAll(cacheKey);
       logger.debug("cached feedData", cachedData);
       if (Object.keys(cachedData).length > 0) {
         return JSON.parse(cachedData.data);
       }
+      const decodedRes=fetchParentDecodedCursor(cursor);
       /**
        * query posts by tags which uses GIN index internally on tags coloumn of  Assets table
        */
-      const { posts: postWithTags, nextCursor: newPostTagsCursor } =
-        await fetchPostsByTags(userTags, postTagsCursor, sortOrder);
+      const { postWithTags,newPostTagsCursor } =
+        await fetchPostsByTags({tags:userTags,cursor:decodedRes?.postTagsCursor, sortOrder});
+      
       const {
         postWithFollowings,
-        newFollowingCursor,
-        newPostFollowingCursor,
+        newPostWithFollowingCursor
       } = await fetchFollowingsAndPosts(
-        userId,
-        followingCursor,
-        sortOrder,
-        redisClient
+        {
+          userId,
+          cursor:decodedRes?.postFollowingCursor,
+          sortOrder,
+          redisClient
+        }
       );
       const result = [...postWithTags, ...postWithFollowings];
       await redisClient.hSet(cacheKey, "data", JSON.stringify(result));
       await redisClient.hSet(cacheKey, "timestamp", Date.now().toString());
       await redisClient.expire(cacheKey, 36); // Set expiration time to 36 seconds
       return {
-        data: sortedResults,
+        data: result,
         cursor: Cursor.encode({
-          followingCursor: newFollowingCursor,
-          postFollowingCursor: newPostFollowingCursor,
+          postFollowingCursor: newPostWithFollowingCursor,
           postTagsCursor: newPostTagsCursor,
         }),
       };
     } catch (error) {
       throw new ErrorWithContext(
         error,
-        new ErrorContext(logLocation, { userTags, userId, cursor })
+        new ErrorContext(logLocation, {
+          userTags,
+          cursor,
+          sortOrder,
+        }),
+        __filename
       );
     }
   }

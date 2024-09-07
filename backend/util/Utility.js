@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const Cursor = require('../../database/cursor');
+const Cursor = require('../database/cursor');
 
 function capitalize(str) {
     if (!str) return '';
@@ -86,11 +86,11 @@ function populateSelectOptions(selectOpt, options) {
 }
 
 function fetchDecodedCursor(cursor){
-  if (cursor) {
+  if (cursor!=null && cursor!=="") {
     const decodedCursor = Cursor.decode(cursor);
     return decodedCursor;
   }
   return null;
 }
 
-module.exports = { populateSelectOptions , fetchLastCursor};
+module.exports = { populateSelectOptions , fetchLastCursor, fetchDecodedCursor};

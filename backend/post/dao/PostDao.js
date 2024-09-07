@@ -5,7 +5,7 @@ const Cursor = require("../../database/cursor");
 const sequelize = require("../../database");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
 const { InternalServerError } = require("../../errors");
-const { populateSelectOptions } = require("../../asset/util/Utility");
+const { populateSelectOptions, fetchDecodedCursor, fetchLastCursor } = require("../../util/Utility");
 
 class PostDao {
   static async create(postData) {
@@ -78,8 +78,7 @@ class PostDao {
       });
       await transaction.commit();
       return post;
-    } catch (error) {
-      console.
+    } catch (error) { 
       transaction.rollback();
       throw new ErrorWithContext(error,
         new ErrorContext(logLocation,{
@@ -98,12 +97,12 @@ class PostDao {
           [Op.in]: userIds,
         },
       };
-      if (cursor) {
-        const decodedCursor = Cursor.decode(cursor);
+      const decodedCursor = fetchDecodedCursor(cursor);
+      if(decodedCursor!=null){
         where.id = {
-          [Op.lt]: decodedCursor.id, // Assuming 'id' is the cursor field
+          [Op.gt]: decodedCursor,
         };
-      }
+      }      
       const posts = await Post.findAll({
         where,
         include: [{ model: Asset, as: "asset" , attributes: ['imageUrl', 'videoUrl','text']}],
@@ -121,7 +120,7 @@ class PostDao {
         new ErrorContext(logLocation,{
           userIds,
           cursor,
-          limit
+          pageSize
         }),__filename
       )
     }

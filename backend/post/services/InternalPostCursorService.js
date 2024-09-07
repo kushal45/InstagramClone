@@ -1,32 +1,33 @@
 const { AssetDAO, PostDAO } = require("../../dao");
 const Cursor = require("../../database/cursor");
+const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
+const { fetchDecodedCursor } = require("../../util/Utility");
+const logger = require("../../logger/logger");
 
 async function deducePostWithTags(userTags, options) {
   const logLocation = "InternalPostCursorService.fetchPostsByTags";
   try {
-    const { postCursor, assetsCursor } = decodeCursor(options.cursor);
+    const decodedCursor = fetchDecodedCursor(options.cursor);
 
     const postOptions = {
       ...options,
-      cursor: postCursor,
+      cursor: decodedCursor?.postCursor,
     };
     const assetOptions = {
       ...options,
-      cursor: assetsCursor,
+      cursor: decodedCursor?.assetsCursor,
     };
-    
     const assetResults = await AssetDAO.findAssetIdsByTag(
       userTags,
       assetOptions
     );
-
     const postResults = await PostDAO.listByAssets(
       assetResults.assetIds,
       postOptions
     );
     return {
-      data: postWithTags,
-      cursor: encodeCursor({
+      postWithTags: postResults.posts,
+      nextCursor: encodeCursor({
         postCursor: postResults.nextCursor,
         assetCursor: assetResults.nextCursor,
       }),
@@ -34,21 +35,11 @@ async function deducePostWithTags(userTags, options) {
   } catch (error) {
     throw new ErrorWithContext(
       error,
-      new ErrorContext(logLocation, { userTags, cursor })
+      new ErrorContext(logLocation, { userTags, options })
     );
   }
 }
 
-function decodeCursor(cursor) {
-  if (cursor != null) {
-    const decodeCursor = Cursor.decode(cursor);
-    return {
-      postCursor: decodeCursor.postCursor,
-      assetsCursor: decodeCursor.assetCursor,
-    };
-  }
-  return null;
-}
 
 function encodeCursor(entityObj) {
   return Cursor.encode(entityObj);
