@@ -2,6 +2,8 @@ const FollowerDao = require("../dao/FollowerDao");
 const KafkaProducer = require("../../kafka/Producer");
 const httpContext = require("express-http-context");
 const logger = require("../../logger/logger");
+const { BadRequestError } = require("../../errors");
+const { ErrorWithContext } = require("../../errors/ErrorContext");
 
 
 class FollowerService {
@@ -50,7 +52,11 @@ class FollowerService {
 
   // Follow another user
   static async followUser(followerId, followingId,redisClient) {
+    const logLocation = "FollowerService.followUser";
     try {
+      if(followerId === followingId){
+        throw new BadRequestError("You cannot follow yourself!");
+      }
       const createdFollower = await FollowerDao.addFollower(followerId, followingId);
       const kafkaProducer = new KafkaProducer("producer-2");
       const correlationId= httpContext.get("correlationId");
@@ -67,12 +73,13 @@ class FollowerService {
         { message: error.message },
         { correlationId }
       );
-      throw error;
+      throw ErrorWithContext(error, new ErrorContext(logLocation), __filename);
     }
   }
 
   // Get top users by followers
   static async getTopUsersByFollowers(numList,redisClient) {
+    const logLocation = "FollowerService.getTopUsersByFollowers";
     try {
       const cacheKey = 'topUsersByFollowers';
       const cachedTopUsers = await redisClient.get(cacheKey);
@@ -83,7 +90,7 @@ class FollowerService {
       redisClient.set(cacheKey, JSON.stringify(topUsers), 'EX', 5); // Cache for 1 hour
       return topUsers;
     } catch (error) {
-      throw error;
+      throw ErrorWithContext(error, new ErrorContext(logLocation), __filename);
     }
   }
 
