@@ -1,3 +1,5 @@
+appBaseImageRebuild=$1
+echo "appBaseImageRebuild: $appBaseImageRebuild"
 cd backend
 if docker ps -a | grep -q 'backend'; then
     docker stop backend-*
@@ -15,7 +17,7 @@ else
 fi
 
 #DEBUG=1 docker-compose up -d --remove-orphans --force-recreate
-if docker images | grep -q 'appbase *latest'; then
+if (docker images | grep -q 'appbase *latest') & !$appBaseImageRebuild; then
    echo "appbase image exists"
 else
     echo "appbase image does not exist"
