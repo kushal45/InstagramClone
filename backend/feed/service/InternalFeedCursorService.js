@@ -53,16 +53,7 @@ async function fetchPostsByTags({ tags, cursor, sortOrder }) {
   };
 }
 
-function decodePostTagsCursor(cursor) {
-  const decodedCursor = fetchDecodedCursor(cursor);
-  if (decodedCursor != null) {
-    return {
-      postTagsCursor: decodedCursor.postTagsCursor,
-      postFollowingCursor: decodedCursor.postFollowingCursor,
-    };
-  }
-  return null;
-}
+
 
 /**
  * Fetches followings and their posts.

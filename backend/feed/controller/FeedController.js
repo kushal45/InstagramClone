@@ -17,6 +17,7 @@ class FeedController {
   // Get all feeds for a user
   static async getFeeds(req, res, next) {
     try {
+      const sort = req.query.sort;
       const cursor = req.query.cursor;
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -26,7 +27,7 @@ class FeedController {
       logger.debug("userTags", userTags);
       const userId = req.userId;
       const redisClient = req.redis;
-      const feeds = await FeedService.fetch({ userTags, userId, redisClient, cursor });
+      const feeds = await FeedService.fetch({ userTags, userId, redisClient, cursor,sortOrder:sort!=null?sort:"asc" });
       res.json(ResponseFormatter.success(feeds, "Feeds retrieved successfully"));
     } catch (error) {
       logger.error(error);

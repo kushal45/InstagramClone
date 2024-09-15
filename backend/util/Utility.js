@@ -44,7 +44,7 @@ function addLimit(selectOpt, options) {
  */
 function addOrder(selectOpt, options) {
   if (options.order) {
-      selectOpt.order = capitalize(options.order);
+      selectOpt.order = [["createdAt",capitalize(options.order)]];
   }
 }
 

@@ -127,7 +127,7 @@ class PostDao {
     
   }
 
-  static async listByAssets(assetIds, { cursor, limit } = {}) {
+  static async listByAssets(assetIds, options) {
     if(assetIds.length === 0) {
       return {
         posts: [],
@@ -151,7 +151,7 @@ class PostDao {
       attributes: ['id', 'userId', 'assetId'],
       subQuery: false,
     };
-    populateSelectOptions(selectOpt, { cursor, limit });
+    populateSelectOptions(selectOpt, options);
     const posts = await Post.findAll(selectOpt);
     
     const nextCursor=fetchLastCursor(posts);
