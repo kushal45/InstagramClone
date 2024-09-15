@@ -16,6 +16,7 @@ An Instagram-like social media API built with **Node.js**, **Express**, and **Mo
 ## Project Overview
 
 This Instagram clone aims to replicate core functionalities of Instagram, such as:
+
 - User authentication (Sign up, login)
 - CRUD operations for posts (create posts ,fetch all posts)
 - Liking, commenting, and following functionality
@@ -42,7 +43,7 @@ The API is designed to be scalable and modular, allowing for future feature expa
 - **Authentication**: JWT
 - **File Storage**: local storage
 - **Cache**: Redis (for caching user sessions, feed, etc.)
-- **Other Tools**: Docker, Swagger for API documentation,Jest to unit testing 
+- **Other Tools**: Docker, Swagger for API documentation,Jest to unit testing
 
 ## Getting Started
 
@@ -56,39 +57,39 @@ The API is designed to be scalable and modular, allowing for future feature expa
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/kushal45/InstagramClone.git
    cd InstagramClone/backend
-   
+   ```
 
 2. Create a .env file and configure your environment variables based on .env.example
 
-3. cd ..
-
-
+3. Perform cd .. to go back to 'InstagramClone' directory
 
 Note: Ensure docker is up and running
 
-4. execute : ./backend_dockerize_up.sh
+4. execute :
+``` ./backend_dockerize_up.sh
+```
 this internally takes care of calling the dependent docker services and setting up the project
 
-
-
 ## API Documentation
+
 You can explore the API using Swagger or Postman. The Swagger documentation is available at /api-docs when the server is running at localhost:3000.
 
-###Endpoints
-POST /auth/register: Register a new user
-POST /auth/login: Login user and receive a token
-POST /posts: Create a new post (Authenticated)
-GET /posts: Get all posts (Paginated with cursor)
-GET /posts/:id: Get a specific post
-DELETE /posts/:id: Delete a post (Authenticated)(Todo)
-POST /like: Like a post (Authenticated)
-POST /comments: Comment on a post (Authenticated)
-GET /users: Follow a user (Authenticated)
-GET /feeds: Get posts from followed users / based on interest tags of post(s) (Authenticated)
+### Endpoints
 
+- `POST /auth/register`: Register a new user
+- `POST /auth/login`: Login user and receive a token
+- `POST /posts`: Create a new post (Authenticated)
+- `GET /posts`: Get all posts (Paginated with cursor)
+- `GET /posts/:id`: Get a specific post
+- `DELETE /posts/:id`: Delete a post (Authenticated) (Todo)
+- `POST /like`: Like a post (Authenticated)
+- `POST /comments`: Comment on a post (Authenticated)
+- `GET /users`: Follow a user (Authenticated)
+- `GET /feeds`: Get posts from followed users / based on interest tags of post(s) (Authenticated)
 
 ## Folder Structure
 
@@ -377,13 +378,12 @@ InstagramClone/
     └── 1723216136194-test-video.mp4
 ```
 
-
 ## Caching & Optimization
 
 - **Redis Caching**: Implemented Redis to cache frequently accessed data such as user sessions, feed data, and user profiles, reducing database load and improving response times.
 - **Query Optimization**: Optimized Postgres queries to ensure efficient data retrieval, reducing latency and improving performance.
 - **Pagination**: Implemented pagination for endpoints that return large datasets to minimize memory usage and improve response times.
-This was achieved by using cursors which query from the last valid id of the entity if cursor is non-empty and valid. 
+This was achieved by using cursors which query from the last valid id of the entity if cursor is non-empty and valid.
 - **Rate Limiting**: Added API rate limiting to prevent abuse and ensure fair usage of resources.
 - **Compression**: Enabled Gzip compression for API responses to reduce payload size and improve network performance.
 - **Connection Pooling**: Configured connection pooling for Postgres /Sequelize ORM by using Pgbouncer to manage database connections efficiently and improve throughput.

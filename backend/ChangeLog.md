@@ -6,7 +6,9 @@ This document serves as a detailed log of all significant changes made to the pr
 
 ---
 
-## [1.0.3] - YYYY-MM-DD (Branch: `instagramV3`)
+## [1.0.4] - YYYY-MM-DD (Branch `instagramV4`)
+
+## [1.0.3] - 2024-09-15 (Branch: `instagramV3`)
 
 ### Enhancements
 - **Error Handling**: Enhanced error management to prevent propagation to the client, improving user experience and system stability.
