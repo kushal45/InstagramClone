@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require("sequelize");
-
 class Post extends Model {
     static init(sequelize) {
       super.init(

@@ -39,19 +39,19 @@ function getRandomTokenIdx(){
 }
 
 async function deleteAllTablesData() {
-  const client = new Client({
-    user: process.env.DB_USERNAME,
-    host: process.env.EXTERNAL_DB_HOST,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-  });
-
-  await client.connect();
-
+  let client;
   try {
+    client = new Client({
+      user: process.env.DB_USERNAME,
+      host: process.env.EXTERNAL_DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.EXTERNAL_DB_PORT,
+    });
+    await client.connect();
     const tables = ["users", "assets", "posts", "comments", "likes", "followers"];
     for (const table of tables) {
+      console.log(`Deleting data from table ${table}`);
       await client.query(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
     }
    console.log("All tables data deleted successfully.");
@@ -191,7 +191,7 @@ module.exports = {
     return next();
   },
   savePostId: function (requestParams,response, context,events, done) {
-    //console.log("saving postIds");
+    console.log("saving postIds",response.data);
     const filePath = path.join(__dirname, "postIds.json");
 
     // Step 1 & 2: Read the file and parse the content if it exists

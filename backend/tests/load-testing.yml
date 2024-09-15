@@ -2,18 +2,24 @@ config:
   target: "http://localhost:3000"
   phases:
     - duration: 30 # Run the test for 100 seconds
-      arrivalRate: 10  # New users arrive at a rate of 50 per second
+      arrivalRate: 5  # New users arrive at a rate of 50 per second
+  headers:
+      Content-Type: "application/json"
+  http:
+      timeout: 30000
   plugins:
     ensure: {}
     apdex: {}
     metrics-by-endpoint: {}
-    # publish-metrics:
-    #   - type: influxdb-statsd # https://artillery.io/docs/guides/plugins/plugin-publish-metrics.html#InfluxDB-Telegraf
-    #     tags:
-    #       - "testId:weather-forecast"
-    #       - "reporterType:influxdb-statsd"
-    #     event:
-    #       priority: low
+    expect: 
+      reportFailuresAsErrors: true
+      outputFormat: prettyError
+  apdex:
+    threshold: 100
+  ensure:
+    thresholds:
+      - http.response_time.p99: 250
+      - http.response_time.p95: 75
   processor: "./processor.js"
 before :
   flow:
@@ -89,13 +95,16 @@ scenarios:
                 headers:
                   Authorization: "Bearer {{ loginToken }}"
                 json:
-                  text: "{{ postData }}"
+                  text: "{{ postData.text }}"
                   imageUrl: "https://source.unsplash.com/random/800x600"
                   videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
                 capture:
                   json: "$.post.id" # Capture the postId from the response
                   as: "postId" # Save it as postId
             #- log: 'post id saved  {{ postId }}'
+                expect:
+                  - statusCode: 201
+                  - contentType: json
             - think: 2
         count: 5 
       - post:
@@ -124,57 +133,57 @@ scenarios:
   #           - think: 3   
   #       over: "usersToFollow"
 
-  # - name: "Create posts"
-  #   flow:
-  #     - loop:
-  #       - parallel:
-  #           - log: "Creating post {{ postData }}"
-  #           - post:
-  #               url: "/posts"
-  #               beforeRequest:
-  #                 - "readToken"
-  #                 - "loadPostData"
-  #               afterResponse: "savePostId"
-  #               headers:
-  #                 Authorization: "Bearer {{ loginToken }}"
-  #               json:
-  #                 text: "{{ postData }}"
-  #                 imageUrl: "https://source.unsplash.com/random/800x600"
-  #                 videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
-  #               capture:
-  #                 json: "$.post.id" # Capture the postId from the response
-  #                 as: "postId" # Save it as postId
-  #           #- log: 'post id saved  {{ postId }}'
-  #           - think: 2
-  #       count: 5 # Simulate creating 5 posts
+  - name: "Create posts"
+    flow:
+      - loop:
+        - parallel:
+            - log: "Creating post {{ postData }}"
+            - post:
+                url: "/posts"
+                beforeRequest:
+                  - "readToken"
+                  - "loadPostData"
+                afterResponse: "savePostId"
+                headers:
+                  Authorization: "Bearer {{ loginToken }}"
+                json:
+                  text: "{{ postData }}"
+                  imageUrl: "https://source.unsplash.com/random/800x600"
+                  videoUrl: "https://www.youtube.com/watch?v=6JYIGclVQdw"
+                capture:
+                  json: "$.post.id" # Capture the postId from the response
+                  as: "postId" # Save it as postId
+            #- log: 'post id saved  {{ postId }}'
+            - think: 2
+        count: 5 # Simulate creating 5 posts
       
   
 
-  - name: "Get all posts"
-    flow:
-       - log: 'New virtual user running {{ userId }}'
-       - get:
-            url: "/posts"
-            beforeRequest:
-              - "readToken"
-            headers:
-               Authorization: "Bearer {{ loginToken }}"
+  # - name: "Get all posts"
+  #   flow:
+  #      - log: 'New virtual user running {{ userId }}'
+  #      - get:
+  #           url: "/posts"
+  #           beforeRequest:
+  #             - "readToken"
+  #           headers:
+  #              Authorization: "Bearer {{ loginToken }}"
 
-  - name: "Create Comments on a Post"
-    flow:
-      - loop:
-         - post:
-            beforeRequest:
-              - "readToken"
-              - "loadPostData"
-              - "loadPostId"
-            url: "/comments"
-            headers:
-             Authorization: "Bearer {{ loginToken }}"
-            json:
-              text: "{{ postData }}"
-              postId: "{{ postId }}" # Use the postId captured from the previous request
-        count: 5 # Simulate creating 5 comments
+  # - name: "Create Comments on a Post"
+  #   flow:
+  #     - loop:
+  #        - post:
+  #           beforeRequest:
+  #             - "readToken"
+  #             - "loadPostData"
+  #             - "loadPostId"
+  #           url: "/comments"
+  #           headers:
+  #            Authorization: "Bearer {{ loginToken }}"
+  #           json:
+  #             text: "{{ postData }}"
+  #             postId: "{{ postId }}" # Use the postId captured from the previous request
+  #       count: 5 # Simulate creating 5 comments
    
 
         

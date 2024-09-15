@@ -73,6 +73,20 @@ const routes = Router();
  *     tags: [Feeds]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: The cursor for pagination
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         required: false
+ *         description: The order in which to sort the results (asc or desc)
  *     responses:
  *       200:
  *         description: Feeds retrieved successfully

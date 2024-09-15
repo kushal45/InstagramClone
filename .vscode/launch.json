@@ -29,7 +29,8 @@
             
             "console": "integratedTerminal",
             "timeout": 9999999,
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+             "envFile": "${workspaceFolder}/backend/.env"
         }
     ]
 }

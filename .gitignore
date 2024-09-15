@@ -6,3 +6,6 @@ backend/*.log
 backend/tests/*.json
 backend/logs
 backend/logs/
+*.venv
+*.pyc
+uploads/

@@ -1,7 +1,23 @@
 
-const assetConsumer = require("./asset/util/assetConsumerGptStrat");
+require('dotenv').config();
+const assetConsumerGPT = require("./asset/util/assetConsumerGptStrat");
+
+process.on('uncaughtException', (err) => {
+  console.error('There was an uncaught error', err);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
+
+// Add event listener for unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Perform any necessary cleanup
+  process.exit(1); // Exit the application
+});
+
 //const assetConsumer = require("./asset/util/assetConsumerGenNLPStrat");
 const consumerServices = require("./config");
+const failureFollowerConsumer = require("./follower/util/failureFollowerConsumer");
 const topFollowerConsumer = require("./follower/util/topFollowerConsumer");
 const KafkaConsumer = require("./kafka/Consumer");
 const fs = require('fs').promises;
@@ -17,9 +33,9 @@ initializeConsumer(kafaConsumerInst);
 async function initializeConsumer(kafaConsumerInst) {
   try {
     await kafaConsumerInst.createTopics(process.env.TOPIC);
-    await kafaConsumerInst.subscribe(process.env.TOPIC, process.env.GROUPID);
+    await kafaConsumerInst.subscribe({topics:[process.env.TOPIC],groupId: process.env.GROUPID});
     await processConsumerInfinitely(kafaConsumerInst);
-    console.log("Successfully subscribed to topic");
+    //console.log("Successfully subscribed to topic");
   } catch (error) {
     console.error(error);
   }
@@ -37,8 +53,9 @@ async function processConsumerInfinitely(kafaConsumerInst){
 
 function _fetchConsumer(){
   return {
-    [consumerServices.ASSETCONSUMER]: assetConsumer,
-    [consumerServices.TOPFOLLOWERCONSUMER]: topFollowerConsumer
+    [consumerServices.ASSETCONSUMER]: assetConsumerGPT,
+    [consumerServices.TOPFOLLOWERCONSUMER]: topFollowerConsumer,
+    [consumerServices.DQLFOLLOWERCONSUMER]: failureFollowerConsumer
   }
 }
 
@@ -62,3 +79,5 @@ async function touchFile(filePath) {
     }
   }
 }
+
+

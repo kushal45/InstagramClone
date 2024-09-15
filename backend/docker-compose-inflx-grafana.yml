@@ -4,6 +4,8 @@ services:
   influxdb:
     image: influxdb:2.0
     restart: always
+    networks:
+      - elk
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
@@ -26,6 +28,8 @@ services:
   grafana:
     image: grafana/grafana:latest
     restart: always
+    networks:
+      - elk
     ports:
       - "3002:3000"
     environment:
@@ -41,8 +45,29 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  agent:
+    container_name: newrelic-infra
+    build:
+      context: .
+      dockerfile: newrelic-infra.dockerfile
+    cap_add:
+      - SYS_PTRACE
+    pid: host
+    privileged: true
+    volumes:
+      - "/:/host:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    restart: unless-stopped
+    networks:
+      - elk
 
 volumes:
   influxdb2config:
   influxdb2data:
   grafana-storage:
+
+networks:
+  elk:
+    driver: bridge
+  default:
+    driver: bridge

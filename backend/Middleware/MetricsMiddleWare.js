@@ -6,7 +6,7 @@ const  metrics = new Metrics();
 const metricsMiddleware = (req, res, next) => {
   const start = process.hrtime();
 
-  res.on('finish', () => {
+  res.on('finish', async () => {
     const durationMs = metrics.fetchDurationMs(start);
     const options= {
         endpoint: req.originalUrl,
@@ -14,7 +14,7 @@ const metricsMiddleware = (req, res, next) => {
         status_code: res.statusCode,
         response_time_ms: durationMs
     }
-    metrics.capture(options);
+    await metrics.capture(options);
   });
 
   next();

@@ -30,12 +30,24 @@ const router = express.Router();
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: The cursor for pagination
  *       - in: path
  *         name: userId
  *         schema:
  *           type: string
  *         required: true
  *         description: The ID of the user
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: The cursor for pagination
  *     responses:
  *       200:
  *         description: List of users that the specified user is following

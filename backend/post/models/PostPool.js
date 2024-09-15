@@ -37,28 +37,6 @@ const logger = require("../../logger/logger");
         }
       }
 
-    //   static async listPostsByAttrbuteList(options, additionalConditions = '', additionalValues = []) {
-    //     if (!Array.isArray(userIds) || userIds.length === 0) {
-    //       throw new Error("userIds must be a non-empty array");
-    //     }
-        
-    //     const query = `
-    //       SELECT p.*, a.*
-    //       FROM posts as p
-    //       JOIN assets as a ON p."assetId" = a."id"
-    //       WHERE p."userId" = ANY($1::int[])
-    //       ${additionalConditions};
-    //     `;
-    //     const values = [userIds, ...additionalValues];
-    
-    //     try {
-    //       const res = await pool.query(query, values);
-    //       return res.rows;
-    //     } catch (error) {
-    //       console.error("Error fetching posts by user IDs:", error);
-    //       throw error;
-    //     }
-    //   }
 
     static async listPostsByAttributeList(options, additionalConditions = '', additionalValues = []) {
         if (!Array.isArray(options) || options.length === 0) {
@@ -81,7 +59,7 @@ const logger = require("../../logger/logger");
         }
       
         const query = `
-          SELECT p.*, a.*
+          SELECT p."assetId",p."userId", a."text",a."imageUrl",a."videoUrl",
           FROM posts as p
           JOIN assets as a ON p."assetId" = a."id"
           WHERE ${conditions.join(' AND ')}

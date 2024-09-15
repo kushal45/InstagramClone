@@ -2,22 +2,13 @@ const { createLogger, transports, format } = require("winston");
  // Increase the limit as needed
 //const WinstonLogStash = require("winston3-logstash-transport");
 const path = require("path");
-const callsite = require('callsite');
 function formatMessage(message) {
   return message
     .map((msg) => (typeof msg === "object" ? JSON.stringify(msg) : msg))
     .join(" ");
 }
 
-// Custom format to include file name and function name
-const customFormat = format.printf(({ level, message, timestamp }) => {
-  const stack = callsite();
-  const callSite = stack[2]; // Adjust the index based on where the logger is called
-  const fileName = callSite.getFileName();
-  const functionName = callSite.getFunctionName() || "anonymous";
-  console.log("fileName",fileName,"functionName",functionName);
-  return `${timestamp} [${level}] [${fileName}:${functionName}] ${message}`;
-});
+
 
 
 class Logger {
@@ -27,7 +18,12 @@ class Logger {
       const errorLogPath = path.resolve(__dirname, "../logs/error.log");
       this.logger =  createLogger({
         level: "debug",
-        format: format.combine(format.timestamp(), format.json()),
+        format: format.combine(
+          format.timestamp(),
+          format.errors({ stack: true }),
+          format.splat(),
+          format.json()
+        ),
         defaultMeta: { service: "user-service" },
         transports: [
           new transports.Console(),

@@ -31,7 +31,10 @@ module.exports = {
         type: Sequelize.ARRAY(Sequelize.ENUM('politics', 'sports', 'technology', 'entertainment', 'science', 'health', 'business', 'education', 'lifestyle', 'other')),
         allowNull: true, 
       });
-
+      await queryInterface.addIndex('assets', ['tags'], {
+        using: 'GIN',
+        name: 'tags_gin_index'
+      });
       // Since the rows were already updated to an array structure, no further row updates are needed here
      
   },

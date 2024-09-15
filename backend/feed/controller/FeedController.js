@@ -11,11 +11,14 @@ const { validationResult } = require("express-validator");
 const FeedService = require("../service/FeedService");
 const { BadRequestError } = require("../../errors");
 const logger = require("../../logger/logger");
+const ResponseFormatter = require("../../util/ResponseFormatter");
 
 class FeedController {
   // Get all feeds for a user
   static async getFeeds(req, res, next) {
     try {
+      const sort = req.query.sort;
+      const cursor = req.query.cursor;
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         throw new BadRequestError(JSON.stringify(errors.array()));
@@ -24,8 +27,8 @@ class FeedController {
       logger.debug("userTags", userTags);
       const userId = req.userId;
       const redisClient = req.redis;
-      const feeds = await FeedService.fetch({ userTags, userId, redisClient });
-      res.json(feeds);
+      const feeds = await FeedService.fetch({ userTags, userId, redisClient, cursor,sortOrder:sort!=null?sort:"asc" });
+      res.json(ResponseFormatter.success(feeds, "Feeds retrieved successfully"));
     } catch (error) {
       logger.error(error);
       next(error);
@@ -42,7 +45,7 @@ class FeedController {
       const { postId } = req.body;
       const userId = req.userId;
       const sharedPost = await FeedService.share(postId, userId);
-      res.status(201).send(sharedPost);
+      res.status(201).send(ResponseFormatter.success(sharedPost, "Post shared successfully"));
     } catch (error) {
       logger.error(error);
       next(error);

@@ -1,6 +1,8 @@
 const redis = require("redis");
 const Metrics = require("../../util/Metrics");
 const FollowerService = require("../services/FollowerService");
+const logger = require("../../logger/logger");
+const viewFollowerResult = require("./viewFollowerResult");
 
 const options = {
   endpoint: "topFollowerConsumer",
@@ -17,28 +19,12 @@ redisClient.connect();
 async function topFollowerConsumer(kafaConsumerInst) {
   kafaConsumerInst.processMessage(async (followerObj) => {
     const start = process.hrtime();
-    console.log("topFollowerConsumer running called with", followerObj);
-    const topFollowers = await fetchTopFollower(
-      followerObj.numberOfTopFollowers,
-      redisClient
-    );
-    console.log(
-      `top ${followerObj.numberOfTopFollowers}:`,
-      JSON.stringify(topFollowers)
-    );
+    await viewFollowerResult(redisClient,"topUsers");
     const metrics = new Metrics();
     const durationMs = metrics.fetchDurationMs(start);
     options.response_time_ms = durationMs;
-    metrics.capture(options);
+    await metrics.capture(options);
   });
-}
-
-async function fetchTopFollower(numList, redisClient) {
-  const topFollowers = FollowerService.getTopUsersByFollowers(
-    numList,
-    redisClient
-  );
-  return topFollowers;
 }
 
 module.exports = topFollowerConsumer;

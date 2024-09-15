@@ -1,0 +1,14 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'team-email'
+
+receivers:
+  - name: 'team-email'
+    email_configs:
+      - to: 'bhattacharya.kushal4@gmail.com'
+        from: 'alertmanager@example.com'
+        smarthost: 'smtp.example.com:587'
+        auth_username: 'alertmanager@example.com'
+        auth_password: '123456'

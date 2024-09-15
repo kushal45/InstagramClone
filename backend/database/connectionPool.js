@@ -7,6 +7,13 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: process.env.PG_BOUNCER_PORT, // pgBouncer port
 });
+// console.log("pool",{
+//   user: process.env.DB_USERNAME,
+//   host: process.env.DB_PGBOUNCER_HOST,
+//   database: process.env.DB_DATABASE,
+//   password: process.env.DB_PASSWORD,
+//   port: process.env.PG_BOUNCER_PORT, // pgBouncer port
+// });
 
 pool.connect((err, client, release) => {
   if (err) {
