@@ -92,13 +92,16 @@ GET /feeds: Get posts from followed users / based on interest tags of post(s) (A
 
 ## Folder Structure
 
-InstagramClone/ .
+## Folder Structure
+
+```bash
+InstagramClone/
 ├── Instagram_Glyph_Gradient.png
 ├── README.md
 ├── backend
 │   ├── ChangeLog.md
 │   ├── Dockerfile
-│   ├── __pycache__
+│   ├── pycache
 │   │   └── flask.cpython-312.pyc
 │   ├── alerts
 │   │   └── alertmanager.yml
@@ -372,6 +375,7 @@ InstagramClone/ .
     ├── 1723215763211-test-video.mp4
     ├── 1723216136131-test-image.jpg
     └── 1723216136194-test-video.mp4
+```
 
 
 ## Caching & Optimization
