@@ -3,7 +3,7 @@ const KafkaProducer = require("../../kafka/Producer");
 const httpContext = require("express-http-context");
 const logger = require("../../logger/logger");
 const { BadRequestError } = require("../../errors");
-const { ErrorWithContext } = require("../../errors/ErrorContext");
+const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
 
 
 class FollowerService {

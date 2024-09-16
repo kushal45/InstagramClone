@@ -30,14 +30,9 @@ class Metrics {
      const memoryUsage = this.getMemoryUsage();
      point.floatField('cpu_usage', cpuUsage);
      point.floatField('memory_usage', memoryUsage);
-    await retry(async () => {
+   
     this.writeApi.writePoint(point);
     this.writeApi.flush();
-  }, {
-    retries: 5, // Number of retries
-    minTimeout: 1000, // Minimum timeout between retries
-    maxTimeout: 5000 // Maximum timeout between retries
-  });
   }
 
   getCpuUsage() {

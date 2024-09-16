@@ -70,7 +70,8 @@ The API is designed to be scalable and modular, allowing for future feature expa
 Note: Ensure docker is up and running
 
 4. execute :
-``` ./backend_dockerize_up.sh
+```bash
+ ./backend_dockerize_up.sh
 ```
 this internally takes care of calling the dependent docker services and setting up the project
 

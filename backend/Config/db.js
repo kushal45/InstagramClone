@@ -13,7 +13,7 @@ module.exports = {
   },
   logging: console.log,
   pool: {
-    max: 5, // maximum number of connections in pool
+    max: 15, // maximum number of connections in pool
     min: 0, // minimum number of connections in pool
     acquire: 3000, // maximum time, in milliseconds, that pool will try to get connection before throwing error
     idle: 10000 // maximum time, in milliseconds, that a connection can be idle before being released
