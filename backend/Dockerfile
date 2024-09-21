@@ -1,5 +1,5 @@
-FROM postgres:14
-FROM node:18
+FROM postgres:14-alpine
+FROM node:21-alpine
 WORKDIR /app
 COPY package*.json .
 RUN npm cache clean --force
