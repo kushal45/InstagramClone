@@ -3,7 +3,6 @@ const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
 const KafkaProducer = require("../../kafka/Producer");
 const httpContext = require("express-http-context");
-const PostPool = require("../models/PostPool");
 const logger = require("../../logger/logger");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
 const { deducePostWithTags } = require("./InternalPostCursorService");
@@ -26,11 +25,8 @@ class PostService {
         transaction = postTransaction;
         // Publish the event to Kafka
         const topic = "assetCreated";
-        //await emitEvent(topic,asset);
-        const kafkaProducerInst = new KafkaProducer("producer-1");
         const correlationId = httpContext.get("correlationId");
-        // await kafkaProducerInst.produce(topic, asset, { correlationId });
-        await this.retryProduce(kafkaProducerInst, topic, asset, {
+        await this.retryProduce( topic, asset, {
           correlationId,
         });
       }
@@ -43,9 +39,8 @@ class PostService {
       return post;
     } catch (error) {
       const dlqTopic = "dlQAssetCreated";
-      const kafkaProducerInst = new KafkaProducer("dlQProducer1");
       const correlationId = httpContext.get("correlationId");
-      await kafkaProducerInst.produce(
+       KafkaProducer.getInstance().produce(
         dlqTopic,
         { message: error.message },
         { correlationId }
@@ -66,7 +61,6 @@ class PostService {
   }
 
   static async retryProduce(
-    producer,
     topic,
     message,
     options,
@@ -75,7 +69,7 @@ class PostService {
   ) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        await producer.produce(topic, message, options);
+        await KafkaProducer.getInstance().produce(topic, message, options);
         return;
       } catch (error) {
         if (attempt === retries) {
