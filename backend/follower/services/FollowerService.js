@@ -23,7 +23,7 @@ class FollowerService {
       }
       logger.debug("current cursor", cursor);
       const followers = await FollowerDao.listFollowers(userId,{ cursor, pageSize });
-      redisClient.set(cachedKey, JSON.stringify(followers), "EX", 3600); // Cache for 1 hour
+      redisClient.set(cachedKey, JSON.stringify(followers), "EX", 100); // Cache for 1 hour
       return followers;
     } catch (error) {
       throw error;
@@ -58,17 +58,15 @@ class FollowerService {
         throw new BadRequestError("You cannot follow yourself!");
       }
       const createdFollower = await FollowerDao.addFollower(followerId, followingId);
-      const kafkaProducer = new KafkaProducer("producer-2");
       const correlationId= httpContext.get("correlationId");
-      logger.debug("following info", createdFollower);
+      //logger.debug("following info", createdFollower);
       await redisClient.zIncrBy('topUsers', 1, createdFollower.FollowingUser.name);
-      await kafkaProducer.produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST}, { correlationId });
+      KafkaProducer.getInstance().produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST}, { correlationId });
       return createdFollower;
     } catch (error) {
       const dlqTopic = "dlQFollowerCreated"; 
-      const kafkaProducerInst = new KafkaProducer("dlQProducer2");
       const correlationId = httpContext.get("correlationId");
-      await kafkaProducerInst.produce(
+      await KafkaProducer.getInstance().produce(
         dlqTopic,
         { message: error.message },
         { correlationId }

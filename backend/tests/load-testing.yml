@@ -1,8 +1,22 @@
 config:
   target: "http://localhost:3000"
   phases:
-    - duration: 30 # Run the test for 100 seconds
-      arrivalRate: 5  # New users arrive at a rate of 50 per second
+    - duration: 10 # 5 minutes
+      arrivalRate: 1
+      rampTo: 15
+      maxVusers: 15
+      name: Warm up the API
+
+    - duration: 20 # 10 minutes
+      arrivalRate: 15
+      rampTo: 50
+      maxVusers: 70
+      name: Ramp up to peak load
+
+    - duration: 30 # 5 minutes
+      arrivalRate: 200
+      maxVusers: 50
+      name: Sustained peak load
   headers:
       Content-Type: "application/json"
   http:

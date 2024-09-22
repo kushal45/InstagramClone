@@ -55,7 +55,7 @@ class FollowerPool {
 
   static async getTopUsersByFollowers(numList) {
     const query = `
-        SELECT u."id", u.*, f."followerCount"
+        SELECT u."id", u."username",u."name", f."followerCount"
 FROM (
     SELECT "followingId", COUNT("followerId") AS "followerCount"
     FROM followers
