@@ -13,6 +13,7 @@ process.on("unhandledRejection", (reason, promise) => {
 
 
 require("dotenv").config();
+const newrelic=require("newrelic");
 const express = require("express");
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
@@ -31,6 +32,7 @@ const {
 } = require("./middleware/PrometheusMiddleWare");
 const httpContext = require("express-http-context");
 const configureDebeziumConnector = require("./database/confDebeziumConnector");
+newrelic.instrumentLoadedModule('express', app);
 
 
 const PORT = process.env.PORT || 3000;
