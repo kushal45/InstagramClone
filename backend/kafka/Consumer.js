@@ -2,6 +2,8 @@ const { Kafka, AssignerProtocol } = require("kafkajs");
 require("dotenv").config();
 
 class KafkaConsumer {
+  CLIENT_ID = "kafka-consumer";
+  static consumerInstance = null;
   constructor(clientId) {
     this.kafkaBrokers = process.env.KAFKA_BROKERS.split(",");
     this.isConsumerRunning = false;
@@ -9,6 +11,13 @@ class KafkaConsumer {
       clientId,
       brokers: ["kafka1:9092"],
     });
+  }
+
+  static getInstance() {
+    if (!KafkaConsumer.consumerInstance) {
+      KafkaConsumer.consumerInstance = new KafkaConsumer(CLIENT_ID);
+    }
+    return KafkaConsumer.consumerInstance;
   }
 
   fetchAdminClient() {

@@ -15,10 +15,10 @@ class KafkaProducer {
   }
 
   static getInstance() {
-    if (!KafkaProducer.instance) {
-      KafkaProducer.instance = new KafkaProducer(CLIENT_ID);
+    if (!KafkaProducer.producerInstance) {
+      KafkaProducer.producerInstance = new KafkaProducer(CLIENT_ID);
     }
-    return KafkaProducer.instance;
+    return KafkaProducer.producerInstance;
   }
 
   async produce(topic, event, options) {
