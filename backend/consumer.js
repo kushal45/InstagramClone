@@ -32,7 +32,7 @@ initializeConsumer();
 
 async function initializeConsumer() {
   try {
-    const kafaConsumerInst = KafkaConsumer.getInstance();
+    const kafaConsumerInst = new KafkaConsumer("kafka-consumer");
     await kafaConsumerInst.createTopics(process.env.TOPIC);
     await kafaConsumerInst.subscribe({topics:[process.env.TOPIC],groupId: process.env.GROUPID});
     await processConsumerInfinitely(kafaConsumerInst);

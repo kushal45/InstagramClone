@@ -1,5 +1,5 @@
 const FollowerDao = require("../dao/FollowerDao");
-const KafkaProducer = require("../../kafka/Producer");
+const KafkaNewRelicProducer = require("../../kafka/KafkaNewRelicProducer");
 const httpContext = require("express-http-context");
 const logger = require("../../logger/logger");
 const { BadRequestError } = require("../../errors");
@@ -61,12 +61,12 @@ class FollowerService {
       const correlationId= httpContext.get("correlationId");
       //logger.debug("following info", createdFollower);
       await redisClient.zIncrBy('topUsers', 1, createdFollower.FollowingUser.name);
-      KafkaProducer.getInstance().produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST}, { correlationId });
+      await new KafkaNewRelicProducer().produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST}, { correlationId });
       return createdFollower;
     } catch (error) {
       const dlqTopic = "dlQFollowerCreated"; 
       const correlationId = httpContext.get("correlationId");
-      await KafkaProducer.getInstance().produce(
+      await new KafkaNewRelicProducer().produce(
         dlqTopic,
         { message: error.message },
         { correlationId }

@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const { UserDAO, AssetDAO, PostDAO } = require("../../dao");
 const { NotFoundError } = require("../../errors");
-const KafkaProducer = require("../../kafka/Producer");
+const KafkaNewRelicProducer = require("../../kafka/KafkaNewRelicProducer");
 const httpContext = require("express-http-context");
 const logger = require("../../logger/logger");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
@@ -40,7 +40,7 @@ class PostService {
     } catch (error) {
       const dlqTopic = "dlQAssetCreated";
       const correlationId = httpContext.get("correlationId");
-       KafkaProducer.getInstance().produce(
+       new KafkaNewRelicProducer().produce(
         dlqTopic,
         { message: error.message },
         { correlationId }
@@ -69,7 +69,7 @@ class PostService {
   ) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        await KafkaProducer.getInstance().produce(topic, message, options);
+        await new KafkaNewRelicProducer().produce(topic, message, options);
         return;
       } catch (error) {
         if (attempt === retries) {
@@ -78,9 +78,6 @@ class PostService {
           );
           throw error;
         }
-        logger.warn(
-          `Retrying produce message (attempt ${attempt}): ${error.message}`
-        );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }

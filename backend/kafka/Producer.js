@@ -1,22 +1,23 @@
 const { Kafka, Partitioners } = require("kafkajs");
 const { ErrorWithContext, ErrorContext } = require("../errors/ErrorContext");
+const logger = require("../logger/logger");
 require("dotenv").config();
 
 class KafkaProducer {
   // Static property to hold the single instance
   static producerInstance = null;
-  CLIENT_ID = "kafka-producer";
+  static CLIENT_ID = "kafka-producer";
   constructor(clientId) {
-    this.kafkaBrokers = process.env.KAFKA_BROKERS.split(",");
+    this.kafkaBrokers = "kafka1:9092,kafka2:9094,kafka3:9096".split(",");
     this.kafka = new Kafka({
       clientId,
-      brokers: ["kafka1:9092"],
+      brokers: this.kafkaBrokers,
     });
   }
 
   static getInstance() {
     if (!KafkaProducer.producerInstance) {
-      KafkaProducer.producerInstance = new KafkaProducer(CLIENT_ID);
+      KafkaProducer.producerInstance = new KafkaProducer(KafkaProducer.CLIENT_ID);
     }
     return KafkaProducer.producerInstance;
   }
@@ -37,7 +38,7 @@ class KafkaProducer {
         correlationId
       );
       await producer.connect();
-      await producer.send({
+      const result=await producer.send({
         topic,
         messages: [
           {
@@ -51,8 +52,10 @@ class KafkaProducer {
           },
         ],
       });
+      logger.debug("producer send result", result);
       await producer.disconnect();
     } catch (error) {
+      logger.error("Error producing message from KafkaProducer class:", error.message);
       throw ErrorWithContext(error, new ErrorContext(logLocation), __filename);
     }
   }

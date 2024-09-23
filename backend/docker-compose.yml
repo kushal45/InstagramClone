@@ -121,6 +121,8 @@ services:
       TOPIC: assetCreated
       GROUPID: assetConsumer
       CONSUMER_NAME: assetConsumer
+      NEW_RELIC_APP_NAME: app
+      NEW_RELIC_LICENSE_KEY: "24bc907284f9e5350c83bc6f4c74ad36FFFFNRAL"
     networks:
       - elk
     command: npm run dev

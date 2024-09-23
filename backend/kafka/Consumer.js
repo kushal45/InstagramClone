@@ -1,23 +1,16 @@
 const { Kafka, AssignerProtocol } = require("kafkajs");
 require("dotenv").config();
+const newRelic = require("newrelic");
 
 class KafkaConsumer {
-  CLIENT_ID = "kafka-consumer";
   static consumerInstance = null;
   constructor(clientId) {
-    this.kafkaBrokers = process.env.KAFKA_BROKERS.split(",");
+    this.kafkaBrokers = this.kafkaBrokers = "kafka1:9092,kafka2:9094,kafka3:9096".split(",");
     this.isConsumerRunning = false;
     this.kafka = new Kafka({
       clientId,
-      brokers: ["kafka1:9092"],
+      brokers: this.kafkaBrokers,
     });
-  }
-
-  static getInstance() {
-    if (!KafkaConsumer.consumerInstance) {
-      KafkaConsumer.consumerInstance = new KafkaConsumer(CLIENT_ID);
-    }
-    return KafkaConsumer.consumerInstance;
   }
 
   fetchAdminClient() {
@@ -26,13 +19,28 @@ class KafkaConsumer {
 
   async subscribe({ topics, groupId }) {
     try {
+     let consumer=this.consumer = this.kafka.consumer({ groupId,heartbeatInterval: 1000, // should be lower than sessionTimeout
+        sessionTimeout: 6000, });
+      const parentTransaction = newRelic.getTransaction();
+      parentTransaction.end();
+      const transactionName = "kafkaConsumerTransactionSubscribe";
+      await newRelic.startBackgroundTransaction(transactionName, async function () {
+        const transaction = newRelic.getTransaction();
+        await handleConsumerSubTransaction(consumer,topics,groupId);
+        transaction.end();
+      });
+      async function handleConsumerSubTransaction(consumer,topics,groupId){
+      console.log("inside background transaction subscribe");
+      console.log("Subscribing to topics", topics, "with group ID", groupId);
+      await consumer.connect();
+      await consumer.subscribe({ topics, fromBeginning: true });
       console.log("Subscribing to topic", topics, "with group ID", groupId);
-      this.consumer = this.kafka.consumer({ groupId });
-      await this.consumer.connect();
-      this.consumer.on("consumer.crash", (err) => {
+      consumer.on("consumer.crash", (err) => {
         console.error(`Error in consumer: ${err.message}`);
       });
-      await this.consumer.subscribe({ topics, fromBeginning: true });
+     }
+    
+      
     } catch (error) {
       console.error(
         "Error subscribing to topics from KafKaConsumer class:",
@@ -50,15 +58,25 @@ class KafkaConsumer {
     this.isConsumerRunning = true;
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
+        const transactionName = "kafkaConsumerTransactionProcessMessage";
         try {
-          const correlationId = message.headers["correlation-id"]
-            ? message.headers["correlation-id"].toString()
-            : null;
-          console.log(
-            `Received message: ${message.offset} with correlation ID: ${correlationId}`
+          const parentTransaction = newRelic.getTransaction();
+          parentTransaction.end();
+          newRelic.startBackgroundTransaction(
+            transactionName,
+            async function () {
+              const transaction = newRelic.getTransaction();
+              const correlationId = message.headers["correlation-id"]
+                ? message.headers["correlation-id"].toString()
+                : null;
+              console.log(
+                `Received message: ${message.offset} with correlation ID: ${correlationId}`
+              );
+              const eventData = JSON.parse(message.value.toString());
+              await handler(eventData, topic);
+              transaction.end();
+            }
           );
-          const eventData = JSON.parse(message.value.toString());
-          await handler(eventData, topic);
         } catch (error) {
           console.error(`Error processing message: ${error.message}`);
           // Implement retry logic here
@@ -129,7 +147,7 @@ class KafkaConsumer {
         const assignment = AssignerProtocol.MemberAssignment.decode(
           memberAssignmentBuffer
         );
-        if(!assignment){
+        if (!assignment) {
           return false;
         }
         //console.log("assignment", assignment);
@@ -138,10 +156,11 @@ class KafkaConsumer {
           subscribedTopics.add(tp);
         });
       });
-      isTopicsSubscribed= topics.every((topic) => subscribedTopics.has(topic))
+      isTopicsSubscribed = topics.every((topic) => subscribedTopics.has(topic));
       console.log(
         "fetched subscribed topics in kafka consumer",
-        subscribedTopics,isTopicsSubscribed
+        subscribedTopics,
+        isTopicsSubscribed
       );
     });
     return isTopicsSubscribed;
