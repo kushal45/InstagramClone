@@ -2,6 +2,7 @@ const { Router } = require("express");
 const AuthMiddleware = require("../user/middleware/Auth");
 const ValidationPost = require("./validations/Post");
 const PostController = require("./controllers/PostController");
+const {uploadMiddleware} = require("../config/multer");
 
 const routes = Router();
 
@@ -259,6 +260,7 @@ const routes = Router();
  */
 routes.post(
     "",
+    uploadMiddleware,
     AuthMiddleware,
     ValidationPost.validatePost,
     PostController.createPost

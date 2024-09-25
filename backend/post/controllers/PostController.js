@@ -15,7 +15,15 @@ module.exports = {
       if (!errors.isEmpty()) {
         throw new BadRequestError(JSON.stringify(errors.array()));
       }
-      const post = await PostService.createPost(req.body, req.userId);
+      const imageUrl = req.files['imageUrl'] ? req.files['imageUrl'][0].filename : null; // Handle image upload
+      const videoUrl = req.files['videoUrl'] ? req.files['videourl'][0].filename : null; // Handle video upload
+      const reqBody = {
+        text: req.body.text,
+        imageUrl,
+        videoUrl,
+      }
+     
+      const post = await PostService.createPost(reqBody, req.userId);
       res.status(201).json(ResponseFormatter.success(post, 'Post created successfully'));
     } catch (error) {
       logger.error(error);

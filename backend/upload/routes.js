@@ -2,21 +2,10 @@
 
 const express = require('express');
 const router = express.Router();
-const upload = require('../config/multer');
-const fs = require('fs');
+const {upload} = require('../config/multer');
 const path = require('path');
 
-//ensure upload directories exist
-const ensureUploadDirsExist = () => {
-    const dirs = ['uploads/images', 'uploads/videos'];
-    dirs.forEach(dir => {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-    });
-  };
-  
-  //ensureUploadDirsExist();
+
 
 
   router.post('/upload/image', upload.single('file'), (req, res) => {
