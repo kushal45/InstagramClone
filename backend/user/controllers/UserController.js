@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 const  UserService  = require("../services/UserService");
 const { NotFoundError } = require("../../errors");
 const logger = require("../../logger/logger");
+const ResponseFormatter = require("../../util/ResponseFormatter");
 
 module.exports = {
   async show(req, res,next) {
@@ -59,4 +60,19 @@ module.exports = {
       next(error);
     }
   },
+
+  async search(req, res,next) {
+    try {
+      logger.info("Searching for users");
+      const query = req.query.q;
+      logger.info("Searching for users with query:", query);
+      const result = await UserService.search(query);
+      logger.info("Search results retrieved successfully");
+      const response= ResponseFormatter.success(result, "Search results retrieved successfully");
+      return res.status(200).send(response);
+    } catch (error) {
+      logger.error(error);
+      next(error);
+    }
+  }
 };

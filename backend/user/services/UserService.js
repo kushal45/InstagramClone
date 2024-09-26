@@ -4,6 +4,7 @@ const Utility = require("../utils/Utility");
 const  UserDAO  = require("../dao/UserDao");
 const { BadRequestError, NotFoundError } = require("../../errors");
 const logger = require("../../logger/logger");
+const ElasticSearch = require("../../util/ElasticSearch");
 
 class UserService {
   static async getUserProfile(username, currentUserId) {
@@ -72,6 +73,9 @@ class UserService {
       username,
       password: passwordHash,
     });
+
+    const result= await new ElasticSearch().indexDocument("userProfiles", user, user.id);
+    logger.debug("indexing result", result);
 
     // JWT
     const payload = { id: user.id, username: user.username, tags: user.tags };
@@ -160,11 +164,15 @@ class UserService {
         updatedFields.langPrefs = profileData.langPrefs;
       }
     }
-
+    const { tags, langPref, ...restOfProfileData } = profileData;
     if (Object.keys(updatedFields).length === 0) {
-      throw new BadRequestError("No fields to update");
+       logger.error("No fields to update");
+       updatedFields={...restOfProfileData};
+    }else{
+      updatedFields = { ...updatedFields, ...restOfProfileData };
     }
-
+   
+   
     return await UserDAO.updateUser(userId, updatedFields);
   }
 
@@ -186,6 +194,16 @@ class UserService {
       throw new NotFoundError("User not found.");
     }
     await user.destroy();
+  }
+
+  static async search(query) {
+    try {
+      const result = await new ElasticSearch().search("userprofiles", query);
+      return result.hits.hits;
+    } catch (error) {
+      console.error("Error searching for users:", error);
+    }
+   
   }
 }
 

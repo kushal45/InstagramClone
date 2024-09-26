@@ -112,6 +112,19 @@ class UserDAO {
       throw error;
     }
   }
+
+  static async fetchUserProfiles(){
+    try {
+      let users = await User.findAll({
+        attributes: ['id','name','username','bio'],
+        order: [['createdAt', 'DESC']]
+      });
+      return users;
+    } catch (error) {
+      console.error("Error fetching user profiles:", error);
+      throw error;
+    }
+  }
 }
 
 module.exports =  UserDAO;

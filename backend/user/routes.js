@@ -77,7 +77,7 @@ routes.get(
 
 /**
  * @swagger
- * /user/{username}:
+ * /user/get/{username}:
  *   get:
  *     summary: Get user by username
  *     tags: [Users]
@@ -98,7 +98,7 @@ routes.get(
  *       401:
  *         description: Unauthorized
  */
-routes.get("/:username", AuthMiddleware, UserController.show);
+routes.get("get/:username", AuthMiddleware, UserController.show);
 
 /**
  * @swagger
@@ -212,5 +212,42 @@ routes.put(
   ValidationsUser.password,
   UserController.updatePassword
 );
+
+/**
+ * @swagger
+ * /user/search:
+ *   get:
+ *     summary: Search for users
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The search query
+ *     responses:
+ *       200:
+ *         description: A list of users matching the search query
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "12345"
+ *                   username:
+ *                     type: string
+ *                     example: "johndoe"
+ *                   email:
+ *                     type: string
+ *                     example: "johndoe@example.com"
+ */
+routes.get("/search/", AuthMiddleware, UserController.search);
 
 module.exports = routes;

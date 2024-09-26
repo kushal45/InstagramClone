@@ -12,7 +12,7 @@ class User extends Model {
         username: DataTypes.STRING,
         password: DataTypes.STRING,
         avatarUrl: DataTypes.STRING,
-        bio: DataTypes.STRING,
+        bio: DataTypes.BLOB,
         website: DataTypes.STRING,
         phone: DataTypes.STRING,
         tags:DataTypes.ARRAY(User.tags),
