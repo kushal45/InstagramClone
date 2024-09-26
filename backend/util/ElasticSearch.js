@@ -25,7 +25,7 @@ class ElasticSearch {
       } catch (error) {
         console.error("Error pinging client:", error);
       }
-
+      await this.checkAndDeleteIndex(indexVal);
       await this.client.indices.create(
         {
           index: indexVal,
@@ -48,7 +48,10 @@ class ElasticSearch {
         { index: { _index: indexVal } },
         doc,
       ]);
-      const bulkResponse = await this.client.bulk({ refresh: true, operations });
+      const bulkResponse = await this.client.bulk({
+        refresh: true,
+        operations,
+      });
 
       if (bulkResponse.errors) {
         const erroredDocuments = [];
@@ -69,16 +72,37 @@ class ElasticSearch {
             });
           }
         });
-        console.log("errorDocuments",erroredDocuments);
+        console.log("errorDocuments len", erroredDocuments.length);
       }
-      
-      const countRes=await this.client.count({ index: indexVal });
-      console.log("countRes",countRes);
+
+      const countRes = await this.client.count({ index: indexVal });
+      console.log("countRes", countRes);
     } catch (error) {
       throw new ErrorWithContext(
         error,
         new ErrorContext(logLocation, {
           sourceData,
+          indexVal,
+        }),
+        __filename
+      );
+    }
+  }
+
+  async checkAndDeleteIndex(indexVal) {
+    const logLocation = "ElasticSearch.checkAndDeleteIndex";
+    try {
+      const exists = await this.client.indices.exists({
+        index: indexVal
+      })
+      console.log("exists", exists);
+      if (exists) {
+        await this.client.indices.delete({ index: indexVal });
+      }
+    } catch (error) {
+      throw new ErrorWithContext(
+        error,
+        new ErrorContext(logLocation, {
           indexVal,
         }),
         __filename
@@ -100,12 +124,16 @@ class ElasticSearch {
       const result = await this.client.search({
         index: indexVal,
         body: {
-            query: {
-              match_phrase_prefix:{
-                username: query
-              }
+          query: {
+            multi_match: {
+              query: query,
+              fields: ["name", "username", "bio"],
             },
-        }
+          },
+          collapse:{
+            field: "username.keyword",
+          }
+        },
       });
       console.log("seach result", JSON.stringify(result));
       return result;
