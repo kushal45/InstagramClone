@@ -11,7 +11,7 @@ ENV NEW_RELIC_CUSTOM_INSIGHTS_EVENTS_MAX_SAMPLES_STORED=100k
 ENV NEW_RELIC_SPAN_EVENTS_MAX_SAMPLES_STORED=10k
 #RUN rm -f package-lock.json
 # Use a different npm registry (optional)
-RUN npm config set registry https://registry.npmjs.org/
+#RUN npm config set registry https://registry.npmjs.org/
 
 # Install dependencies and generate a new package-lock.json
 RUN npm install --verbose --no-audit --fetch-timeout=60000
