@@ -141,6 +141,8 @@ module.exports = {
     ];
     context.vars.tags = getRandomItems(supportedTags);
     context.vars.langPrefs = getRandomItems(supportedLanguages);
+    const userBioArr= checkIfContentExists(path.join(__dirname, "userBio.json"));
+    context.vars.userBio = getRandomItems(userBioArr);
     return next();
   },
   readUsersToFollow: function (context, ee, done) {
