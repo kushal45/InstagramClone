@@ -74,7 +74,7 @@ class UserService {
       password: passwordHash,
     });
 
-    const result= await new ElasticSearch().indexDocument("userProfiles", user, user.id);
+    const result= await new ElasticSearch().indexDocument("userprofiles", user, user.id);
     logger.debug("indexing result", result);
 
     // JWT
