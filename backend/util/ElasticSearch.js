@@ -1,5 +1,6 @@
-const { Client, HttpConnection } = require("@elastic/elasticsearch");
-const { Readable } = require("stream");
+const { Client } = require("@elastic/elasticsearch");
+const { Readable } = require('stream');
+const split = require("split2");
 const { ErrorWithContext, ErrorContext } = require("../errors/ErrorContext");
 class ElasticSearch {
   constructor() {
@@ -13,7 +14,7 @@ class ElasticSearch {
   }
 
   async bulkIndexStream(sourceData, indexVal) {
-    console.log("sourceData", sourceData);
+   // console.log("sourceData", sourceData);
     const logLocation = "ElasticSearch.bulkIndexStream";
     try {
       try {
@@ -25,33 +26,17 @@ class ElasticSearch {
       } catch (error) {
         console.error("Error pinging client:", error);
       }
-      await this.checkAndDeleteIndex(indexVal);
-      await this.client.indices.create(
-        {
-          index: indexVal,
-          operations: {
-            mappings: {
-              properties: {
-                id: { type: "integer" },
-                bio: { type: "text" },
-                username: { type: "keyword" },
-                time: { type: "date" },
-                name: { type: "keyword" },
-              },
-            },
-          },
-        },
-        { ignore: [400] }
-      );
 
-      const operations = sourceData.flatMap((doc) => [
-        { index: { _index: indexVal } },
-        doc,
-      ]);
-      const bulkResponse = await this.client.bulk({
-        refresh: true,
-        operations,
+
+      const bulkResponse = await this.client.helpers.bulk({
+        datasource: createReadStreamFromArray(sourceData),
+        onDocument (doc) {
+          return {
+            index: { _index: indexVal }
+          }
+        }
       });
+      console.log("result", bulkResponse);
 
       if (bulkResponse.errors) {
         const erroredDocuments = [];
@@ -148,6 +133,18 @@ class ElasticSearch {
       );
     }
   }
+}
+
+function createReadStreamFromArray(data) {
+  return new Readable({
+    objectMode: true,
+    read() {
+      for (const item of data) {
+        this.push(item); // Push each item to the stream
+      }
+      this.push(null); // Signal the end of the stream
+    }
+  });
 }
 
 module.exports = ElasticSearch;

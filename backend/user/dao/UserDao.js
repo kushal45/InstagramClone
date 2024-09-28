@@ -113,11 +113,13 @@ class UserDAO {
     }
   }
 
-  static async fetchUserProfiles(){
+  static async fetchUserProfiles(limit,offset){
     try {
       let users = await User.findAll({
         attributes: ['id','name','username','bio'],
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset
       });
       return users;
     } catch (error) {
