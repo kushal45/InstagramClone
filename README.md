@@ -94,8 +94,6 @@ You can explore the API using Swagger or Postman. The Swagger documentation is a
 
 ## Folder Structure
 
-## Folder Structure
-
 ```bash
 InstagramClone/
 ├── Instagram_Glyph_Gradient.png

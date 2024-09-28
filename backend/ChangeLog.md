@@ -8,6 +8,27 @@ This document serves as a detailed log of all significant changes made to the pr
 
 ## [1.0.4] - YYYY-MM-DD (Branch `instagramV4`)
 
+### Enhancements
+- **Minimized Docker Image FootPrint** : Minimised docker image Footprint of node and postgres which consumes less size 
+- **Index Optimization** : Indexed followingId coloumn to perform index scan when fetching follower Counts from follower table
+- **Singleton Pattern** : Converted KafkaProducer and KafkaConsumer class to be accessed as singleton class
+- **Multiple Master Nodes Addition** : Added Multiple master nodes of elastic search docker services for failover purposes such that elastic search can be utilized both for consumption as elk 
+and for indexing search functionality of user profiles
+- **Load phases in Load testing** : added Warm up, Ramp up and peak load configurations in artillery yaml file to perform various phases of warmup, ramp up and peak load testing
+- **Integration of Upload with Post creation**: integration upload api functionality during invoking of post creation api 
+
+
+
+### New Features 
+
+- **NewRelic Config** : Added new relic as a config layer to monitor the entire docker ecosystem used in the project
+- **New Relic Custom Monitoring** : Added Monitoring of new relics in :- 
+     -- instrumenting kafka producer ,kafka consumer using backGround Tasks and segment of newRelic nodeJs client
+
+### Fixes
+  --reducing cache limit for avoiding stale caches in feed api
+  -- added basic validation to check for files object present in the post creation request object which led to undefined errors during load testing
+
 ## [1.0.3] - 2024-09-15 (Branch: `instagramV3`)
 
 ### Enhancements
