@@ -1,6 +1,5 @@
 const KafkaProducer = require("./Producer");
 const newRelic = require("newrelic");
-const logger = require("../logger/logger");
 
 class KafkaNewRelicProducer {
   constructor() {}
@@ -14,7 +13,7 @@ class KafkaNewRelicProducer {
         async function () {
           //  const transaction = newRelic.getTransaction();
           const kafkaProducer = KafkaProducer.getInstance();
-          logger.debug(
+          console.log(
             "Producing message to topic within segment",
             topic,
             "with correlation ID",

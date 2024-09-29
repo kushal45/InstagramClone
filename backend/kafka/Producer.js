@@ -1,6 +1,5 @@
 const { Kafka, Partitioners } = require("kafkajs");
 const { ErrorWithContext, ErrorContext } = require("../errors/ErrorContext");
-const logger = require("../logger/logger");
 require("dotenv").config();
 
 class KafkaProducer {
@@ -43,19 +42,17 @@ class KafkaProducer {
         messages: [
           {
             value: JSON.stringify(event),
-            partition: 0,
-            key: "assetId",
             timestamp: Date.now(),
             headers: {
-              "correlation-id": correlationId,
+              "correlation-id": correlationId??`kafka-${Date.now()}`,
             },
           },
         ],
       });
-      logger.debug("producer send result", result);
+      console.log("producer send result", result);
       await producer.disconnect();
     } catch (error) {
-      logger.error("Error producing message from KafkaProducer class:", error.message);
+      console.error("Error producing message from KafkaProducer class:", error.message);
       throw ErrorWithContext(error, new ErrorContext(logLocation), __filename);
     }
   }
