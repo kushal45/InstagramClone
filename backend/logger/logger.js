@@ -25,10 +25,6 @@ class Logger {
         defaultMeta: { service: "user-service" },
         transports: [
           new transports.Console(),
-          // new transports.File({
-          //   filename: logFilePath,
-          //   level: "debug",
-          // }),
           new KafkaTransport({
             topic: "logs",
           })
