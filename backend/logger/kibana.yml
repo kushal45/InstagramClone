@@ -1,4 +1,4 @@
 server.name: kibana
 server.host: "0.0.0.0"
-elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.hosts: ["http://escontainer2:9200"]
 elasticsearch.requestTimeout: 60000

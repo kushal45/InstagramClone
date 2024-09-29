@@ -1,7 +1,5 @@
 const { createLogger, transports, format } = require("winston");
- // Increase the limit as needed
-//const WinstonLogStash = require("winston3-logstash-transport");
-const path = require("path");
+const KafkaTransport = require("./KafKaTransport");
 function formatMessage(message) {
   return message
     .map((msg) => (typeof msg === "object" ? JSON.stringify(msg) : msg))
@@ -14,8 +12,8 @@ function formatMessage(message) {
 class Logger {
   constructor() {
     try {
-      const logFilePath = path.resolve(__dirname, "../logs/combined.log");
-      const errorLogPath = path.resolve(__dirname, "../logs/error.log");
+      //const logFilePath = path.resolve(__dirname, "../logs/combined.log");
+     // const errorLogPath = path.resolve(__dirname, "../logs/error.log");
       this.logger =  createLogger({
         level: "debug",
         format: format.combine(
@@ -27,19 +25,13 @@ class Logger {
         defaultMeta: { service: "user-service" },
         transports: [
           new transports.Console(),
-          new transports.File({
-            filename: `${errorLogPath}`,
-            level: "error",
-          }),
-          new transports.File({
-            filename: logFilePath,
-            level: "debug",
-          }),
-          // new WinstonLogStash({
-          //   mode: "tcp",
-          //   host: "localhost",
-          //   port: 5044,
+          // new transports.File({
+          //   filename: logFilePath,
+          //   level: "debug",
           // }),
+          new KafkaTransport({
+            topic: "logs",
+          })
         ],
         exceptionHandlers: [
           new transports.File({ filename: "../logs/exceptions.log" }),

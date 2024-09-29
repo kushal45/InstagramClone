@@ -19,8 +19,8 @@ services:
      - cluster.routing.allocation.disk.watermark.low=85%
      - cluster.routing.allocation.disk.watermark.high=90%
      - cluster.routing.allocation.disk.watermark.flood_stage=95%
-     - discovery.seed_hosts=es_container_1,es_container_2,es_container_3
-     - cluster.initial_master_nodes=es_container_1,es_container_2,es_container_3
+     - discovery.seed_hosts=es_container_1,escontainer2,es_container_3
+     - cluster.initial_master_nodes=es_container_1,escontainer2,es_container_3
     ports:
       - "9200:9200"
     ulimits:
@@ -31,16 +31,16 @@ services:
       - ./es_data_1:/usr/share/elasticsearch/data
     networks:
       - elk
-  es_container_2:
+  escontainer2:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.2
-    container_name: es_container_2
+    container_name: escontainer2
     environment:
       - cluster.name=es_cluster
-      - node.name=es_container_2
+      - node.name=escontainer2
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.security.enabled=false
-      - discovery.seed_hosts=es_container_1,es_container_2,es_container_3
-      - cluster.initial_master_nodes=es_container_1,es_container_2,es_container_3
+      - discovery.seed_hosts=es_container_1,escontainer2,es_container_3
+      - cluster.initial_master_nodes=es_container_1,escontainer2,es_container_3
     ulimits:
       memlock:
         soft: -1
@@ -58,8 +58,8 @@ services:
       - node.name=es_container_3
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.security.enabled=false
-      - discovery.seed_hosts=es_container_1,es_container_2,es_container_3
-      - cluster.initial_master_nodes=es_container_1,es_container_2,es_container_3
+      - discovery.seed_hosts=es_container_1,escontainer2,es_container_3
+      - cluster.initial_master_nodes=es_container_1,escontainer2,es_container_3
     ulimits:
       memlock:
         soft: -1
@@ -81,10 +81,10 @@ services:
     networks:
       - elk
     depends_on:
-      - es_container_2
+      - escontainer2
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.10.1
+    image: docker.elastic.co/kibana/kibana:8.15.2
     container_name: kibana
     ports:
       - "5601:5601"
@@ -93,7 +93,7 @@ services:
     networks:
       - elk
     depends_on:
-      - es_container_2
+      - escontainer2
 
 volumes:
   es_data_1:
