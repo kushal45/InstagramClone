@@ -44,7 +44,6 @@ class FeedService {
 
       const resultData = await NewRelicInstrumentation.startSegment(
         "fetchFeedsOfPost",
-        true,
         async () => fetchFeedsOfPost({
           userTags,
           decodedRes,
