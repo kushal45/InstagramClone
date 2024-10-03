@@ -3,7 +3,11 @@ const PostService = require("../../post/services/PostService");
 const logger = require("../../logger/logger");
 const Cursor = require("../../database/cursor");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
-const { fetchPostsByTags, fetchFollowingsAndPosts, fetchParentDecodedCursor } = require("./InternalFeedCursorService");
+const {
+  fetchParentDecodedCursor,
+  fetchFeedsOfPost,
+} = require("./InternalFeedCursorService");
+const NewRelicInstrumentation = require("../../util/NewRelicInstrumentation");
 
 class FeedService {
   /**
@@ -30,41 +34,28 @@ class FeedService {
         ? userTags
         : []
       ).join(",")}:${cursor}:${sortOrder}`;
-    
+
       const cachedData = await redisClient.hGetAll(cacheKey);
       logger.debug("cached feedData", cachedData);
       if (Object.keys(cachedData).length > 0) {
         return JSON.parse(cachedData.data);
       }
-      const decodedRes=fetchParentDecodedCursor(cursor);
-      /**
-       * query posts by tags which uses GIN index internally on tags coloumn of  Assets table
-       */
-      const { postWithTags,newPostTagsCursor } =
-        await fetchPostsByTags({tags:userTags,cursor:decodedRes?.postTagsCursor, sortOrder});
-      
-      const {
-        postWithFollowings,
-        newPostWithFollowingCursor
-      } = await fetchFollowingsAndPosts(
-        {
-          userId,
-          cursor:decodedRes?.postFollowingCursor,
+      const decodedRes = fetchParentDecodedCursor(cursor);
+
+      const resultData = await NewRelicInstrumentation.startSegment(
+        "fetchFeedsOfPost",
+        true,
+        async () => fetchFeedsOfPost({
+          userTags,
+          decodedRes,
           sortOrder,
-          redisClient
-        }
+          userId,
+          redisClient,
+          cacheKey,
+        })
       );
-      const result = [...postWithTags, ...postWithFollowings];
-      await redisClient.hSet(cacheKey, "data", JSON.stringify(result));
-      await redisClient.hSet(cacheKey, "timestamp", Date.now().toString());
-      await redisClient.expire(cacheKey, 36); // Set expiration time to 36 seconds
-      return {
-        data: result,
-        cursor: Cursor.encode({
-          postFollowingCursor: newPostWithFollowingCursor,
-          postTagsCursor: newPostTagsCursor,
-        }),
-      };
+      logger.debug("resultData", resultData);
+      return resultData;
     } catch (error) {
       throw new ErrorWithContext(
         error,

@@ -100,7 +100,7 @@ class PostDao {
       const decodedCursor = fetchDecodedCursor(cursor);
       if(decodedCursor!=null){
         where.id = {
-          [Op.gt]: decodedCursor,
+          [Op.gt]: decodedCursor.id,
         };
       }      
       const posts = await Post.findAll({
