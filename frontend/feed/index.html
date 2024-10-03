@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Clone - Feed</title>
+    <link rel="stylesheet" href="feed-styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>Instagram Clone</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search">
+            </div>
+            <div class="profile">
+                <img src="profile-pic.png" alt="Profile" class="profile-pic">
+            </div>
+        </header>
+
+        <!-- Create Post Section -->
+        <section class="create-post">
+            <div class="create-post-header">
+                <img src="profile-pic.png" alt="Profile" class="create-post-pic">
+                <span class="create-post-username">You</span>
+            </div>
+            <form id="post-form" enctype="multipart/form-data">
+                <textarea id="post-text" placeholder="What's on your mind?" rows="2"></textarea>
+                <div class="file-input-wrapper">
+                    <input type="file" id="post-image" accept="image/*">
+                    <label for="post-image">Choose Image</label>
+                </div>
+                <button type="submit" class="post-btn">Share</button>
+            </form>
+        </section>
+
+        <!-- Feed Section -->
+        <main class="feed" id="feed">
+            <!-- Dynamically added posts will appear here -->
+        </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

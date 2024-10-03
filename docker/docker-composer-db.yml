@@ -24,8 +24,8 @@ services:
       - elk
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persist data
-      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf # custom config
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
+      - ../backend/database/postgresql.conf:/etc/postgresql/postgresql.conf # custom config
+      - ../backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # init script for db setup
     command: ["postgres", "-c", "wal_level=logical"]
 
   pgbouncer:
@@ -39,8 +39,8 @@ services:
     networks:
       - elk
     volumes:
-      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
-      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+      - ../backend/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ../backend/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
 
   mongo:
     image: mongo:4.4
@@ -54,9 +54,9 @@ services:
     volumes:
       - mongo_data:/data/db  # Persist data
       - mongo_config:/data/configdb  # Persist config data
-      - ./mongo/mongod.conf:/etc/mongo/mongod.conf # custom config
-      - ./mongo/mongo-keyfile:/etc/mongo-keyfile/mongo-keyfile # key file for internal authentication
-      - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js # init script for replica set
+      - ../backend/mongo/mongod.conf:/etc/mongo/mongod.conf # custom config
+      - ../backend/mongo/mongo-keyfile:/etc/mongo-keyfile/mongo-keyfile # key file for internal authentication
+      - ../backend/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js # init script for replica set
     command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
     healthcheck:
       test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]

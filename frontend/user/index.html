@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Clone - User Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Instagram Clone</h1>
+        </header>
+
+        <!-- Navigation between forms -->
+        <div class="nav-buttons">
+            <button class="nav-btn" id="showRegister">Register</button>
+            <button class="nav-btn" id="showLogin">Login</button>
+            <button class="nav-btn" id="showUpdateProfile">Update Profile</button>
+        </div>
+
+        <!-- Registration Form -->
+        <section class="form-section" id="registerSection">
+            <h2>Register</h2>
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <label for="registerUsername">Username:</label>
+                    <input type="text" id="registerUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password:</label>
+                    <input type="password" id="registerPassword" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" class="form-control" required>
+                </div>
+                <button type="submit" class="btn">Register</button>
+            </form>
+        </section>
+
+        <!-- Login Form -->
+        <section class="form-section" id="loginSection">
+            <h2>Login</h2>
+            <form id="loginForm" class="form">
+                <div class="form-group">
+                    <label for="loginUsername">Username:</label>
+                    <input type="text" id="loginUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </section>
+
+        <!-- Update Profile Form -->
+        <section class="form-section" id="updateProfileSection">
+            <h2>Update Profile</h2>
+            <form id="updateProfileForm" class="form">
+                <div class="form-group">
+                    <label for="newUsername">New Username:</label>
+                    <input type="text" id="newUsername" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="profilePicture">Profile Picture:</label>
+                    <input type="file" id="profilePicture" class="form-control">
+                </div>
+                <button type="submit" class="btn">Update Profile</button>
+            </form>
+        </section>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

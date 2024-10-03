@@ -50,7 +50,7 @@
             }
 
             // You can use Fetch API or a library like Axios to send the form data to the server
-            fetch('/login', {
+            fetch('/user/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams(new FormData(form)) // Encode form data

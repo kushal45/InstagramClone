@@ -13,7 +13,7 @@ services:
       app:
         condition: service_healthy
     volumes:
-      - .:/usr/src/app
+      - ../backend:/usr/src/app
     working_dir: /usr/src/app
     command: npm run startup
     networks:
@@ -26,7 +26,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
     depends_on:
       redis:
         condition: service_healthy
@@ -39,9 +39,6 @@ services:
       
     environment:
       NODE_ENV: development
-      ERROR_LOG_PATH:  "./logs/error.log"
-      COMBINED_LOG_PATH: "./logs/combined.log"
-      EXCEPTION_LOG_PATH: "./logs/exceptions.log"
       NEW_RELIC_APP_NAME: app
       NEW_RELIC_LICENSE_KEY: "24bc907284f9e5350c83bc6f4c74ad36FFFFNRAL"
       PORT: 3000
@@ -53,9 +50,28 @@ services:
       - elk
     command: npm run dev
     volumes:
-      - .:/app/
+      - ../backend:/app/
       - /app/node_modules
-  
+
+  frontend:
+    restart: on-failure
+    build: ../frontend
+    ports:
+      - "3008:3002"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3008 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    networks:
+      - elk
+    command: npm run dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true
   prometheus:
     image: prom/prometheus
     depends_on:
@@ -70,8 +86,8 @@ services:
       retries: 5
       start_period: 30s
     volumes:
-      - ./logger/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./logger/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - ../backend/logger/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../backend/logger/alert_rules.yml:/etc/prometheus/alert_rules.yml
     ports:
       - "9090:9090"
   
@@ -79,7 +95,7 @@ services:
     image: prom/alertmanager:latest
     volumes:
       - alertmanager_data:/alertmanager
-      - ./alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ../backend/alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
     ports:
@@ -127,7 +143,7 @@ services:
       - elk
     command: npm run dev
     volumes:
-      - .:/app/
+      - ../backend/:/app/
       - /app/node_modules
   
   followerconsumer:
@@ -152,7 +168,7 @@ services:
       CONSUMER_NAME: followerConsumer
     command: npm run dev
     volumes:
-      - .:/app/
+      - ../backend:/app/
       - /app/node_modules
   
   mongoconsumer:
@@ -178,7 +194,7 @@ services:
         - elk
       command: npm run dev
       volumes:
-        - .:/app/
+        - ../backend:/app/
         - /app/node_modules
   
   dlqfollowerconsumer:

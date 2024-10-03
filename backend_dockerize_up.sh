@@ -9,11 +9,12 @@ while getopts "r" opt; do
   esac
 done
 
-cd backend
-if docker ps -a | grep -q 'backend'; then
+cd docker
+if docker ps -a | grep -q 'backend' ||  docker ps -a | grep -q 'docker'; then
     docker stop backend-*
     docker rm backend-*
     docker volume prune
+    docker stop docker-*
 fi
 docker image prune -f
 containers_up=$(docker-compose ps -a)
@@ -38,5 +39,7 @@ else
   DEBUG=1 docker build -f Dockerfile -t appbase:latest .
 fi
 DEBUG=1 docker-compose -f docker-compose.yml -f docker-composer-db.yml -f docker-compose-inflx-grafana.yml -f docker-compose-elk.yml   up --remove-orphans  --build -d
+cd ..
+cd backend
 node run-migrations.js
 
