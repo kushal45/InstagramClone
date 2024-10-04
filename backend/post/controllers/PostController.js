@@ -4,6 +4,7 @@ const { BadRequestError } = require("../../errors");
 const logger = require("../../logger/logger");
 const ResponseFormatter = require("../../util/ResponseFormatter");
 module.exports = {
+  BASE_URL :process.env.BASE_URL || "http://localhost:3000",
   /**
    * Create a new post
    * @param {Object} req - Request object containing post data
@@ -11,6 +12,7 @@ module.exports = {
    */
   createPost: async (req, res,next) => {
     try {
+      console.log("req recieved",req.body);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         throw new BadRequestError(JSON.stringify(errors.array()));
@@ -18,9 +20,10 @@ module.exports = {
       const reqBody = {
         text: req.body.text,
       }
-      if(req.files){
-      const imageUrl = req.files['imageUrl'] ? req.files['imageUrl'][0].filename : null; // Handle image upload
-      const videoUrl = req.files['videoUrl'] ? req.files['videourl'][0].filename : null; // Handle video upload
+      if(req.file){
+      console.log("req files",req);
+      const imageUrl = req.file['imageUrl'] ? `${this.BASE_URL}/uploads/${req.file['imageUrl'][0].filename}` : null;
+      const videoUrl = req.file['videoUrl'] ? `${this.BASE_URL}/uploads/${req.file['videoUrl'][0].filename}` : null;
       reqBody.imageUrl = imageUrl;
       reqBody.videoUrl = videoUrl;
       }

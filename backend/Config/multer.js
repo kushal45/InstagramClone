@@ -42,7 +42,7 @@ const upload = multer({
     },
     fileFilter
 });
-const uploadMiddleware = upload.fields([{ name: 'imageUrl', maxCount: 1 }, { name: 'videoUrl', maxCount: 1 }])
+const uploadMiddleware = upload.single("imageUrl");
 
 module.exports = {
     uploadMiddleware,

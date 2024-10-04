@@ -1,0 +1,49 @@
+.profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    text-align: center;
+}
+
+#user-name {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+#user-email, #user-bio {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+#follow-button {
+    padding: 10px 20px;
+    font-size: 1em;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.initialFollow {
+    background-color: #007bff;
+    cursor: pointer;
+}
+
+.initialFollow:hover {
+    background-color: #0056b3;
+}
+
+.followed:hover {
+    background-color: #28a745;
+}
+
+.followed {
+    background-color: #28a745;
+    cursor: default;
+}
+
+.followed:hover {
+    background-color: #28a745;
+}

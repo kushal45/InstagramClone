@@ -9,7 +9,7 @@ module.exports = {
     try {
       const { username } = req.params;
       const result = await UserService.getUserProfile(username, req.userId);
-      return res.status(200).send(result.body);
+      return res.status(200).send(ResponseFormatter.success(result.body, "User profile retrieved successfully"));
     } catch (error) {
       logger.error(error);
       next(error);

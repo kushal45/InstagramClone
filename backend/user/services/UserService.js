@@ -14,16 +14,8 @@ class UserService {
         exclude: ["password", "updatedAt"],
       }
     );
-
+    console.log("user to show", user);
     if (!user) throw new NotFoundError("User not found ");
-
-    // const count_follows = await Follow.count({
-    //   where: { followerId: user.id },
-    // });
-    // const count_followers = await Follow.count({
-    //   where: { followingId: user.id },
-    // });
-
     let isProfile = user.id === currentUserId;
     logger.debug("user profile", user, isProfile);
     return {

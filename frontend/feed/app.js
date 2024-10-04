@@ -1,12 +1,12 @@
-import { fetchPosts, createPost } from "./api.js"; // Import API functions
+import { fetchPosts, createPost, fetchSearchResults } from "./api.js"; // Import API functions
 
 document.addEventListener("DOMContentLoaded", function () {
+  integrateSearchFunctionality();
   const postForm = document.getElementById("post-form");
   const feedContainer = document.getElementById("feed");
   const token = localStorage.getItem("authToken");
   // Function to display posts in the feed
   function displayPosts(posts) {
-    
     feedContainer.innerHTML = ""; // Clear existing posts
     posts.forEach((post) => {
       const postElement = document.createElement("div");
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
       feedContainer.appendChild(postElement);
     });
   }
- 
+
   console.log("Token:", token);
   // Fetch posts when the page loads
   fetchPosts(token)
@@ -77,25 +77,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Get the selected file from the input field
     const postImage = document.getElementById("post-image").files[0];
+    //console.log("postImage", postImage, "postText", postText);
+    const formData = new FormData();
+    formData.append("imageUrl", postImage);
+    formData.append("text", postText);
     console.log("postImage", postImage, "postText", postText);
+    console.log("formData", formData);
     // Validate if necessary fields are filled
-    if (postText == null && postImage== null) {
+    if (postText == null && postImage == null) {
       alert("Please enter some text or choose an image to share!");
       return;
-    }
-
-    const postData={
-        text:postText,
-    };
-    if (postImage) {
-        postData.imageUrl=postImage;
     }
 
     //const text = document.getElementById("post-text").value;
     // const image = document.getElementById("post-image").files[0];
 
     try {
-      await createPost(postData); // Call createPost from API module
+      await createPost(formData); // Call createPost from API module
       document.getElementById("post-text").value = ""; // Clear textarea
       document.getElementById("post-image").value = ""; // Clear file input
       fetchPosts().then((posts) => displayPosts(posts)); // Refresh posts after new post
@@ -104,3 +102,55 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+function integrateSearchFunctionality() {
+  const searchInput = document.getElementById("search-input");
+  const searchResults = document.getElementById("search-results");
+
+  const debouncedSearch = debounce(async () => {
+    const query = searchInput.value.trim();
+    if (query.length > 0) {
+      const results = await fetchSearchResults(query);
+
+      if (results.status == "success") {
+        displaySearchResults(results.data, searchResults, searchInput);
+      }
+    } else {
+      searchResults.style.display = "none";
+    }
+  }, 300); // Adjust the delay as needed (300ms in this example)
+
+  searchInput.addEventListener("input", debouncedSearch);
+}
+
+function debounce(func, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+}
+
+function displaySearchResults(results, searchResults, searchInput) {
+  searchResults.innerHTML = "";
+  if (results.length > 0) {
+    results.forEach((result) => {
+      const userResult = result._source;
+      console.log("search result", result);
+      const item = document.createElement("div");
+      item.classList.add("result-item");
+      item.textContent = userResult.name; // Adjust based on your API response structure
+      item.addEventListener("click", () => {
+        //searchInput.value = userResult.name; // Adjust based on your API response structure
+        // searchResults.style.display = 'none';
+        window.location.href = `/userProfile.html?username=${userResult.username}`;
+      });
+      searchResults.appendChild(item);
+    });
+    searchResults.style.display = "block";
+  } else {
+    searchResults.style.display = "none";
+  }
+}

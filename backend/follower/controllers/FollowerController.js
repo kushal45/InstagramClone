@@ -1,5 +1,6 @@
 const FollowerService = require("../services/FollowerService");
 const logger = require("../../logger/logger");
+const ResponseFormatter = require("../../util/ResponseFormatter");
 
 class FollowerController {
   // List followers of a user
@@ -44,7 +45,7 @@ class FollowerController {
       const followingId = req.params.userId;
       const redisClient = req.redis;
       await FollowerService.followUser(req.userId, followingId, redisClient);
-      res.status(201).send("Followed successfully.");
+      res.status(201).send(ResponseFormatter.success({}, "Followed successfully."));
     } catch (error) {
       logger.error(error);
       next(error);

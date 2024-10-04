@@ -1,6 +1,8 @@
 // api.js
 
-const API_BASE_URL = "http://localhost:3000"; // Replace with the actual backend URL
+const API_BASE_URL = "http://localhost:3000"; 
+const USER_API ="http://localhost:3000/user";
+const FOLLOWER_API = "http://localhost:3000/users";
 
 export async function registerUser(username, password, email) {
     try {
@@ -53,5 +55,39 @@ export async function updateUserProfile(newUsername, profilePictureFile, token) 
     } catch (error) {
         console.error('Error updating user profile:', error);
         throw error;
+    }
+}
+
+export async function fetchUserProfile(username) {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`${USER_API}/${encodeURIComponent(username)}/userProfile`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`, // Add Bearer token
+            'Content-Type': 'application/json' // Optional: Set content type if needed
+        }
+    });
+    if (response.ok) {
+        return await response.json();
+    }
+    return null;
+}
+
+export async function followUser(userId) {
+    try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(`${FOLLOWER_API}/${userId}/follow`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`, // Add Bearer token
+                'Content-Type': 'application/json'
+            }
+        });
+        if(response.ok) {
+            return await response.json();
+        }
+        return null;
+    } catch (error) {
+        console.error('Error following user:', error);
     }
 }

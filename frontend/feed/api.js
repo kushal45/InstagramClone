@@ -35,10 +35,9 @@ export async function createPost(postData) {
         const token = localStorage.getItem("authToken");
         const response = await fetch(`${API_BASE_URL}/posts`, { // Replace with your actual endpoint
             method: "POST",
-            body: JSON.stringify(postData),
+            body: postData,
             headers: {
-                'Authorization': `Bearer ${token}`, // Add Bearer token
-                'Content-Type': 'application/json' // Optional: Set content type if needed
+                'Authorization': `Bearer ${token}`
             }
         });
         if (!response.ok) {
@@ -48,5 +47,32 @@ export async function createPost(postData) {
     } catch (error) {
         console.error("Error creating post:", error);
         throw error; // Rethrow the error for handling in the caller function
+    }
+}
+
+/**
+ * 
+ * @param {*} query query string sent from the search input
+ * @returns response json object
+ */
+export async function fetchSearchResults(query) {
+    try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(`${API_BASE_URL}/user/search?q=${encodeURIComponent(query)}`,{
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`, // Add Bearer token
+                'Content-Type': 'application/json' // Optional: Set content type if needed
+            }
+    });
+        if (response.ok) {
+            return await response.json();
+        } else {
+            console.error('Error fetching search results:', response.statusText);
+            return [];
+        }
+    } catch (error) {
+        console.error('Error fetching search results:', error);
+        return [];
     }
 }

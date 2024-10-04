@@ -77,7 +77,7 @@ routes.get(
 
 /**
  * @swagger
- * /user/get/{username}:
+ * /user/{username}/userProfile:
  *   get:
  *     summary: Get user by username
  *     tags: [Users]
@@ -98,7 +98,7 @@ routes.get(
  *       401:
  *         description: Unauthorized
  */
-routes.get("get/:username", AuthMiddleware, UserController.show);
+routes.get("/:username/userProfile", AuthMiddleware, UserController.show);
 
 /**
  * @swagger
