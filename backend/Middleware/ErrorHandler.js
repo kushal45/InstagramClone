@@ -1,4 +1,5 @@
 const { NotFoundError, InternalServerError, BadRequestError} = require('../errors');
+const ResponseFormatter = require('../util/ResponseFormatter');
 
 const errorResponseMap = new Map([
   [NotFoundError, { statusCode: 404, message: "Not found" }],
@@ -10,7 +11,7 @@ const errorHandler = (err, req, res, next) => {
   console.log("error caugth from errorHandler",err);
   const errorResponse = errorResponseMap.get(err.error.constructor);
   if (errorResponse) {
-    return res.status(errorResponse.statusCode).send({ message: err.message || errorResponse.message });
+    return res.status(errorResponse.statusCode).send(ResponseFormatter.error(err.error, errorResponse.message));
   } else {
     return res.status(500).send({ message: "Internal server error" });
   }

@@ -54,7 +54,8 @@ class FollowerService {
   static async followUser(followerId, followingId,redisClient) {
     const logLocation = "FollowerService.followUser";
     try {
-      if(followerId === followingId){
+      console.log("followerId", followerId, "followingId", followingId);
+      if(followerId == followingId){
         throw new BadRequestError("You cannot follow yourself!");
       }
       const createdFollower = await FollowerDao.addFollower(followerId, followingId);
@@ -71,7 +72,7 @@ class FollowerService {
         { message: error.message },
         { correlationId }
       );
-      throw ErrorWithContext(error, new ErrorContext(logLocation), __filename);
+      throw new ErrorWithContext(error, new ErrorContext(logLocation), __filename);
     }
   }
 

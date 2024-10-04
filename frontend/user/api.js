@@ -83,11 +83,15 @@ export async function followUser(userId) {
                 'Content-Type': 'application/json'
             }
         });
+        console.error('response',response);
         if(response.ok) {
             return await response.json();
         }
-        return null;
+        return {
+            status: response.status,
+            message: response.statusText
+        };
     } catch (error) {
-        console.error('Error following user:', error);
+        console.error('Error in Followe User api:', error);
     }
 }

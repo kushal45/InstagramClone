@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     followButton.classList.remove('initialFollow');
                     followButton.disabled = true;
                 } else {
-                    console.error('Error following user:', response.statusText);
+                    //console.error('Error following user:', response.statusText);
+                    alert(`Error following user:${followResponse.message}`);
                 }
             } catch (error) {
                 console.error('Error following user:', error);

@@ -5,8 +5,8 @@ const xss = require('xss');
 const validatePost = [
   query('cursor').optional().isString().trim().escape(),
   body('imageUrl').optional().custom((value, { req }) => {
-    console.log("req file",req.files);
-    if(!req.files){
+    console.log("req file",req.file);
+    if(!req.file){
       return;
     }
     // You can add more checks here, such as file type and size

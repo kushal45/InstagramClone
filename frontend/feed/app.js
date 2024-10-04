@@ -79,7 +79,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const postImage = document.getElementById("post-image").files[0];
     //console.log("postImage", postImage, "postText", postText);
     const formData = new FormData();
-    formData.append("imageUrl", postImage);
+    if(postImage!=null){
+      formData.append("imageUrl", postImage);
+    }
     formData.append("text", postText);
     console.log("postImage", postImage, "postText", postText);
     console.log("formData", formData);
