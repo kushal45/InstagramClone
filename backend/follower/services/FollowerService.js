@@ -4,6 +4,7 @@ const httpContext = require("express-http-context");
 const logger = require("../../logger/logger");
 const { BadRequestError } = require("../../errors");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
+const {connections} = require("../../Middleware/WebSocketMiddleWare");
 
 
 class FollowerService {
@@ -37,10 +38,6 @@ class FollowerService {
   }) {
     try {
       const cachedKey = `following:${userId}:${cursor}`;
-     // const cachedFollowing = await redisClient.get(cachedKey);
-      // if (cachedFollowing) {
-      //   return JSON.parse(cachedFollowing);
-      // }
       logger.debug("current cursor", cursor);
       const paginatedFollowings = await FollowerDao.listFollowing(userId,{ cursor, pageSize });
       redisClient.set(cachedKey, JSON.stringify(paginatedFollowings), "EX", 3600); // Cache for 1 hour
@@ -62,6 +59,16 @@ class FollowerService {
       const correlationId= httpContext.get("correlationId");
       //logger.debug("following info", createdFollower);
       await redisClient.zIncrBy('topUsers', 1, createdFollower.FollowingUser.name);
+      const followedUserSocket = connections.get(Number(followingId));
+      if (followedUserSocket) {
+        console.log("sending notification to user", followingId);
+        followedUserSocket.send(JSON.stringify({
+          type: 'notification',
+          message: `User ${followerId} has followed you.`
+        }));
+      }
+
+
       await new KafkaNewRelicProducer().produce("followerCreated", { numberOfTopFollowers: process.env.TOP_USER_FOLLOWERLIST}, { correlationId });
       return createdFollower;
     } catch (error) {

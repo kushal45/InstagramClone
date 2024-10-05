@@ -1,4 +1,4 @@
-import { fetchPosts, createPost, fetchSearchResults } from "./api.js"; // Import API functions
+import { fetchPosts, createPost, fetchSearchResults, fetchUserDetailsFrmToken } from "./api.js"; // Import API functions
 
 document.addEventListener("DOMContentLoaded", function () {
   integrateSearchFunctionality();
@@ -103,7 +103,43 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Failed to create post:", error);
     }
   });
+
+  webSocketConnectionInit();
 });
+
+function webSocketConnectionInit(){
+  const userDetails=fetchUserDetailsFrmToken();
+  const userId=userDetails?.id;
+  connectToWebSocket(userId);
+}
+function connectToWebSocket(userId){
+  if(userId == null){
+    console.error("User id not found");
+    return;
+  }
+  const socket = new WebSocket("ws://localhost:3000");
+  socket.onopen = function () {
+    console.log("WebSocket connection established");
+    const registrationMessage = {
+      type: 'register',
+      userId: userId
+    };
+    socket.send(JSON.stringify(registrationMessage));
+  };
+  socket.onmessage = function (event) {
+    console.log("Message received:", event.data);
+    const data = JSON.parse(event.data);
+    console.log("Message parsed:", data);
+    alert(data.message);
+  }
+
+  socket.onclose = function () {
+    console.log("WebSocket connection closed");
+  };
+  socket.onerror = function (error) {
+    console.error("WebSocket error:", error);
+  };
+}
 
 function integrateSearchFunctionality() {
   const searchInput = document.getElementById("search-input");

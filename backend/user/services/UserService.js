@@ -5,6 +5,7 @@ const  UserDAO  = require("../dao/UserDao");
 const { BadRequestError, NotFoundError } = require("../../errors");
 const logger = require("../../logger/logger");
 const ElasticSearch = require("../../util/ElasticSearch");
+const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
 
 class UserService {
   static async getUserProfile(username, currentUserId) {
@@ -45,37 +46,51 @@ class UserService {
   }
 
   static async registerUser({name, email, username, password}) {
-    let user = await UserDAO.findUserByEmailOrUsername(email, username);
-    console.log("existing user", user);
-    if (user) {
-      if (user.email === email) {
-        throw new BadRequestError("email already exists");
+    const logLocation = "UserService.registerUser";
+    try {
+      let user = await UserDAO.findUserByEmailOrUsername(email, username);
+      console.log("existing user", user);
+      if (user) {
+        if (user.email === email) {
+          throw new BadRequestError("email already exists");
+        }
+        if (user.username === username) {
+          throw new BadRequestError("username already exists");
+        }
       }
-      if (user.username === username) {
-        throw new BadRequestError("username already exists");
-      }
+  
+      const salt = await bcryptjs.genSalt(10);
+      const passwordHash = await bcryptjs.hash(password, salt);
+  
+      user = await UserDAO.createUser({
+        name,
+        email,
+        username,
+        password: passwordHash,
+      });
+  
+      const result= await new ElasticSearch().indexDocument("userprofiles", user, user.id);
+      logger.debug("indexing result", result);
+  
+      // JWT
+      const payload = { id: user.id, username: user.username, tags: user.tags };
+      const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {
+        expiresIn: 86400,
+      });
+  
+      return { body: { token } };
+    } catch (error) {
+      throw new ErrorWithContext(
+        error,
+        new ErrorContext(logLocation, {
+          name,
+          email,
+          username,
+        }),
+        __filename
+      );
     }
-
-    const salt = await bcryptjs.genSalt(10);
-    const passwordHash = await bcryptjs.hash(password, salt);
-
-    user = await UserDAO.createUser({
-      name,
-      email,
-      username,
-      password: passwordHash,
-    });
-
-    const result= await new ElasticSearch().indexDocument("userprofiles", user, user.id);
-    logger.debug("indexing result", result);
-
-    // JWT
-    const payload = { id: user.id, username: user.username, tags: user.tags };
-    const token = jwt.sign(payload, process.env.SIGNATURE_TOKEN, {
-      expiresIn: 86400,
-    });
-
-    return { body: { token } };
+  
   }
 
   static async getUserById(userId, attributes) {

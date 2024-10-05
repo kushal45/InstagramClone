@@ -11,12 +11,11 @@ process.on("unhandledRejection", (reason, promise) => {
   process.exit(1); // Exit the application
 });
 
-
 require("dotenv").config();
-const newrelic=require("newrelic");
+const newrelic = require("newrelic");
 const express = require("express");
-const rateLimit = require('express-rate-limit');
-const compression = require('compression');
+const rateLimit = require("express-rate-limit");
+const compression = require("compression");
 const path = require("path");
 const app = express();
 const cors = require("cors");
@@ -25,20 +24,23 @@ const errorHandler = require("./middleware/ErrorHandler");
 const correlationIdMiddleware = require("./middleware/CorrelationIdHandler");
 const metricsMiddleware = require("./middleware/MetricsMiddleWare");
 const RedisMiddleware = require("./middleware/Redis");
-const helmet = require('helmet');
+const helmet = require("helmet");
 const {
   prometheusMiddleware,
   metricsEndpoint,
 } = require("./middleware/PrometheusMiddleWare");
 const httpContext = require("express-http-context");
 const configureDebeziumConnector = require("./database/confDebeziumConnector");
-newrelic.instrumentLoadedModule('express', app);
-
+const http = require("http");
+const { webSocketMiddleware } = require("./Middleware/WebSocketMiddleWare");
+newrelic.instrumentLoadedModule("express", app);
 
 const PORT = process.env.PORT || 3000;
 
 try {
   // Use httpContext middleware
+  const server = http.createServer(app);
+  webSocketMiddleware(server);
   app.use(metricsMiddleware);
   app.use(compression());
   app.use(RedisMiddleware);
@@ -56,13 +58,14 @@ try {
   // app.use(
   //   cors({ origin: [process.env.CORS_ORIGIN, process.env.CORS_ORIGIN_IP] })
   // );
-  const corsOptions ={
-    origin:'*', 
-    credentials:true,            //access-control-allow-credentials:true
-    optionSuccessStatus:200,
- }
- 
- app.use(cors(corsOptions))
+  const corsOptions = {
+    origin: "*",
+    optionSuccessStatus: 200,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  };
+
+  app.use(cors(corsOptions));
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -75,8 +78,11 @@ try {
   app.use(errorHandler);
   app.use(metricsEndpoint);
   configureDebeziumConnector().catch(console.error);
-  app.listen(PORT);
-  console.log(`Server running on port ${PORT}`);
+  server.listen(PORT, () => {
+    const address = server.address();
+    console.log(`Server is running on port ${PORT}`);
+    console.log("address", address);
+  });
 } catch (error) {
   console.error("server error:", error);
 }
