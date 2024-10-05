@@ -10,11 +10,14 @@ while getopts "r" opt; do
 done
 
 cd docker
-if docker ps -a | grep -q 'backend' ||  docker ps -a | grep -q 'docker'; then
-    docker stop backend-*
-    docker rm backend-*
-    docker volume prune
-    docker stop docker-*
+# Prune unused volumes
+echo "Checking for unused Docker volumes..."
+unused_volumes=$(docker volume ls -f dangling=true -q)
+if [ -n "$unused_volumes" ]; then
+  echo "Pruning unused Docker volumes..."
+  docker volume prune -f
+else
+  echo "No unused Docker volumes found."
 fi
 docker image prune -f
 containers_up=$(docker-compose ps -a)
