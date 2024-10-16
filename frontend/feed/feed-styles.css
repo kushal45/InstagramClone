@@ -62,6 +62,25 @@ body {
     z-index: 1000;
 }
 
+.like-button {
+    background-color: #ff4757; /* Red background */
+    color: blue; /* White text */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Padding */
+    font-size: 16px; /* Font size */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth transition */
+  }
+  
+  .like-button:hover {
+    background-color: #ff6b81; /* Lighter red on hover */
+  }
+  
+.like-button:active {
+        background-color: #ff4757; /* Darker red when clicked */
+    }
+
 .search-results .result-item {
     padding: 10px;
     cursor: pointer;

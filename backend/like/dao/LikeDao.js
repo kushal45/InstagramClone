@@ -25,7 +25,7 @@ class LikeDAO {
     // Create or increment like for a post
     static async likePost(postId) {
       try {
-        let like = await Like.get({ where: { postId } });
+        let like = await Like.findOne({ where: { postId } });
         if (!like) {
           like = await Like.create({ postId, count: 1 });
         } else {

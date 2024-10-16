@@ -3,8 +3,8 @@ const PostService  = require("../services/PostService");
 const { BadRequestError } = require("../../errors");
 const logger = require("../../logger/logger");
 const ResponseFormatter = require("../../util/ResponseFormatter");
+const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 module.exports = {
-  BASE_URL :process.env.BASE_URL || "http://localhost:3000",
   /**
    * Create a new post
    * @param {Object} req - Request object containing post data
@@ -21,9 +21,9 @@ module.exports = {
         text: req.body.text,
       }
       if(req.file){
-      console.log("req files",req);
-      const imageUrl = req.file['imageUrl'] ? `${this.BASE_URL}/uploads/${req.file['imageUrl'][0].filename}` : null;
-      const videoUrl = req.file['videoUrl'] ? `${this.BASE_URL}/uploads/${req.file['videoUrl'][0].filename}` : null;
+      console.log("req files",req.file);
+      const imageUrl = req.file.fieldname ==='imageUrl' ? `${BASE_URL}/uploads/${req.file.filename}` : null;
+      const videoUrl = req.file['videoUrl'] ? `${BASE_URL}/uploads/${req.file['videoUrl'][0].filename}` : null;
       reqBody.imageUrl = imageUrl;
       reqBody.videoUrl = videoUrl;
       }

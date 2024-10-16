@@ -6,7 +6,7 @@ const logger = require("../../logger/logger");
 
 /**
  * Fetches feeds of posts based on user tags and followings, and updates the cache.
- * 
+ *
  * @param {Object} params - The parameters for fetching feeds.
  * @param {Array<string>} params.userTags - The tags associated with the user.
  * @param {Object} params.decodedRes - The decoded response containing cursors.
@@ -27,27 +27,47 @@ async function fetchFeedsOfPost({
   /**
    * query posts by tags which uses GIN index internally on tags column of Assets table
    */
-  const { postWithTags, newPostTagsCursor } = await fetchPostsByTags({
+  logger.debug("userId from fetchFeedsOfPost", userId);
+  const fetchPostsByTagsQuery = fetchPostsByTags({
     tags: userTags,
     cursor: decodedRes?.postTagsCursor,
     sortOrder,
   });
-  const { postWithFollowings, newPostWithFollowingCursor } =
-    await fetchFollowingsAndPosts({
-      userId,
-      cursor: decodedRes?.postFollowingCursor,
-      sortOrder,
-      redisClient,
-    });
-  const result = [...postWithTags, ...postWithFollowings];
-  await redisClient.hSet(cacheKey, "data", JSON.stringify(result));
-  await redisClient.hSet(cacheKey, "timestamp", Date.now().toString());
-  await redisClient.expire(cacheKey, 36); // Set expiration time to 36 seconds
+
+  const fetchFollowingsAndPostsQuery = fetchFollowingsAndPosts({
+    userId,
+    cursor: decodedRes?.postFollowingCursor,
+    sortOrder,
+    redisClient,
+  });
+
+  const fetchUserPostsQuery = PostService.listPosts(
+    userId,
+    redisClient,
+    {cursor: decodedRes?.userPostsCursor}
+  );
+
+  // Execute the queries concurrently
+  const [postsByTags, followingsPosts, userPosts] = await Promise.all([
+    fetchPostsByTagsQuery,
+    fetchFollowingsAndPostsQuery,
+    fetchUserPostsQuery,
+  ]);
+
+  // Process the results
+  const { postWithTags, newPostTagsCursor } = postsByTags;
+  const { postWithFollowings, newPostWithFollowingCursor } = followingsPosts;
+  //const { userPostsData, newUserPostsCursor } = userPosts;
+  const { posts, nextCursor } = userPosts;
+
+  const result = [...postWithTags, ...postWithFollowings,...posts];
+  logger.debug("result for feedService", result);
   return {
     data: result,
     cursor: Cursor.encode({
       postFollowingCursor: newPostWithFollowingCursor,
       postTagsCursor: newPostTagsCursor,
+      userPostsCursor: nextCursor,
     }),
   };
 }
@@ -66,6 +86,7 @@ function fetchParentDecodedCursor(cursor) {
     return {
       postTagsCursor: decodeCursor.postTagsCursor,
       postFollowingCursor: decodeCursor.postFollowingCursor,
+      userPostsCursor: decodeCursor.userPostsCursor,
     };
   }
   return null;
@@ -86,21 +107,16 @@ async function fetchPostsByTags({ tags, cursor, sortOrder }) {
       postTagsCursor = decodedCursor.postTagsCursor;
     }
   }
-  const postResults = await PostService.listPostsByAttr(
-    { tags },
-    undefined,
-    {
-      cursor: postTagsCursor,
-      sortOrder,
-    }
-  );
+  const postResults = await PostService.listPostsByAttr({ tags }, undefined, {
+    cursor: postTagsCursor,
+    sortOrder,
+  });
+  console.log("postResults", postResults);
   return {
     postWithTags: postResults.postWithTags,
     newPostTagsCursor: postResults.nextCursor,
   };
 }
-
-
 
 /**
  * Fetches followings and their posts.
@@ -141,6 +157,7 @@ async function fetchFollowingsAndPosts({
     followingCursor: newFollowingCursor,
     userFollowingPostsCursor: newUserFollowingPosts,
   });
+  // console.log("postWithFollowings", postWithFollowings, newPostWithFollowingCursor);
   return { postWithFollowings, newPostWithFollowingCursor };
 }
 

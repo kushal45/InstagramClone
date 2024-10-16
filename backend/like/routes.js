@@ -50,7 +50,17 @@ const routes = Router();
  *     tags: [Likes]
  *     security:
  *       - bearerAuth: []
- *     responses:
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               postId:
+ *                 type: number
+ *                 description: The ID of the post to like
+ *                 example: "1"
  *       201:
  *         description: Post liked successfully
  *       401:

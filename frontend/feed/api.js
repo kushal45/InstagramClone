@@ -6,7 +6,8 @@ const API_BASE_URL = "http://localhost:3000"; // Replace with your actual API ba
  * Fetch posts from the backend API.
  * @returns {Promise<Array>} An array of posts.
  */
-export async function fetchPosts(token) {
+export async function fetchPosts() {
+  const token = localStorage.getItem("authToken");
   try {
     const response = await fetch(`${API_BASE_URL}/feeds`, {
       method: "GET",
@@ -93,4 +94,49 @@ export function fetchUserDetailsFrmToken() {
     return payload;
   }
   return null;
+}
+
+export async function performLike(postId){
+  const token = localStorage.getItem("authToken");
+   // Send POST request to the like endpoint
+  const like= await fetch(`${API_BASE_URL}/like`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`, // Add Bearer token
+      "Content-Type": "application/json", // Optional: Set content type if needed
+    },
+    body: JSON.stringify({ postId }),
+  })
+  return like.json(); 
+}
+
+export async function performShare(postId){
+  const token = localStorage.getItem("authToken");
+  // Send POST request to the share endpoint
+  const share= await fetch(`${API_BASE_URL}/feeds/share`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`, // Add Bearer token
+      "Content-Type": "application/json", // Optional: Set content type if needed
+    },
+    body: JSON.stringify({ postId }),
+  });
+  return share.json();
+}
+
+export async function performComment({
+  postId,
+  text,
+  userId,
+}){
+  const token = localStorage.getItem("authToken");
+  // Send POST request to the comment endpoint
+  await fetch(`${API_BASE_URL}/comments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`, // Add Bearer token
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ postId, userId, text }),
+  })
 }

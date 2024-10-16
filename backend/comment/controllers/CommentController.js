@@ -16,6 +16,16 @@ module.exports = {
     }
   },
 
+  getCommentsByPostId: async (req, res, next) => {
+    try {
+      const comments = await CommentService.getCommentsByPostId(req.params.postId);
+      res.status(200).send(comments);
+    } catch (error) {
+      logger.debug(error);
+      next(error);
+    }
+  },
+
   getById: async (req, res, next) => {
     try {
       const comment = await CommentService.getCommentById(req.params.id);

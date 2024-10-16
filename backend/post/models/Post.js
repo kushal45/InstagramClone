@@ -27,6 +27,10 @@ class Post extends Model {
         foreignKey: 'postId',
         as: 'comments',
        });
+      this.hasOne(models.Like, {
+        foreignKey: 'postId',
+        as: 'likes',
+      });
      }
      
   }

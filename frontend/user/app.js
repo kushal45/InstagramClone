@@ -61,7 +61,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             localStorage.setItem('authToken', token); 
             //const tokenfetched = localStorage.getItem('authToken');
             //console.log("Token fetched: ", tokenfetched);
-            location.href="../feed/index.html";
+            location.href="../feed";
        }else{
            alert('Login failed with status: ' + result.status);
        }

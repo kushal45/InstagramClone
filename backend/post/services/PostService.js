@@ -6,6 +6,7 @@ const httpContext = require("express-http-context");
 const logger = require("../../logger/logger");
 const { ErrorWithContext, ErrorContext } = require("../../errors/ErrorContext");
 const { deducePostWithTags } = require("./InternalPostCursorService");
+const { sequelize } = require("../models/Post");
 
 class PostService {
   static async createPost(postData, userId) {
@@ -22,13 +23,15 @@ class PostService {
           postData
         );
         assetId = asset.id;
-        transaction = postTransaction;
         // Publish the event to Kafka
         const topic = "assetCreated";
         const correlationId = httpContext.get("correlationId");
         await this.retryProduce( topic, asset, {
           correlationId,
         });
+      }
+      if(transaction == null){
+        transaction =  await sequelize.transaction();
       }
       const post = await PostDAO.create({
         userId: user.id,
@@ -231,25 +234,25 @@ class PostService {
     try {
       const user = await UserDAO.findUserById(userId);
       if (!user) throw new NotFoundError("User not found");
-      const cacheKey = `posts:${userId}:${cursor}:${pageSize}`;
+     // const cacheKey = `posts:${userId}:${cursor}:${pageSize}`;
 
-      const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
-        if (err) return reject(err);
-        if (data) return resolve(JSON.parse(data));
-        resolve(null);
-      });
+      // const cachedPosts = await redisClient.get(cacheKey, (err, data) => {
+      //   if (err) return reject(err);
+      //   if (data) return resolve(JSON.parse(data));
+      //   resolve(null);
+      // });
 
-      logger.debug("cachedPosts", cachedPosts);
-      if (cachedPosts) {
-        return cachedPosts;
-      }
+      // logger.debug("cachedPosts", cachedPosts);
+      // if (cachedPosts) {
+      //   return cachedPosts;
+      // }
 
       const paginatedPosts = await PostDAO.listByUsers([user.id], {
         cursor,
         pageSize,
       });
       logger.debug("paginatedPosts", paginatedPosts);
-      redisClient.set(cacheKey, JSON.stringify(paginatedPosts), "EX", 10);
+      //redisClient.set(cacheKey, JSON.stringify(paginatedPosts), "EX", 10);
       return paginatedPosts;
     } catch (error) {
       throw new ErrorWithContext(

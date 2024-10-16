@@ -13,7 +13,7 @@ class CommentService {
       const post = await PostDAO.getById(postId);
       if (!post) throw new NotFoundError("Post not found");
       const tags = ["other"];
-      const asset = await AssetDAO.create({ imageUrl, videoUrl, text,tags});
+      const {asset} = await AssetDAO.create({ imageUrl, videoUrl, text,tags});
       const comment = await CommentDAO.create({
         userId: user.id,
         postId,
@@ -25,6 +25,15 @@ class CommentService {
        throw error;
     }
    
+  }
+
+  static async getCommentsByPostId(postId) {
+    try {
+      const comments = await CommentDAO.getByPostId(postId);
+      return comments;
+    } catch (error) {
+      throw error;
+    }
   }
 
   static async getCommentById(id) {

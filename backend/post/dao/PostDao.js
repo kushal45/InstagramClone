@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Asset, Post } = require("../../models");
+const { Asset, Post, Like } = require("../../models");
 //const PostPool = require("../models/PostPool");
 const Cursor = require("../../database/cursor");
 const sequelize = require("../../database");
@@ -24,7 +24,7 @@ class PostDao {
       //await transaction.rollback();
       throw new ErrorWithContext(error,
         new ErrorContext(logLocation,{
-          postId
+          postData
         }),__filename
       )
     }
@@ -105,7 +105,11 @@ class PostDao {
       }      
       const posts = await Post.findAll({
         where,
-        include: [{ model: Asset, as: "asset" , attributes: ['imageUrl', 'videoUrl','text']}],
+        include: [{ model: Asset, as: "asset" , attributes: ['imageUrl', 'videoUrl','text']},{
+          model:Like,
+          as:"likes",
+          attributes: ['count']
+        }],
         limit: pageSize,
         order: [["id", "DESC"]],
       });

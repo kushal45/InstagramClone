@@ -75,6 +75,7 @@ class FeedService {
       if (!post) {
         throw new NotFoundError("Post not found");
       }
+      logger.debug("post data to share", post);
       const sharedPost = await PostService.createPost(post, userId);
       return sharedPost;
     } catch (error) {
